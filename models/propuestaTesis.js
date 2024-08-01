@@ -1,5 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
+const Usuarios = require("./usuarios");
 
 const PropuestaTesis = sequelize.define(
   "PropuestaTesis",
@@ -12,6 +13,14 @@ const PropuestaTesis = sequelize.define(
     propuesta: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    user_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Usuarios,
+        key: "user_id",
+      },
     },
   },
   {
