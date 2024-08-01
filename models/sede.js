@@ -1,0 +1,20 @@
+const { DataTypes } = require("sequelize");
+const sequelize = require("../database");
+
+const Sede = sequelize.define("sede", {
+  sede_id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true,
+  },
+  nombre: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  }
+},{
+    timestamps: false,
+    tableName: 'sede'
+}
+);
+
+module.exports = Sede;
