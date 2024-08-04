@@ -3,6 +3,7 @@ const sequelize = require("../config/database");
 const Cursos = require("./cursos");
 const Usuarios = require("./usuarios");
 const Ciclos = require("./ciclos");
+const Tareas = require("./tareas");
 
 const Notas = sequelize.define(
   "Notas",
@@ -36,21 +37,30 @@ const Notas = sequelize.define(
         key: "ciclo_id",
       },
     },
-    parcial: {
-      type: DataTypes.NUMBER(5, 2),
+    tarea_id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
+      references:{
+        model: Tareas,
+        key: "tarea_id"
+      }
+    },
+
+    parcial: {
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: true,
     },
     act_final: {
-      type: DataTypes.NUMBER(5, 2),
-      allowNull: false,
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: true,
     },
     total: {
-      type: DataTypes.NUMBER(5, 2),
-      allowNull: false,
+      type: DataTypes.DECIMAL(5, 2),
+      allowNull: true,
     },
     total_letras: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     fecha: {
       type: DataTypes.DATE,

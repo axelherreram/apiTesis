@@ -7,7 +7,7 @@ const Sede = sequelize.define("sede", {
     primaryKey: true,
     autoIncrement: true,
   },
-  nombre: {
+  nombreSede: {
     type: DataTypes.STRING,
     allowNull: false,
   }

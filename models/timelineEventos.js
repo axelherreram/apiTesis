@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Usuario = require("./usuario");
+const Usuario = require("./usuarios");
 
 const TimelineEventos = sequelize.define("TimelineEventos", {
   evento_id: {

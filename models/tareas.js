@@ -1,40 +1,45 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Usuario = require("./usuarios");
+const Cursos = require("./cursos");
 
-const BitacoraApp = sequelize.define(
-  "BitacoraApp",
+const Tareas = sequelize.define(
+  "Tareas",
   {
-    bitacora_id: {
+    tarea_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    user_id: {
+    curso_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Usuario,
-        key: "user_id",
+        model: Cursos,
+        key: "curso_id",
       },
     },
-    accion: {
+
+    titulo: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    detalles: {
+    descripcion: {
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    fecha: {
+    inicioTarea: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    finTarea: {
       type: DataTypes.DATE,
       allowNull: false,
     },
   },
   {
     timestamps: false,
-    tableName: "BitacoraApp",
+    tableName: "Tareas",
   }
 );
 
-module.exports = BitacoraApp;
+module.exports = Tareas;
