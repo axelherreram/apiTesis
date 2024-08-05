@@ -2,7 +2,6 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Cursos = require("./cursos");
 const Usuarios = require("./usuarios");
-const Ciclos = require("./ciclos");
 const Tareas = require("./tareas");
 
 const Notas = sequelize.define(
@@ -29,13 +28,9 @@ const Notas = sequelize.define(
         key: "user_id",
       },
     },
-    ciclo_id: {
-      type: DataTypes.INTEGER,
+    ciclo: {
+      type: DataTypes.STRING,
       allowNull: false,
-      references: {
-        model: Ciclos,
-        key: "ciclo_id",
-      },
     },
     tarea_id: {
       type: DataTypes.INTEGER,
