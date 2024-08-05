@@ -29,6 +29,7 @@ const BitacoraApp = sequelize.define(
     fecha: {
       type: DataTypes.DATE,
       allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
