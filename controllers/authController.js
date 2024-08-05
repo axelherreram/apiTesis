@@ -36,14 +36,19 @@ Pendiente agregar sede para iniciar sesion
 */
 
 const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, sede_id} = req.body;
 
   try {
-    const user = await Usuarios.findOne({ where: { email } });
+    const user = await Usuarios.findOne({ where: { email, sede_id } });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
-    }
+      // Comprobar si el usuario existe en la base de datos sin considerar la sede
+      const userExists = await Usuarios.findOne({ where: { email } });
+      if (!userExists) {
+        return res.status(404).json({ message: 'Usuario no encontrado' });
+      }
+      return res.status(403).json({ message: 'No pertenece a esta sede' });
+    }  
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
     
@@ -53,7 +58,7 @@ const loginUser = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { user: { user_id: user.user_id, rol_id: user.rol_id } },
+      { user: { user_id: user.user_id, rol_id: user.rol_id, sede_id: user.sede_id } },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
