@@ -12,7 +12,7 @@ async function registrarEvento(user_id, tipoEvento, tipoEvento) {
         user_id,
         tipoEvento,
         tipoEvento,
-      });
+      }); 
       console.log('Actividad registrada en la bitácora');
     } catch (err) {
       console.error('Error al registrar en la bitácora:', err);
