@@ -29,11 +29,11 @@ const Tareas = sequelize.define(
     },
     inicioTarea: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
     finTarea: {
       type: DataTypes.DATE,
-      allowNull: false,
+      allowNull: true,
     },
   },
   {
