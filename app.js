@@ -4,6 +4,7 @@ const sequelize = require('./config/database');
 const initializetables = require('./config/iniciableTables');
 const authRoutes = require('./routes/authRoutes');
 const { swaggerUi, swaggerDocs } = require('./docs/swagger'); 
+const userRoutes = require('./routes/userRoutes');
 
 require('dotenv').config();
 
@@ -14,6 +15,7 @@ app.use(bodyParser.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use('/auth', authRoutes);
+app.use('/api', userRoutes);
 
 sequelize.sync({ alter: false, force: false })
   .then(async () => {
