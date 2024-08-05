@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Usuarios = require("../models/usuarios");
+const { registrarBitacora } = require('../sql/bitacora');
 
 const registerUser = async (req, res) => {
   const { email, password, nombre, carnet, sede_id, rol_id, anioRegistro } = req.body;
@@ -30,19 +31,13 @@ const registerUser = async (req, res) => {
 };
 
 
-/* 
-Pendiente agregar sede para iniciar sesion
-  Esto para que solo los usuairos de la sede puedan iniciar sesion
-*/
-
 const loginUser = async (req, res) => {
-  const { email, password, sede_id} = req.body;
+  const { email, password, sede_id } = req.body;
 
   try {
     const user = await Usuarios.findOne({ where: { email, sede_id } });
 
     if (!user) {
-      // Comprobar si el usuario existe en la base de datos sin considerar la sede
       const userExists = await Usuarios.findOne({ where: { email } });
       if (!userExists) {
         return res.status(404).json({ message: 'Usuario no encontrado' });
@@ -51,7 +46,6 @@ const loginUser = async (req, res) => {
     }  
 
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
 
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid password' });
@@ -62,6 +56,8 @@ const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
+    // Scrip para registrar en la bitacora
+    registrarBitacora(user.user_id, `El usuario inició sesión`, 'Inicio de sesión');
 
     res.status(200).json({
       message: 'Login successful',
@@ -92,11 +88,16 @@ const updateUser = async (req, res) => {
   if (!user_id) {
     return res.status(401).json({ message: 'Unauthorized' });
   }
+  
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
+
     
     await Usuarios.update({ password: hashedPassword }, { where: { user_id } });
+    
+    // Scrip para registrar en la bitacora
+    await registrarBitacora(user_id, `El usuario actualizo su contraseña`, 'Actualización de contraseña');
 
     res.json({ message: 'Contraseña actualizada exitosamente' });
   } catch (err) {
