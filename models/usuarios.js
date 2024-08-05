@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Roles = require("./roles");
 const Sede = require("./sede");
-const Cursos = require("./cursos");
+// const Cursos = require("./cursos");
 
 const Usuarios = sequelize.define("Usuarios",
   {
@@ -27,6 +27,11 @@ const Usuarios = sequelize.define("Usuarios",
       type: DataTypes.STRING(15),
       allowNull: false,
     },
+    anioRegistro: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: new Date().getFullYear(),
+    },
     sede_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -38,19 +43,20 @@ const Usuarios = sequelize.define("Usuarios",
     rol_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      defaultValue: 1,
       references: {
         model: Roles,
         key: "rol_id",
       },
     },
-    curso_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: Cursos,
-        key: "curso_id",
-      },
-    },
+    // curso_id: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    //   references: {
+    //     model: Cursos,
+    //     key: "curso_id",
+    //   },
+    // },
 
   },
   {
