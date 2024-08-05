@@ -34,7 +34,19 @@ const initializetables = async () => {
     await Cursos.findOrCreate({
       where: { nombreCurso: "PROYECTO DE GRADUACIÓN II" },
     });
-
+    
+    // CREACIÓN DE LAS TAREAS DE PROPUESTA DE TESIS SOLO 3 POR USUARIO
+    await Tareas.findOrCreate({
+      where: {
+        curso_id: 1,
+        titulo: "PROPUESTAS DE TESIS",
+      },
+      defaults: {
+        descripcion: "SUBE TUS 3 PROPUESTAS DE TESIS",
+        inicioTarea: now,
+        finTarea: oneMonthLater,
+      },
+    });
 
     // CREACIÓN DE LAS TAREAS DE LOS 3 CAPÍTULOS DE PROYECTO DE GRADUACIÓN I
     await Tareas.findOrCreate({
@@ -44,8 +56,6 @@ const initializetables = async () => {
       },
       defaults: {
         descripcion: "REALIZAR EL CAPÍTULO 1 DEL PROYECTO DE GRADUACIÓN",
-        inicioTarea: now,
-        finTarea: oneMonthLater,
       },
     });
     await Tareas.findOrCreate({
@@ -55,8 +65,6 @@ const initializetables = async () => {
       },
       defaults: {
         descripcion: "REALIZAR EL CAPÍTULO 2 DEL PROYECTO DE GRADUACIÓN",
-        inicioTarea: now,
-        finTarea: oneMonthLater,
       },
     });
     await Tareas.findOrCreate({
@@ -66,8 +74,6 @@ const initializetables = async () => {
       },
       defaults: {
         descripcion: "REALIZAR EL CAPÍTULO 3 DEL PROYECTO DE GRADUACIÓN",
-        inicioTarea: now,
-        finTarea: oneMonthLater,
       },
     });
 
@@ -79,8 +85,6 @@ const initializetables = async () => {
       },
       defaults: {
         descripcion: "REALIZAR EL CAPÍTULO 4 DEL PROYECTO DE GRADUACIÓN",
-        inicioTarea: now,
-        finTarea: oneMonthLater,
       },
     });
     await Tareas.findOrCreate({
@@ -90,8 +94,6 @@ const initializetables = async () => {
       },
       defaults: {
         descripcion: "REALIZAR EL CAPÍTULO 5 DEL PROYECTO DE GRADUACIÓN",
-        inicioTarea: now,
-        finTarea: oneMonthLater,
       },
     });
     await Tareas.findOrCreate({
@@ -101,8 +103,6 @@ const initializetables = async () => {
       },
       defaults: {
         descripcion: "REALIZAR EL CAPÍTULO 6 DEL PROYECTO DE GRADUACIÓN",
-        inicioTarea: now,
-        finTarea: oneMonthLater,
       },
     });
 
