@@ -10,6 +10,7 @@ const Sede = sequelize.define("sede", {
   nombreSede: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true, 
   }
 },{
     timestamps: false,
