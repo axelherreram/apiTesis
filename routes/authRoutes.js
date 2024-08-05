@@ -1,4 +1,3 @@
-// routes/auth.js
 const express = require('express');
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
@@ -6,6 +5,10 @@ const router = express.Router();
 
 /**
  * @swagger
+ * tags:
+ *   name: Autenticación
+ *   description: Operaciones de autenticación
+ *
  * components:
  *   schemas:
  *     Usuario:
@@ -49,7 +52,7 @@ const router = express.Router();
  * /auth/register:
  *   post:
  *     summary: Registra un nuevo usuario
- *     tags: [Usuario]
+ *     tags: [Autenticación]
  *     requestBody:
  *       required: true
  *       content:
@@ -69,7 +72,7 @@ router.post('/register', authController.registerUser);
  * /auth/login:
  *   post:
  *     summary: Inicia sesión con un usuario
- *     tags: [Usuario]
+ *     tags: [Autenticación]
  *     requestBody:
  *       required: true
  *       content:
@@ -103,7 +106,7 @@ router.post('/login', authController.loginUser);
  * /auth/update:
  *   put:
  *     summary: Actualiza la contraseña del usuario
- *     tags: [Usuario]
+ *     tags: [Autenticación]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
