@@ -37,7 +37,7 @@ const admin = verifyRole([3]);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Bitacora'
+ *                 $ref: '../models/bitacora.js'
  *       404:
  *         description: No se encontraron entradas de bitácora para este usuario
  *       500:

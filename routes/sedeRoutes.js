@@ -21,13 +21,12 @@ const adminOrTerna = verifyRole([2,3]);
  *         - nombreSede
  *       properties:
  *         sede_id:
- *           type: integer
- *           description: ID autogenerado de la sede
+ *          type: integer
+ *          description: Identificador único de la sede
  *         nombreSede:
  *           type: string
  *           description: Nombre de la sede
  *       example:
- *         sede_id: 1
  *         nombreSede: "Sede Centro"
  */
 
