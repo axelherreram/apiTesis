@@ -8,6 +8,7 @@ const userRoutes = require('./routes/userRoutes');
 const bitacoraRoutes = require('./routes/bitacoraRoutes');
 const sedeRoutes = require('./routes/sedeRoutes');
 const tareaRoutes = require('./routes/tareasRoutes');
+const PropuestaTesis = require('./routes/propuestaTesisRoutes');
 
 require('dotenv').config();
 
@@ -22,6 +23,7 @@ app.use('/api', userRoutes);
 app.use('/api', bitacoraRoutes);
 app.use('/api', sedeRoutes);
 app.use('/api', tareaRoutes);
+app.use('/api', PropuestaTesis);
 
 sequelize.sync({ alter: false, force: false })
   .then(async () => {
