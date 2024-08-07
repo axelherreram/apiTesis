@@ -23,7 +23,7 @@ const BitacoraApp = sequelize.define(
       allowNull: false,
     },
     detalles: {
-      type: DataTypes.STRING(255),
+      type: DataTypes.TEXT,
       allowNull: false,
     },
     fecha: {
