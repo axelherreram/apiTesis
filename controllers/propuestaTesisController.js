@@ -1,4 +1,5 @@
 const PropuestaTesis = require("../models/propuestaTesis");
+const { registrarBitacora } = require("../sql/bitacora");
 
 // Listar propuestas de tesis de un usuario
 const listarPropuestasPorUsuario = async (req, res) => {
@@ -6,6 +7,12 @@ const listarPropuestasPorUsuario = async (req, res) => {
   try {
     const propuestas = await PropuestaTesis.findAll({ where: { user_id } });
     res.status(200).json(propuestas);
+    // Scrip para registrar en la bitacora
+    registrarBitacora(
+      user.user_id,
+      `Solicitud de tesis subidas`,
+      "Solicitud de tesis"
+    );
   } catch (error) {
     res
       .status(500)
@@ -25,12 +32,18 @@ const crearPropuesta = async (req, res) => {
           "No se pueden tener más de 3 propuestas. Elimine o actualice una existente.",
       });
     }
-
     await PropuestaTesis.create({
       user_id,
       titulo,
       propuesta,
     });
+    // Scrip para registrar en la bitacora
+    registrarBitacora(
+      user.user_id,
+      `Creo una nueva propuesta`,
+      "Creación de propuesta"
+    );
+
     res.status(201).json({
       message: "Propuesta creada correctamente",
     });
@@ -55,7 +68,12 @@ const actualizarPropuesta = async (req, res) => {
     propuestaExistente.propuesta = propuesta;
 
     await propuestaExistente.save();
-
+    // Scrip para registrar en la bitacora
+    registrarBitacora(
+      user.user_id,
+      `Actualizo propuesta con id ${propuesta_id}`,
+      "Actualización de propuesta"
+    );
     res.status(200).json({
       message: "Propuesta actualizada correctamente",
     });
@@ -77,6 +95,12 @@ const eliminarPropuesta = async (req, res) => {
     }
 
     await propuesta.destroy();
+    // Scrip para registrar en la bitacora
+    registrarBitacora(
+      user.user_id,
+      `Elimino propuesta con id ${propuesta_id}`,
+      "Eliminación de propuesta"
+    );
     res.status(200).json({ message: "Propuesta eliminada correctamente" });
   } catch (error) {
     res.status(500).json({ message: "Error al eliminar la propuesta", error });
