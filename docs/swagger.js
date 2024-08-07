@@ -5,9 +5,9 @@ const swaggerOptions = {
   swaggerDefinition: {
     openapi: '3.0.0',
     info: {
-      title: 'User API',
-      version: '1.0.0',
-      description: 'API for user management',
+      title: 'Api para la gestion de tesis',
+      version: '1.0.1',
+      description: 'Documentacion de la api para la gestion de tesis',
     },
     servers: [
       {
