@@ -1,10 +1,14 @@
-const express = require('express');
-const { listarTareas, actualizarTarea } = require('../controllers/tareasController');
-const verifyRole = require('../middlewares/roleMiddleware');
-const authMiddleware = require('../middlewares/authMiddleware');
+const express = require("express");
+const {
+  listarTareas,
+  actualizarTarea,
+} = require("../controllers/tareasController");
+const verifyRole = require("../middlewares/roleMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
+const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
 
 const router = express.Router();
-const adminOrTerna = verifyRole([2,3]);
+const adminOrTerna = verifyRole([2, 3]);
 
 /**
  * @swagger
@@ -12,8 +16,6 @@ const adminOrTerna = verifyRole([2,3]);
  *   - name: Tareas
  *     description: Operaciones de Tarea - get y put
  */
-
-
 
 /**
  * @swagger
@@ -37,7 +39,7 @@ const adminOrTerna = verifyRole([2,3]);
  *       500:
  *         description: Error del servidor.
  */
-router.get('/tareas', authMiddleware, listarTareas);
+router.get("/tareas", authMiddleware, obtenerUserIdDeToken, listarTareas);
 
 /**
  * @swagger
@@ -90,6 +92,12 @@ router.get('/tareas', authMiddleware, listarTareas);
  *         description: Error al actualizar la tarea.
  */
 
-router.put('/tareas/:tarea_id', authMiddleware, adminOrTerna, actualizarTarea);
+router.put(
+  "/tareas/:tarea_id",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  adminOrTerna,
+  actualizarTarea
+);
 
 module.exports = router;
