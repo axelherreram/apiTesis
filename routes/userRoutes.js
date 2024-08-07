@@ -1,8 +1,9 @@
 // routes/userRoutes.js
-const express = require('express');
-const userController = require('../controllers/userController');
-const authMiddleware = require('../middlewares/authMiddleware');
-const verifyRole = require('../middlewares/roleMiddleware');
+const express = require("express");
+const userController = require("../controllers/userController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const verifyRole = require("../middlewares/roleMiddleware");
+const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
 const router = express.Router();
 
 // Middleware para verificar que el usuario tenga rol de Admin o Terna
@@ -15,7 +16,6 @@ const admin = verifyRole([3]);
  *   name: Usuarios
  *   description: Gestión de usuarios y filtrado
  */
-
 
 /**
  * @swagger
@@ -50,7 +50,13 @@ const admin = verifyRole([3]);
  *       401:
  *         description: No autorizado
  */
-router.get('/usuarios/estudiantes', authMiddleware, adminOrTerna,userController.listStudents);
+router.get(
+  "/usuarios/estudiantes",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  adminOrTerna,
+  userController.listStudents
+);
 
 /**
  * @swagger
@@ -94,7 +100,13 @@ router.get('/usuarios/estudiantes', authMiddleware, adminOrTerna,userController.
  *       403:
  *         description: Acceso denegado
  */
-router.get('/usuarios/sede/:sede_id', authMiddleware, adminOrTerna, userController.filterUsersBySede);
+router.get(
+  "/usuarios/sede/:sede_id",
+  authMiddleware,
+  adminOrTerna,
+  obtenerUserIdDeToken,
+  userController.filterUsersBySede
+);
 
 /**
  * @swagger
@@ -138,7 +150,13 @@ router.get('/usuarios/sede/:sede_id', authMiddleware, adminOrTerna, userControll
  *       403:
  *         description: Acceso denegado
  */
-router.get('/usuarios/anio/:anioRegistro', authMiddleware, adminOrTerna, userController.filterUsersByAnio);
+router.get(
+  "/usuarios/anio/:anioRegistro",
+  authMiddleware,
+  adminOrTerna,
+  obtenerUserIdDeToken,
+  userController.filterUsersByAnio
+);
 
 /**
  * @swagger
@@ -173,6 +191,11 @@ router.get('/usuarios/anio/:anioRegistro', authMiddleware, adminOrTerna, userCon
  *       403:
  *         description: Acceso denegado
  */
-router.get('/usuarios/allUsers', authMiddleware, admin, userController.listUsuariosAdmin);
+router.get(
+  "/usuarios/allUsers",
+  authMiddleware,
+  admin,
+  userController.listUsuariosAdmin
+);
 
 module.exports = router;
