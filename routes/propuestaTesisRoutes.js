@@ -1,13 +1,14 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const {
-    listarPropuestasPorUsuario,
-    crearPropuesta,
-    actualizarPropuesta,
-    eliminarPropuesta
-} = require('../controllers/propuestaTesisController');
-const verifyRole = require('../middlewares/roleMiddleware');
-const authMiddleware = require('../middlewares/authMiddleware');
+  listarPropuestasPorUsuario,
+  crearPropuesta,
+  actualizarPropuesta,
+  eliminarPropuesta,
+} = require("../controllers/propuestaTesisController");
+const verifyRole = require("../middlewares/roleMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
+const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
 
 // Middleware para verificar el rol de administrador o permisos específicos
 // const= verifyRole([2, 3]);
@@ -33,7 +34,12 @@ const authMiddleware = require('../middlewares/authMiddleware');
  *       500:
  *         description: Error del servidor
  */
-router.get('/propuestas/:user_id', authMiddleware, listarPropuestasPorUsuario);
+router.get(
+  "/propuestas/:user_id",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  listarPropuestasPorUsuario
+);
 
 /**
  * @swagger
@@ -67,7 +73,12 @@ router.get('/propuestas/:user_id', authMiddleware, listarPropuestasPorUsuario);
  *       500:
  *         description: Error del servidor
  */
-router.post('/propuestas', authMiddleware, crearPropuesta);
+router.post(
+  "/propuestas",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  crearPropuesta
+);
 
 /**
  * @swagger
@@ -103,7 +114,12 @@ router.post('/propuestas', authMiddleware, crearPropuesta);
  *       500:
  *         description: Error del servidor
  */
-router.put('/propuestas/:propuesta_id', authMiddleware, actualizarPropuesta);
+router.put(
+  "/propuestas/:propuesta_id",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  actualizarPropuesta
+);
 
 /**
  * @swagger
@@ -128,6 +144,11 @@ router.put('/propuestas/:propuesta_id', authMiddleware, actualizarPropuesta);
  *       500:
  *         description: Error del servidor
  */
-router.delete('/propuestas/:propuesta_id', authMiddleware, eliminarPropuesta);
+router.delete(
+  "/propuestas/:propuesta_id",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  eliminarPropuesta
+);
 
 module.exports = router;
