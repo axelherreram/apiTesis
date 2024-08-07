@@ -2,10 +2,11 @@ const express = require('express');
 const { listarSedes, crearSede } = require('../controllers/sedeController');
 const verifyRole = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
+const obtenerUserIdDeToken = require('../middlewares/obtenerUserIdDeToken');
 
 const router = express.Router();
-
 const adminOrTerna = verifyRole([2,3]);
+
 
 /**
  * @swagger
@@ -71,6 +72,6 @@ const adminOrTerna = verifyRole([2,3]);
  */
 
 router.get('/sedes', authMiddleware, listarSedes);
-router.post('/sedes', authMiddleware, adminOrTerna, crearSede);
+router.post('/sedes', authMiddleware, obtenerUserIdDeToken, adminOrTerna, crearSede);
 
 module.exports = router;
