@@ -1,6 +1,5 @@
-// routes/bitacoraRoutes.js
 const express = require('express');
-const { listarBitacoraPorUsuario } = require('../controllers/bitacoraController');
+const { listarBitacoraPorUsuario, listarTodasBitacoras } = require('../controllers/bitacoraController');
 const verifyRole = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -37,12 +36,34 @@ const admin = verifyRole([3]);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '../models/bitacora.js'
+ *                 $ref: '#/components/schemas/Bitacora'
  *       404:
  *         description: No se encontraron entradas de bitácora para este usuario
  *       500:
  *         description: Error en el servidor
+ * 
+ * /api/bitacora:
+ *   get:
+ *     tags: [Bitácora]
+ *     summary: Listar todas las bitácoras
+ *     description: Obtiene una lista de todas las entradas de la bitácora en el sistema.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista completa de bitácoras
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Bitacora'
+ *       404:
+ *         description: No se encontraron entradas de bitácora
+ *       500:
+ *         description: Error en el servidor
  */
 router.get('/bitacora/:user_id', authMiddleware, admin, listarBitacoraPorUsuario);
+router.get('/bitacora', authMiddleware, admin, listarTodasBitacoras);
 
 module.exports = router;
