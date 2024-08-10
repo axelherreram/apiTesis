@@ -18,6 +18,10 @@ const BitacoraApp = sequelize.define(
         key: "user_id",
       },
     },
+    usuario: {
+      type: DataTypes.STRING(255),
+      allowNull: false,
+    },
     accion: {
       type: DataTypes.STRING(255),
       allowNull: false,
