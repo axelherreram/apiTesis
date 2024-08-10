@@ -71,7 +71,7 @@ const adminOrTerna = verifyRole([2,3]);
  *         description: Error interno del servidor al intentar crear la sede.
  */
 
-router.get('/sedes', authMiddleware, listarSedes);
+router.get('/sedes',authMiddleware ,listarSedes);
 router.post('/sedes', authMiddleware, obtenerUserIdDeToken, adminOrTerna, crearSede);
 
 module.exports = router;
