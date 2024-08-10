@@ -57,7 +57,7 @@ const loginUser = async (req, res) => {
       { expiresIn: '1h' }
     );
     // Scrip para registrar en la bitacora
-    registrarBitacora(user.user_id, `El usuario inició sesión`, 'Inicio de sesión');
+    registrarBitacora(user.user_id, `El usuario: ${user.nombre} inició sesión`, 'Inicio de sesión');
 
     res.status(200).json({
       message: 'Login successful',
@@ -93,11 +93,12 @@ const updateUser = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const user = await Usuarios.findOne({where: user_id})
     
     await Usuarios.update({ password: hashedPassword }, { where: { user_id } });
     
     // Scrip para registrar en la bitacora
-    await registrarBitacora(user_id, `El usuario actualizo su contraseña`, 'Actualización de contraseña');
+    await registrarBitacora(user_id, `El usuario: ${user.nombre} actualizo su contraseña`, 'Actualización de contraseña');
 
     res.json({ message: 'Contraseña actualizada exitosamente' });
   } catch (err) {
