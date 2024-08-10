@@ -1,14 +1,17 @@
 const PropuestaTesis = require("../models/propuestaTesis");
 const { registrarBitacora } = require("../sql/bitacora");
+const Usuario = require("../models/usuarios");
 
 // Listar propuestas de tesis de un usuario
 const listarPropuestasPorUsuario = async (req, res) => {
   const { user_id } = req.params; 
   try {
     const propuestas = await PropuestaTesis.findAll({ where: { user_id } });
+    const user = await Usuario.findByPk(user_id);
 
     await registrarBitacora(
       user_id,
+      user.nombre,
       `Solicitud de tesis subidas`,
       "Solicitud de tesis"
     );
@@ -31,6 +34,8 @@ const crearPropuesta = async (req, res) => {
           "No se pueden tener más de 3 propuestas. Elimine o actualice una existente.",
       });
     }
+    const User = await Usuario.findByPk(user_id);
+
     const nuevaPropuesta = await PropuestaTesis.create({
       user_id,
       titulo,
@@ -39,7 +44,8 @@ const crearPropuesta = async (req, res) => {
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
-      `Creó una nueva propuesta: ${nuevaPropuesta.titulo}`,
+      User.nombre,
+      `El usuario  ${User.nombre} Creó una nueva propuesta`,
       "Creación de propuesta"
     );
 
@@ -63,6 +69,9 @@ const actualizarPropuesta = async (req, res) => {
     if (!propuestaExistente) {
       return res.status(404).json({ message: "Propuesta no encontrada" });
     }
+
+    const User = await Usuario.findByPk(user_id);
+
     propuestaExistente.titulo = titulo;
     propuestaExistente.propuesta = propuesta;
 
@@ -70,6 +79,7 @@ const actualizarPropuesta = async (req, res) => {
 
     await registrarBitacora(
       user_id,
+      User.nombre,
       `Actualizó propuesta con id ${propuesta_id}`,
       "Actualización de propuesta"
     );
@@ -92,11 +102,12 @@ const eliminarPropuesta = async (req, res) => {
     if (!propuesta) {
       return res.status(404).json({ message: "Propuesta no encontrada" });
     }
-
+    const User = await Usuario.findByPk(user_id);
     await propuesta.destroy();
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.nombre,
       `Eliminó propuesta Nombre: ${propuesta.titulo}`,
       "Eliminación de propuesta"
     );
