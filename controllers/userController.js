@@ -34,8 +34,12 @@ const listStudents = async (req, res) => {
       anio: student.anioRegistro,
     }));
 
+    const User = await Usuarios.findByPk(user_id);
+
+    // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.nombre,
       "Listar estudiantes",
       `Listo todos los estudiantes`
     );
@@ -63,8 +67,12 @@ const filterUsersBySede = async (req, res) => {
       anio: user.anioRegistro,
     }));
 
+    const User = await Usuarios.findByPk(user_id);
+
+    // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.nombre,
       "Listar estudiantes",
       `Listo todos los estudiantes de la sede: ${sedes.nombreSede}`
     );
@@ -92,8 +100,13 @@ const filterUsersByAnio = async (req, res) => {
       sede: user.sede_id,
       anio: user.anioRegistro,
     }));
+
+    const User = await Usuarios.findByPk(user_id);
+    
+    // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.nombre,
       "Listar estudiantes",
       `Listo todos los estudiantes del año ${anioRegistro}`
     );

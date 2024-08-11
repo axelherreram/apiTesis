@@ -2,13 +2,13 @@ const PropuestaTesis = require("../models/propuestaTesis");
 const { registrarBitacora } = require("../sql/bitacora");
 const Usuario = require("../models/usuarios");
 
-// Listar propuestas de tesis de un usuario
 const listarPropuestasPorUsuario = async (req, res) => {
-  const { user_id } = req.params; 
+  const { user_id } = req.params;
   try {
     const propuestas = await PropuestaTesis.findAll({ where: { user_id } });
     const user = await Usuario.findByPk(user_id);
 
+    // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
       user.nombre,
@@ -18,11 +18,15 @@ const listarPropuestasPorUsuario = async (req, res) => {
 
     res.status(200).json(propuestas);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener las propuestas de tesis", error: error.message || error });
+    res
+      .status(500)
+      .json({
+        message: "Error al obtener las propuestas de tesis",
+        error: error.message || error,
+      });
   }
 };
 
-// Crear una nueva propuesta de tesis
 const crearPropuesta = async (req, res) => {
   const { user_id, titulo, propuesta } = req.body;
 
@@ -36,7 +40,7 @@ const crearPropuesta = async (req, res) => {
     }
     const User = await Usuario.findByPk(user_id);
 
-    const nuevaPropuesta = await PropuestaTesis.create({
+    await PropuestaTesis.create({
       user_id,
       titulo,
       propuesta,
@@ -45,20 +49,23 @@ const crearPropuesta = async (req, res) => {
     await registrarBitacora(
       user_id,
       User.nombre,
-      `El usuario  ${User.nombre} Creó una nueva propuesta`,
+      `El usuario Creó una nueva propuesta ${propuesta.titulo}`,
       "Creación de propuesta"
     );
 
     res.status(201).json({
       message: "Propuesta creada correctamente",
-      propuesta: nuevaPropuesta
     });
   } catch (error) {
-    res.status(500).json({ message: "Error al crear la propuesta de tesis", error: error.message || error });
+    res
+      .status(500)
+      .json({
+        message: "Error al crear la propuesta de tesis",
+        error: error.message || error,
+      });
   }
 };
 
-// Actualizar una propuesta de tesis
 const actualizarPropuesta = async (req, res) => {
   const { propuesta_id } = req.params;
   const { titulo, propuesta } = req.body;
@@ -77,10 +84,11 @@ const actualizarPropuesta = async (req, res) => {
 
     await propuestaExistente.save();
 
+    // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
       User.nombre,
-      `Actualizó propuesta con id ${propuesta_id}`,
+      `Actualizó propuesta con nombre: ${propuesta.titulo}`,
       "Actualización de propuesta"
     );
     res.status(200).json({
@@ -93,7 +101,6 @@ const actualizarPropuesta = async (req, res) => {
   }
 };
 
-// Eliminar una propuesta de tesis
 const eliminarPropuesta = async (req, res) => {
   const { propuesta_id } = req.params;
   const user_id = req.user_id;
@@ -102,8 +109,10 @@ const eliminarPropuesta = async (req, res) => {
     if (!propuesta) {
       return res.status(404).json({ message: "Propuesta no encontrada" });
     }
-    const User = await Usuario.findByPk(user_id);
     await propuesta.destroy();
+    
+    const User = await Usuario.findByPk(user_id);
+
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,

@@ -1,5 +1,4 @@
 const BitacoraApp = require('../models/bitacoraApp'); 
-const Usuarios = require('../models/usuarios');
 
 
 const listarTodasBitacoras = async (req, res) => {
@@ -39,7 +38,7 @@ const listarBitacoraPorUsuario = async (req, res) => {
       return res.status(404).json({ message: 'No se encontraron entradas de bitácora para este usuario' });
     }
     const formattedBitacoras = bitacoras.map((bitacora) => ({
-      username: bitacora.username,
+      username: bitacora.usuario,
       accion: bitacora.accion,
       descripcion: bitacora.descripcion,
       fecha: bitacora.fecha,
