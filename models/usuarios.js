@@ -25,11 +25,11 @@ const Usuarios = sequelize.define("Usuarios",
     },
     carnet: {
       type: DataTypes.STRING(15),
-      allowNull: false,
+      allowNull: true,
     },
     anioRegistro: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       defaultValue: new Date().getFullYear(),
     },
     sede_id: {
