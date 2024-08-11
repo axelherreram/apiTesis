@@ -20,95 +20,95 @@ const initializetables = async () => {
     );
 
     // Creacion de roles
-    await Roles.findOrCreate({ where: { nombreRol: "ESTUDIANTE" } });
-    await Roles.findOrCreate({ where: { nombreRol: "TERNA" } });
-    await Roles.findOrCreate({ where: { nombreRol: "ADMINISTRADOR" } });
+    await Roles.findOrCreate({ where: { nombreRol: "Estudiante" } });
+    await Roles.findOrCreate({ where: { nombreRol: "Catedrático" } });
+    await Roles.findOrCreate({ where: { nombreRol: "Administrador" } });
 
     // Creacion de sedes
-    await Sedes.findOrCreate({ where: { nombreSede: "GUASTATOYA" } });
-    await Sedes.findOrCreate({ where: { nombreSede: "SANARATE" } });
+    await Sedes.findOrCreate({ where: { nombreSede: "Guastatoya" } });
+    await Sedes.findOrCreate({ where: { nombreSede: "Sanarate" } });
 
     await Cursos.findOrCreate({
-      where: { nombreCurso: "PROYECTO DE GRADUACIÓN I" },
+      where: { nombreCurso: "Proyecto De Graduación I" },
     });
     await Cursos.findOrCreate({
-      where: { nombreCurso: "PROYECTO DE GRADUACIÓN II" },
+      where: { nombreCurso: "Proyecto De Graduación II" },
     });
     
-    // CREACIÓN DE LAS TAREAS DE PROPUESTA DE TESIS SOLO 3 POR USUARIO
+    // Creación De Las Tareas De Propuesta De Tesis Solo 3 Por Usuario
     await Tareas.findOrCreate({
       where: {
         curso_id: 1,
-        titulo: "PROPUESTAS DE TESIS",
+        titulo: "Propuestas De Tesis",
       },
       defaults: {
-        descripcion: "SUBE TUS 3 PROPUESTAS DE TESIS",
+        descripcion: "Sube Tus 3 Propuestas De Tesis",
         inicioTarea: now,
         finTarea: oneMonthLater,
       },
     });
 
-    // CREACIÓN DE LAS TAREAS DE LOS 3 CAPÍTULOS DE PROYECTO DE GRADUACIÓN I
+    // Creación De Las Tareas De Los 3 Capítulos De Proyecto De Graduación I
     await Tareas.findOrCreate({
       where: {
         curso_id: 1,
-        titulo: "CAPITULO 1",
+        titulo: "Capitulo 1",
       },
       defaults: {
-        descripcion: "REALIZAR EL CAPÍTULO 1 DEL PROYECTO DE GRADUACIÓN",
+        descripcion: "Realizar El Capítulo 1 Del Proyecto De Graduación",
       },
     });
     await Tareas.findOrCreate({
       where: {
         curso_id: 1,
-        titulo: "CAPITULO 2",
+        titulo: "Capitulo 2",
       },
       defaults: {
-        descripcion: "REALIZAR EL CAPÍTULO 2 DEL PROYECTO DE GRADUACIÓN",
+        descripcion: "Realizar El Capítulo 2 Del Proyecto De Graduación",
       },
     });
     await Tareas.findOrCreate({
       where: {
         curso_id: 1,
-        titulo: "CAPITULO 3",
+        titulo: "Capitulo 3",
       },
       defaults: {
-        descripcion: "REALIZAR EL CAPÍTULO 3 DEL PROYECTO DE GRADUACIÓN",
+        descripcion: "Realizar El Capítulo 3 Del Proyecto De Graduación",
       },
     });
 
-    // CREACIÓN DE LAS TAREAS DE LOS 3 CAPÍTULOS DE PROYECTO DE GRADUACIÓN II
+    // Creación De Las Tareas De Los 3 Capítulos De Proyecto De Graduación II
     await Tareas.findOrCreate({
       where: {
         curso_id: 2,
-        titulo: "CAPITULO 4",
+        titulo: "Capitulo 4",
       },
       defaults: {
-        descripcion: "REALIZAR EL CAPÍTULO 4 DEL PROYECTO DE GRADUACIÓN",
+        descripcion: "Realizar El Capítulo 4 Del Proyecto De Graduación",
       },
     });
     await Tareas.findOrCreate({
       where: {
         curso_id: 2,
-        titulo: "CAPITULO 5",
+        titulo: "Capitulo 5",
       },
       defaults: {
-        descripcion: "REALIZAR EL CAPÍTULO 5 DEL PROYECTO DE GRADUACIÓN",
+        descripcion: "Realizar El Capítulo 5 Del Proyecto De Graduación",
       },
     });
     await Tareas.findOrCreate({
       where: {
         curso_id: 2,
-        titulo: "CAPITULO 6",
+        titulo: "Capitulo 6",
       },
       defaults: {
-        descripcion: "REALIZAR EL CAPÍTULO 6 DEL PROYECTO DE GRADUACIÓN",
+        descripcion: "Realizar El Capítulo 6 Del Proyecto De Graduación",
       },
     });
 
-    console.log(`Tablas inicializadas correctamente en la BD`);
+    console.log(`Tablas Inicializadas Correctamente En La BD`);
   } catch (error) {
-    console.error("Error initializing roles:", error);
+    console.error("Error Initializing:", error);
   }
 };
 
