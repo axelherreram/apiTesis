@@ -2,9 +2,9 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Roles = require("./roles");
 const Sede = require("./sede");
-// const Cursos = require("./cursos");
 
-const Usuarios = sequelize.define("Usuarios",
+const Usuarios = sequelize.define(
+  "Usuarios",
   {
     user_id: {
       type: DataTypes.INTEGER,
@@ -49,15 +49,6 @@ const Usuarios = sequelize.define("Usuarios",
         key: "rol_id",
       },
     },
-    // curso_id: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false,
-    //   references: {
-    //     model: Cursos,
-    //     key: "curso_id",
-    //   },
-    // },
-
   },
   {
     timestamps: false,
