@@ -13,8 +13,8 @@ const adminOrTerna = verifyRole([2, 3]);
 /**
  * @swagger
  * tags:
- *   - name: Tareas
- *     description: Operaciones de Tarea - get y put
+ *   name: Tareas
+ *   description: Operaciones de Tarea - get y put
  */
 
 /**
