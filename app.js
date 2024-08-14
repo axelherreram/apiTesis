@@ -9,6 +9,8 @@ const bitacoraRoutes = require('./routes/bitacoraRoutes');
 const sedeRoutes = require('./routes/sedeRoutes');
 const tareaRoutes = require('./routes/tareasRoutes');
 const PropuestaTesis = require('./routes/propuestaTesisRoutes');
+const rolRoutes = require('./routes/rolRoutes');
+const cursoRoutes = require('./routes/cursoRoutes');
 
 const cors = require('cors');
 
@@ -33,6 +35,8 @@ app.use('/api', bitacoraRoutes);
 app.use('/api', sedeRoutes);
 app.use('/api', tareaRoutes);
 app.use('/api', PropuestaTesis);
+app.use('/api', rolRoutes);
+app.use('/api', cursoRoutes);
 
 sequelize.sync({ alter: true, force: false })
   .then(async () => {
