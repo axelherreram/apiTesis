@@ -1,8 +1,5 @@
 const express = require("express");
-const {
-  listarTareas,
-  actualizarTarea,
-} = require("../controllers/tareasController");
+const { listarTareas, actualizarTarea, listarTareasPorCurso } = require("../controllers/tareasController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
@@ -13,8 +10,8 @@ const adminOrTerna = verifyRole([2, 3]);
 /**
  * @swagger
  * tags:
- *   name: Tareas
- *   description: Operaciones de Tarea - get y put
+ *   - name: Tareas
+ *     description: Operaciones de Tarea - obtener y actualizar
  */
 
 /**
@@ -40,6 +37,39 @@ const adminOrTerna = verifyRole([2, 3]);
  *         description: Error del servidor.
  */
 router.get("/tareas", authMiddleware, obtenerUserIdDeToken, listarTareas);
+
+/**
+ * @swagger
+ * /api/tareas/curso/{curso_id}:
+ *   get:
+ *     summary: Lista todas las tareas de un curso específico
+ *     tags: [Tareas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: curso_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del curso para obtener las tareas
+ *     responses:
+ *       200:
+ *         description: Retorna una lista de tareas del curso especificado.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Tarea'
+ *       401:
+ *         description: No autorizado.
+ *       404:
+ *         description: No se encontraron tareas para el curso especificado.
+ *       500:
+ *         description: Error del servidor.
+ */
+router.get("/tareas/curso/:curso_id", authMiddleware, obtenerUserIdDeToken, listarTareasPorCurso);
 
 /**
  * @swagger
@@ -91,7 +121,6 @@ router.get("/tareas", authMiddleware, obtenerUserIdDeToken, listarTareas);
  *       500:
  *         description: Error al actualizar la tarea.
  */
-
 router.put(
   "/tareas/:tarea_id",
   authMiddleware,
