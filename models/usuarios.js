@@ -34,7 +34,7 @@ const Usuarios = sequelize.define(
     },
     sede_id: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: Sede,
         key: "sede_id",
@@ -55,5 +55,9 @@ const Usuarios = sequelize.define(
     tableName: "Usuarios",
   }
 );
+
+Usuarios.associate = function(models) {
+  Usuarios.hasMany(models.CursoAsignacion, { foreignKey: 'estudiante_id' });
+};
 
 module.exports = Usuarios;

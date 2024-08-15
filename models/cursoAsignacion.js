@@ -32,4 +32,9 @@ const CursoAsignacion = sequelize.define(
   }
 );
 
+CursoAsignacion.associate = function(models) {
+  CursoAsignacion.belongsTo(models.Usuarios, { foreignKey: 'estudiante_id' });
+  CursoAsignacion.belongsTo(models.Cursos, { foreignKey: 'curso_id' });
+};
+
 module.exports = CursoAsignacion;
