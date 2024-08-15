@@ -23,6 +23,31 @@ const listarTareas = async (req, res) => {
   }
 };
 
+// listar tareas por curso id
+const listarTareasPorCurso = async (req, res) => {
+  const { curso_id } = req.params;
+  const user_id = req.user_id;
+  try {
+    const tareas = await Tareas.findAll({ where: { curso_id } });
+
+    const User = await Usuario.findByPk(user_id);
+    
+    // Scrip para registrar en la bitacora
+    await registrarBitacora(
+      user_id,
+      User.nombre,
+      "Obtener todas las tareas",
+      `Listo todas las tareas`
+    );
+
+    res.status(200).json(tareas);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener las tareas", error });
+  }
+};
+
+
+
 const actualizarTarea = async (req, res) => {
   const { tarea_id } = req.params;
   const { titulo, descripcion, inicioTarea, finTarea } = req.body;
@@ -59,4 +84,5 @@ const actualizarTarea = async (req, res) => {
 module.exports = {
   listarTareas,
   actualizarTarea,
+  listarTareasPorCurso
 };
