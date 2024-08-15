@@ -1,12 +1,15 @@
 const Usuarios = require("../models/usuarios");
 const { registrarBitacora } = require("../sql/bitacora");
 const sede = require("../models/sede");
+const CursoAsignacion = require("../models/cursoAsignacion");
+const Cursos = require("../models/cursos");
 
 const listUsuariosAdmin = async (req, res) => {
   try {
     const users = await Usuarios.findAll({ where: { rol_id: 2 } });
 
     const formattedUsers = users.map((user) => ({
+      user_id: user.user_id,
       email: user.email,
       userName: user.nombre,
       carnet: user.carnet,
@@ -27,6 +30,7 @@ const listStudents = async (req, res) => {
 
     const user_id = req.user_id;
     const formattedStudents = students.map((student) => ({
+      user_id: student.user_id,
       email: student.email,
       userName: student.nombre,
       carnet: student.carnet,
@@ -60,6 +64,7 @@ const filterUsersBySede = async (req, res) => {
     const users = await Usuarios.findAll({ where: { sede_id, rol_id: 1 } });
 
     const formattedUsers = users.map((user) => ({
+      user_id: user.user_id,
       email: user.email,
       userName: user.nombre,
       carnet: user.carnet,
@@ -94,6 +99,7 @@ const filterUsersByAnio = async (req, res) => {
     });
 
     const formattedUsers = users.map((user) => ({
+      user_id: user.user_id,
       email: user.email,
       userName: user.nombre,
       carnet: user.carnet,
@@ -117,9 +123,52 @@ const filterUsersByAnio = async (req, res) => {
   }
 };
 
+
+
+const obtenerUsuariosPorCurso = async (req, res) => {
+  const { curso_id } = req.params;
+  const user_id = req.user_id;
+
+  try {
+      const usuarios = await Usuarios.findAll({
+          include: [
+              {
+                  model: CursoAsignacion,
+                  where: { curso_id },
+                  attributes: ['curso_id'],
+              },
+          ],
+          attributes: ['user_id', 'email', 'nombre', 'carnet', 'anioRegistro', 'sede_id', 'rol_id'],
+      });
+
+      if (usuarios.length === 0) {
+          return res.status(404).json({ message: "No se encontraron usuarios asignados a este curso" });
+      }
+
+      const Curso = await Cursos.findByPk(curso_id);
+
+      const User = await Usuarios.findByPk(user_id);
+
+      await registrarBitacora(
+        user_id,
+        User.nombre,
+        "Listar estudiantes",
+        `Listo todos los estudiantes del curso: ${Curso.nombreCurso}`
+      );
+
+      res.status(200).json(usuarios);
+  } catch (error) {
+      res.status(500).json({ message: "Error al obtener los usuarios asignados al curso", error });
+  }
+};
+
+
+
+
 module.exports = {
   listStudents,
   filterUsersBySede,
   filterUsersByAnio,
   listUsuariosAdmin,
+  obtenerUsuariosPorCurso,
 };
