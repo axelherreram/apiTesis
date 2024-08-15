@@ -1,4 +1,3 @@
-// routes/userRoutes.js
 const express = require("express");
 const userController = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -196,6 +195,54 @@ router.get(
   authMiddleware,
   admin,
   userController.listUsuariosAdmin
+);
+
+/**
+ * @swagger
+ * /api/cursos/{curso_id}/usuarios:
+ *   get:
+ *     summary: Listar todos los usuarios asignados a un curso
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: curso_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del curso para listar los usuarios asignados
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios asignados al curso obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   user_id:
+ *                     type: integer
+ *                   email:
+ *                     type: string
+ *                   nombre:
+ *                     type: string
+ *                   carnet:
+ *                     type: string
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Curso no encontrado o no hay usuarios asignados
+ *       500:
+ *         description: Error en el servidor
+ */
+router.get(
+  "/cursos/:curso_id/usuarios",
+  authMiddleware,
+  adminOrTerna,
+  obtenerUserIdDeToken,
+  userController.obtenerUsuariosPorCurso
 );
 
 module.exports = router;
