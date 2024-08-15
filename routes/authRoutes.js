@@ -19,6 +19,8 @@ const router = express.Router();
  *         - nombre
  *         - carnet
  *         - sede_id
+ *         - rol_id
+ *         - curso_id
  *       properties:
  *         user_id:
  *           type: integer
@@ -38,6 +40,15 @@ const router = express.Router();
  *         sede_id:
  *           type: integer
  *           description: ID de la sede del usuario
+ *         rol_id:
+ *           type: integer
+ *           description: ID del rol del usuario
+ *         curso_id:
+ *           type: integer
+ *           description: ID del curso del usuario
+ *         anioRegistro:
+ *           type: integer
+ *           description: Año de registro del usuario
  *       example:
  *         email: example@gmail.com
  *         password: example123
@@ -45,6 +56,7 @@ const router = express.Router();
  *         carnet: 123456789
  *         sede_id: 1
  *         anioRegistro: 2021
+ *         curso_id: 1
  */
 
 /**
