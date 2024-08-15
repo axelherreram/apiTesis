@@ -2,33 +2,57 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Usuarios = require("../models/usuarios");
 const { registrarBitacora } = require('../sql/bitacora');
+const CursoAsignacion = require("../models/cursoAsignacion");
 
 const registerUser = async (req, res) => {
-  const { email, password, nombre, carnet, sede_id, rol_id, anioRegistro } = req.body;
+  const { email, password, nombre, carnet, sede_id, rol_id, anioRegistro, curso_id } = req.body;
 
   try {
     let user = await Usuarios.findOne({ where: { email } });
 
-    if (user) {
-      return res.status(400).json({ message: "Usuario ya registrado" });
+    if (!user) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      user = await Usuarios.create({
+        email,
+        password: hashedPassword,
+        nombre,
+        carnet,
+        sede_id,
+        rol_id,
+        anioRegistro,
+      });
+
+      if (!curso_id) {
+        return res.status(201).json({ message: "Usuario registrado exitosamente" });
+      }
+
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    user = await Usuarios.create({
-      email,
-      password: hashedPassword,
-      nombre,
-      carnet,
-      sede_id,
-      rol_id,
-      anioRegistro
+    // Verificar si el usuario ya está asignado a este curso
+    const asignacionExistente = await CursoAsignacion.findOne({
+      where: {
+        estudiante_id: user.user_id,
+        curso_id: curso_id,
+      },
     });
-    res.status(201).json({ message: "Usuario registrado exitosamente" });
+
+    if (asignacionExistente) {
+      return res.status(400).json({ message: `El usuario ya está asignado al curso con ID ${curso_id}` });
+    }
+
+    // Asignar el curso al usuario
+    await CursoAsignacion.create({
+      estudiante_id: user.user_id,
+      curso_id: curso_id,
+    });
+
+    res.status(201).json({ message: "Usuario registrado y curso asignado exitosamente" });
   } catch (err) {
-    res.status(500).json({ message: "Error en el servidor" });
+    res.status(500).json({ message: "Error en el servidor", error: err.message });
   }
 };
+
 
 
 const loginUser = async (req, res) => {
