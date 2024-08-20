@@ -2,8 +2,8 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Cursos = require("./cursos");
 const Usuarios = require("./usuarios");
-const Tareas = require("./tareas");
-
+// const Tareas = require("./tareas");
+const Entregas = require("./entregas");
 const Notas = sequelize.define(
   "Notas",
   {
@@ -32,15 +32,22 @@ const Notas = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
-    tarea_id: {
+    entrega_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      references:{
-        model: Tareas,
-        key: "tarea_id"
+      references: {
+        model: Entregas,
+        key: "entrega_id",
       }
     },
-
+    // tarea_id: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    //   references:{
+    //     model: Tareas,
+    //     key: "tarea_id"
+    //   }
+    // },
     parcial: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: true,
