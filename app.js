@@ -12,11 +12,13 @@ const PropuestaTesis = require('./routes/propuestaTesisRoutes');
 const rolRoutes = require('./routes/rolRoutes');
 const cursoRoutes = require('./routes/cursoRoutes');
 
+const path = require('path');
 const cors = require('cors');
 
 require('dotenv').config();
 
 const app = express();
+
 
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -24,6 +26,7 @@ app.use(cors({
   credentials: true, 
 }));
 
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 app.use(bodyParser.json());
 
@@ -38,7 +41,7 @@ app.use('/api', PropuestaTesis);
 app.use('/api', rolRoutes);
 app.use('/api', cursoRoutes);
 
-sequelize.sync({ alter: true, force: false })
+sequelize.sync({ alter: false, force: false })
   .then(async () => {
     console.log('Base de datos sincronizada');
     await initializetables(); 
