@@ -49,6 +49,10 @@ const Usuarios = sequelize.define(
         key: "rol_id",
       },
     },
+    FotoPerfil: {
+      type: DataTypes.STRING(200), 
+      allowNull: true,
+    }
   },
   {
     timestamps: false,
