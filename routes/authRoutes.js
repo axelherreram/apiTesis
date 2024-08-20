@@ -1,6 +1,7 @@
 const express = require('express');
 const authController = require('../controllers/authController');
 const authMiddleware = require('../middlewares/authMiddleware');
+const { upload } = require('../controllers/authController'); // Importar el middleware upload para subir archivos
 const router = express.Router();
 
 /**
@@ -20,7 +21,6 @@ const router = express.Router();
  *         - carnet
  *         - sede_id
  *         - rol_id
- *         - curso_id
  *       properties:
  *         user_id:
  *           type: integer
@@ -43,9 +43,6 @@ const router = express.Router();
  *         rol_id:
  *           type: integer
  *           description: ID del rol del usuario
- *         curso_id:
- *           type: integer
- *           description: ID del curso del usuario
  *         anioRegistro:
  *           type: integer
  *           description: Año de registro del usuario
@@ -56,7 +53,6 @@ const router = express.Router();
  *         carnet: 123456789
  *         sede_id: 1
  *         anioRegistro: 2021
- *         curso_id: 1
  */
 
 /**
@@ -98,13 +94,9 @@ router.post('/register', authController.registerUser);
  *               password:
  *                 type: string
  *                 description: Contraseña del usuario
- *               sede_id:
- *                type: integer
- *                description: ID de la sede del usuario
  *             example:
  *               email: example@gmail.com
  *               password: example123
- *               sede_id: 1
  *     responses:
  *       200:
  *         description: Inicio de sesión exitoso
@@ -115,7 +107,7 @@ router.post('/login', authController.loginUser);
 
 /**
  * @swagger
- * /auth/update:
+ * /auth/updatePassword:
  *   put:
  *     summary: Actualiza la contraseña del usuario
  *     tags: [Autenticación]
@@ -139,6 +131,33 @@ router.post('/login', authController.loginUser);
  *       400:
  *         description: Error al actualizar la contraseña
  */
-router.put('/update', authMiddleware, authController.updateUser);
+router.put('/updatePassword', authMiddleware, authController.actualizarPassword);
+
+/**
+ * @swagger
+ * /auth/updateFotoPerfil:
+ *   put:
+ *     summary: Actualiza la foto de perfil del usuario
+ *     tags: [Autenticación]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fotoPerfil:
+ *                 type: string
+ *                 format: binary
+ *                 description: Nueva foto de perfil del usuario
+ *     responses:
+ *       200:
+ *         description: Foto de perfil actualizada exitosamente
+ *       400:
+ *         description: Error al actualizar la foto de perfil
+ */
+router.put('/updateFotoPerfil', authMiddleware, upload.single('fotoPerfil'), authController.actualizarFotoPerfil);
 
 module.exports = router;
