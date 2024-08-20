@@ -4,7 +4,7 @@ const Tareas = require("./tareas");
 const Usuarios = require("./usuarios")
 
 const Entregas = sequelize.define("Entregas", {
-  archivo_id: {
+  entrega_id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
