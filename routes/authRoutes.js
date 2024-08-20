@@ -1,7 +1,7 @@
-const express = require('express');
-const authController = require('../controllers/authController');
-const authMiddleware = require('../middlewares/authMiddleware');
-const { upload } = require('../controllers/authController'); // Importar el middleware upload para subir archivos
+const express = require("express");
+const authController = require("../controllers/authController");
+const authMiddleware = require("../middlewares/authMiddleware");
+const { upload } = require("../controllers/authController"); // Importar el middleware upload para subir archivos
 const router = express.Router();
 
 /**
@@ -46,6 +46,9 @@ const router = express.Router();
  *         anioRegistro:
  *           type: integer
  *           description: Año de registro del usuario
+ *         fotoPerfil:
+ *           type: string
+ *           description: Foto de perfil del usuario
  *       example:
  *         email: example@gmail.com
  *         password: example123
@@ -73,7 +76,7 @@ const router = express.Router();
  *       400:
  *         description: Error en la creación del usuario
  */
-router.post('/register', authController.registerUser);
+router.post("/register", authController.registerUser);
 
 /**
  * @swagger
@@ -103,7 +106,7 @@ router.post('/register', authController.registerUser);
  *       400:
  *         description: Credenciales inválidas
  */
-router.post('/login', authController.loginUser);
+router.post("/login", authController.loginUser);
 
 /**
  * @swagger
@@ -131,7 +134,11 @@ router.post('/login', authController.loginUser);
  *       400:
  *         description: Error al actualizar la contraseña
  */
-router.put('/updatePassword', authMiddleware, authController.actualizarPassword);
+router.put(
+  "/updatePassword",
+  authMiddleware,
+  authController.actualizarPassword
+);
 
 /**
  * @swagger
@@ -158,6 +165,12 @@ router.put('/updatePassword', authMiddleware, authController.actualizarPassword)
  *       400:
  *         description: Error al actualizar la foto de perfil
  */
-router.put('/updateFotoPerfil', authMiddleware, upload.single('fotoPerfil'), authController.actualizarFotoPerfil);
+router.put(
+  "/updateFotoPerfil",
+  authMiddleware,
+  upload.single("fotoPerfil"),
+  authController.actualizarFotoPerfil,
+  authController.handleMulterErrors
+);
 
 module.exports = router;
