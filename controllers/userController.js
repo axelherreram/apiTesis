@@ -12,6 +12,7 @@ const listUsuariosAdmin = async (req, res) => {
       user_id: user.user_id,
       email: user.email,
       userName: user.nombre,
+      fotoPerfil: user.fotoPerfil,
       carnet: user.carnet,
       sede: user.sede_id,
       rol_id: user.rol_id,
@@ -33,6 +34,7 @@ const listStudents = async (req, res) => {
       user_id: student.user_id,
       email: student.email,
       userName: student.nombre,
+      fotoPerfil: user.fotoPerfil,
       carnet: student.carnet,
       sede: student.sede_id,
       anio: student.anioRegistro,
@@ -67,6 +69,7 @@ const filterUsersBySede = async (req, res) => {
       user_id: user.user_id,
       email: user.email,
       userName: user.nombre,
+      fotoPerfil: user.fotoPerfil,
       carnet: user.carnet,
       sede: user.sede_id,
       anio: user.anioRegistro,
@@ -102,6 +105,8 @@ const filterUsersByAnio = async (req, res) => {
       user_id: user.user_id,
       email: user.email,
       userName: user.nombre,
+      fotoPerfil: user.fotoPerfil,
+
       carnet: user.carnet,
       sede: user.sede_id,
       anio: user.anioRegistro,
@@ -138,7 +143,7 @@ const obtenerUsuariosPorCurso = async (req, res) => {
                   attributes: ['curso_id'],
               },
           ],
-          attributes: ['user_id', 'email', 'nombre', 'carnet', 'anioRegistro', 'sede_id', 'rol_id'],
+          attributes: ['user_id', 'email', 'nombre', 'carnet', 'anioRegistro', 'sede_id', 'rol_id', 'fotoPerfil'],
       });
 
       if (usuarios.length === 0) {
