@@ -1,6 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const { crearAsignacion, listarEstudiantesPorCatedratico } = require('../controllers/asignacionEstudianteController');
+const verifyRole = require("../middlewares/roleMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
+const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+
+const admin = verifyRole([3]);
+const adminOrTerna = verifyRole([2,3]);
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
 
 /**
  * @swagger
@@ -8,6 +24,8 @@ const { crearAsignacion, listarEstudiantesPorCatedratico } = require('../control
  *   post:
  *     summary: Crear una asignación
  *     description: Crea una asignación entre un catedrático y un estudiante
+ *     security:
+ *       - bearerAuth: []   # Requiere autenticación
  *     requestBody:
  *       required: true
  *       content:
@@ -46,7 +64,7 @@ const { crearAsignacion, listarEstudiantesPorCatedratico } = require('../control
  *       500:
  *         description: Error del servidor
  */
-router.post('/crear', crearAsignacion);
+router.post('/crear', authMiddleware, obtenerUserIdDeToken, adminOrTerna, crearAsignacion);
 
 /**
  * @swagger
@@ -54,6 +72,8 @@ router.post('/crear', crearAsignacion);
  *   get:
  *     summary: Listar estudiantes asignados a un catedrático
  *     description: Lista todos los estudiantes asignados a un catedrático específico
+ *     security:
+ *       - bearerAuth: []   # Requiere autenticación
  *     parameters:
  *       - in: path
  *         name: catedratico_id
@@ -90,6 +110,6 @@ router.post('/crear', crearAsignacion);
  *       500:
  *         description: Error del servidor
  */
-router.get('/estudiantes/:catedratico_id', listarEstudiantesPorCatedratico);
+router.get('/estudiantes/:catedratico_id', authMiddleware, obtenerUserIdDeToken, adminOrTerna, listarEstudiantesPorCatedratico);
 
 module.exports = router;
