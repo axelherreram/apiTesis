@@ -50,9 +50,9 @@ const Usuarios = sequelize.define(
       },
     },
     FotoPerfil: {
-      type: DataTypes.STRING(200), 
+      type: DataTypes.STRING(200),
       allowNull: true,
-    }
+    },
   },
   {
     timestamps: false,
@@ -61,7 +61,7 @@ const Usuarios = sequelize.define(
 );
 
 Usuarios.associate = function (models) {
-  Usuarios.hasMany(models.CursoAsignacion, { foreignKey: 'estudiante_id' });
+  Usuarios.hasMany(models.CursoAsignacion, { foreignKey: "estudiante_id" });
   // Relación de muchos a uno entre usuarios y asignaciones como estudiantes
   Usuarios.hasMany(models.AsignacionEstudiante, {
     foreignKey: "estudiante_id",
@@ -72,6 +72,8 @@ Usuarios.associate = function (models) {
     foreignKey: "catedratico_id",
     as: "asignacionesCatedratico",
   });
+
+  Usuarios.belongsTo(models.Sede, { foreignKey: "sede_id", as: "sede" });
 };
 
 module.exports = Usuarios;

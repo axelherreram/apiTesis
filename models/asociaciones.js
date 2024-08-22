@@ -4,6 +4,7 @@ const Usuarios = require('./usuarios');
 const CursoAsignacion = require('./cursoAsignacion');
 const Cursos = require('./cursos');
 const AsignacionEstudiante = require('./asignacionEstudiante');
+const Sede = require('./sede');
 
 module.exports = function associateModels() {
   // Asegúrate de que los modelos estén correctamente asociados
@@ -16,4 +17,8 @@ module.exports = function associateModels() {
 
   AsignacionEstudiante.belongsTo(Usuarios, { foreignKey: 'estudiante_id', as: 'estudiante' });
   AsignacionEstudiante.belongsTo(Usuarios, { foreignKey: 'catedratico_id', as: 'catedratico' });
+
+  Usuarios.belongsTo(Sede, { foreignKey: 'sede_id', as: 'sede' });
+  Sede.hasMany(Usuarios, { foreignKey: 'sede_id' });
+  
 };
