@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const sequelize = require('./config/database');
+const associateModels = require("./models/asociaciones");
 const initializetables = require('./config/iniciableTables');
 const authRoutes = require('./routes/authRoutes');
 const { swaggerUi, swaggerDocs } = require('./docs/swagger'); 
@@ -11,6 +12,7 @@ const tareaRoutes = require('./routes/tareasRoutes');
 const PropuestaTesis = require('./routes/propuestaTesisRoutes');
 const rolRoutes = require('./routes/rolRoutes');
 const cursoRoutes = require('./routes/cursoRoutes');
+const AsignacionEstudianteRoutes = require('./routes/asignacionEstudianteRoutes');
 
 const path = require('path');
 const cors = require('cors');
@@ -18,7 +20,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-
+associateModels();
 
 app.use(cors({
   origin: 'http://localhost:5173',
@@ -40,6 +42,7 @@ app.use('/api', tareaRoutes);
 app.use('/api', PropuestaTesis);
 app.use('/api', rolRoutes);
 app.use('/api', cursoRoutes);
+app.use('/api', AsignacionEstudianteRoutes);
 
 sequelize.sync({ alter: false, force: false })
   .then(async () => {
