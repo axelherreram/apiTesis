@@ -60,8 +60,18 @@ const Usuarios = sequelize.define(
   }
 );
 
-Usuarios.associate = function(models) {
+Usuarios.associate = function (models) {
   Usuarios.hasMany(models.CursoAsignacion, { foreignKey: 'estudiante_id' });
+  // Relación de muchos a uno entre usuarios y asignaciones como estudiantes
+  Usuarios.hasMany(models.AsignacionEstudiante, {
+    foreignKey: "estudiante_id",
+    as: "asignacionesEstudiante",
+  });
+
+  Usuarios.hasMany(models.AsignacionEstudiante, {
+    foreignKey: "catedratico_id",
+    as: "asignacionesCatedratico",
+  });
 };
 
 module.exports = Usuarios;

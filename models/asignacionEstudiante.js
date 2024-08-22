@@ -1,6 +1,6 @@
+const Usuarios = require("./usuarios");
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Usuarios = require("./usuarios");
 
 const AsignacionEstudiante = sequelize.define(
   "AsignacionEstudiante",
@@ -28,13 +28,18 @@ const AsignacionEstudiante = sequelize.define(
   {
     timestamps: false,
     tableName: "AsignacionEstudiante",
-    indexes: [
-      {
-        unique: true,
-        fields: ['catedratico_id', 'estudiante_id']
-      }
-    ]
   }
 );
 
+// Definición de las asociaciones
+AsignacionEstudiante.associate = function (models) {
+  AsignacionEstudiante.belongsTo(models.Usuarios, {
+    foreignKey: "estudiante_id",
+    as: "estudiante",
+  });
+  AsignacionEstudiante.belongsTo(models.Usuarios, {
+    foreignKey: "catedratico_id",
+    as: "catedratico",
+  });
+};
 module.exports = AsignacionEstudiante;
