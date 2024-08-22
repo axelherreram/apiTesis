@@ -8,6 +8,9 @@ const Sedes = require("../models/sede");
 const Tareas = require("../models/tareas");
 const TimelineEventos = require("../models/timelineEventos");
 const Usuarios = require("../models/usuarios");
+const AsignacionEstudiante = require("../models/asignacionEstudiante");
+const CursoAsignacion = require("../models/cursoAsignacion");
+
 
 // Inicializar tables in la BD
 const initializetables = async () => {
