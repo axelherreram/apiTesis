@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 
 // Verifica si la carpeta existe, de lo contrario, la crea
-const uploadDir = path.join(__dirname, '../public/uploads/estudianteExcel');
+const uploadDir = path.join(__dirname, '../public/uploads/excels');
 
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
