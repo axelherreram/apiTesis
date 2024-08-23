@@ -4,26 +4,26 @@ const sede = require("../models/sede");
 const CursoAsignacion = require("../models/cursoAsignacion");
 const Cursos = require("../models/cursos");
 
-const listUsuariosAdmin = async (req, res) => {
-  try {
-    const users = await Usuarios.findAll({ where: { rol_id: 2 } });
+// const listUsuariosAdmin = async (req, res) => {
+//   try {
+//     const users = await Usuarios.findAll({ where: { rol_id: 2 } });
 
-    const formattedUsers = users.map((user) => ({
-      user_id: user.user_id,
-      email: user.email,
-      userName: user.nombre,
-      fotoPerfil: user.fotoPerfil,
-      carnet: user.carnet,
-      sede: user.sede_id,
-      rol_id: user.rol_id,
-      anio: user.anioRegistro,
-    }));
+//     const formattedUsers = users.map((user) => ({
+//       user_id: user.user_id,
+//       email: user.email,
+//       userName: user.nombre,
+//       fotoPerfil: user.fotoPerfil,
+//       carnet: user.carnet,
+//       sede: user.sede_id,
+//       rol_id: user.rol_id,
+//       anio: user.anioRegistro,
+//     }));
 
-    res.status(200).json(formattedUsers);
-  } catch (error) {
-    res.status(500).json({ message: "Error al obtener usuarios" });
-  }
-};
+//     res.status(200).json(formattedUsers);
+//   } catch (error) {
+//     res.status(500).json({ message: "Error al obtener usuarios" });
+//   }
+// };
 
 const listStudents = async (req, res) => {
   try {
@@ -174,6 +174,5 @@ module.exports = {
   listStudents,
   filterUsersBySede,
   filterUsersByAnio,
-  listUsuariosAdmin,
   obtenerUsuariosPorCurso,
 };

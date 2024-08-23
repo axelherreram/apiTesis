@@ -157,45 +157,6 @@ router.get(
   userController.filterUsersByAnio
 );
 
-/**
- * @swagger
- * /api/usuarios/allUsers:
- *   get:
- *     summary: Listar todos los usuarios con rol de terna solo para el rol administrador
- *     tags: [Usuarios]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Lista de usuarios obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   email:
- *                     type: string
- *                   userName:
- *                     type: string
- *                   carnet:
- *                     type: string
- *                   sede:
- *                     type: integer
- *                   anio:
- *                     type: integer
- *       401:
- *         description: No autorizado
- *       403:
- *         description: Acceso denegado
- */
-router.get(
-  "/usuarios/allUsers",
-  authMiddleware,
-  admin,
-  userController.listUsuariosAdmin
-);
 
 /**
  * @swagger
