@@ -13,6 +13,7 @@ const PropuestaTesis = require('./routes/propuestaTesisRoutes');
 const rolRoutes = require('./routes/rolRoutes');
 const cursoRoutes = require('./routes/cursoRoutes');
 const AsignacionEstudianteRoutes = require('./routes/asignacionEstudianteRoutes');
+const TernasRoutes = require('./routes/ternaRoutes');
 
 const path = require('path');
 const cors = require('cors');
@@ -43,6 +44,7 @@ app.use('/api', PropuestaTesis);
 app.use('/api', rolRoutes);
 app.use('/api', cursoRoutes);
 app.use('/api', AsignacionEstudianteRoutes);
+app.use('/api', TernasRoutes);
 
 sequelize.sync({ alter: false, force: false })
   .then(async () => {
