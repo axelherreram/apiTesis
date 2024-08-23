@@ -1,9 +1,8 @@
 const express = require("express");
 const authController = require("../controllers/authController");
 const authMiddleware = require("../middlewares/authMiddleware");
-const { upload } = require("../controllers/authController"); // Importar el middleware upload para subir archivos
 const router = express.Router();
-
+const { upload, handleMulterErrors } = require("../middlewares/uploadMiddleware");
 /**
  * @swagger
  * tags:
@@ -49,6 +48,9 @@ const router = express.Router();
  *         fotoPerfil:
  *           type: string
  *           description: Foto de perfil del usuario
+ *         activoTerna:
+ *           type: boolean
+ *           description: Activo o inactivo en la terna
  *       example:
  *         email: example@gmail.com
  *         password: example123
@@ -139,7 +141,6 @@ router.put(
   authMiddleware,
   authController.actualizarPassword
 );
-
 /**
  * @swagger
  * /auth/updateFotoPerfil:
@@ -170,7 +171,7 @@ router.put(
   authMiddleware,
   upload.single("fotoPerfil"),
   authController.actualizarFotoPerfil,
-  authController.handleMulterErrors
+  handleMulterErrors
 );
 
 module.exports = router;
