@@ -15,7 +15,7 @@ const cargarUsuariosMasivos = async (req, res) => {
 
     const filePath = path.join(
       __dirname,
-      "../public/uploads/estudianteExcel",
+      "../public/uploads/excels",
       req.file.filename
     );
     const workbook = xlsx.readFile(filePath);
