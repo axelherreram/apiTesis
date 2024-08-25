@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Cursos = require("./cursos");
+const Sedes = require("./sede")
 
 const Tareas = sequelize.define(
   "Tareas",
@@ -18,7 +19,14 @@ const Tareas = sequelize.define(
         key: "curso_id",
       },
     },
-
+    sede_id:{
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Sedes,
+        key: "sede_id",
+      },
+    },
     titulo: {
       type: DataTypes.STRING(255),
       allowNull: false,

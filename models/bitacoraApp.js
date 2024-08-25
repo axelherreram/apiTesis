@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Usuario = require("./usuarios");
+const Sede = require("./sede");
 
 const BitacoraApp = sequelize.define(
   "BitacoraApp",
@@ -16,6 +17,14 @@ const BitacoraApp = sequelize.define(
       references: {
         model: Usuario,
         key: "user_id",
+      },
+    },
+    sede_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Sede,
+        key: "sede_id",
       },
     },
     usuario: {
