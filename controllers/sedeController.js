@@ -29,6 +29,7 @@ const crearSede = async (req, res) => {
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre, 
       "Creación de sede",
       `Una nueva sede: (${nombreSede}), fue creada.`

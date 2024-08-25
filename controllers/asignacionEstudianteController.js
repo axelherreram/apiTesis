@@ -25,6 +25,7 @@ const crearAsignacion = async (req, res) => {
 
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre,
       `Creó una asignación para el estudiante: ${Estudiante.nombre} con el catedrático: ${Catedratico.nombre}`,
       'Creacion de asignación para estudiante' 
@@ -88,6 +89,7 @@ const listarEstudiantesPorCatedratico = async (req, res) => {
 
     await registrarBitacora(
       catedratico_id,
+      Catedratico.sede_id,
       Catedratico.nombre,
       `Listó los estudiantes asignados a su cuenta con sede: ${Catedratico.sede.nombreSede}`,
       "Listar estudiantes"

@@ -16,6 +16,7 @@ const actualizarActivoTerna = async (req, res) => {
 
     await registrarBitacora(
       user_id,
+      usuario.sede_id,
       usuario.nombre,
       `El campo activoTerna ha sido actualizado a ${activoTerna}`,
       "Actualización de campo activoTerna"

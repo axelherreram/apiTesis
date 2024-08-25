@@ -11,6 +11,7 @@ const listarPropuestasPorUsuario = async (req, res) => {
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      user.sede_id,
       user.nombre,
       `Solicitud de tesis subidas`,
       "Solicitud de tesis"
@@ -48,6 +49,7 @@ const crearPropuesta = async (req, res) => {
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre,
       `El usuario Creó una nueva propuesta ${propuesta.titulo}`,
       "Creación de propuesta"
@@ -87,6 +89,7 @@ const actualizarPropuesta = async (req, res) => {
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre,
       `Actualizó propuesta con nombre: ${propuesta.titulo}`,
       "Actualización de propuesta"
@@ -116,6 +119,7 @@ const eliminarPropuesta = async (req, res) => {
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre,
       `Eliminó propuesta Nombre: ${propuesta.titulo}`,
       "Eliminación de propuesta"

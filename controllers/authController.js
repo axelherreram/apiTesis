@@ -98,6 +98,7 @@ const loginUser = async (req, res) => {
     );
     await registrarBitacora(
       user.user_id,
+      user.sede_id,
       user.nombre,
       `El usuario inició sesión`,
       "Inicio de sesión"
@@ -146,6 +147,7 @@ const actualizarPassword = async (req, res) => {
 
     await registrarBitacora(
       user_id,
+      userUpdated.sede_id,
       userUpdated.nombre,
       `El usuario actualizó su contraseña`,
       "Actualización de contraseña"
@@ -204,6 +206,7 @@ const actualizarFotoPerfil = async (req, res) => {
 
     await registrarBitacora(
       user_id,
+      userUpdated.sede_id,
       userUpdated.nombre,
       `El usuario actualizó su foto de perfil`,
       "Actualización de foto de perfil"

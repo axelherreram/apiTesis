@@ -45,6 +45,7 @@ const listStudents = async (req, res) => {
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre,
       "Listar estudiantes",
       `Listo todos los estudiantes`
@@ -80,6 +81,7 @@ const filterUsersBySede = async (req, res) => {
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre,
       "Listar estudiantes",
       `Listo todos los estudiantes de la sede: ${sedes.nombreSede}`
@@ -117,6 +119,7 @@ const filterUsersByAnio = async (req, res) => {
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre,
       "Listar estudiantes",
       `Listo todos los estudiantes del año ${anioRegistro}`
@@ -156,6 +159,7 @@ const obtenerUsuariosPorCurso = async (req, res) => {
 
       await registrarBitacora(
         user_id,
+        User.sede_id,
         User.nombre,
         "Listar estudiantes",
         `Listo todos los estudiantes del curso: ${Curso.nombreCurso}`
