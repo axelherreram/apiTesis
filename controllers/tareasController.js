@@ -3,15 +3,18 @@ const { registrarBitacora } = require("../sql/bitacora");
 const Usuario = require("../models/usuarios");
 
 const listarTareas = async (req, res) => {
+  const { sede_id } = req.params;
   const user_id = req.user_id;
+  
   try {
-    const tareas = await Tareas.findAll();
+    const tareas = await Tareas.findAll({ where: { sede_id } });
 
     const User = await Usuario.findByPk(user_id);
     
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre,
       "Obtener todas las tareas",
       `Listo todas las tareas`
@@ -23,18 +26,19 @@ const listarTareas = async (req, res) => {
   }
 };
 
-// listar tareas por curso id
 const listarTareasPorCurso = async (req, res) => {
+  const { sede_id } = req.params;
   const { curso_id } = req.params;
   const user_id = req.user_id;
   try {
-    const tareas = await Tareas.findAll({ where: { curso_id } });
+    const tareas = await Tareas.findAll({ where: { curso_id, sede_id } });
 
     const User = await Usuario.findByPk(user_id);
     
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre,
       "Obtener todas las tareas",
       `Listo todas las tareas`
@@ -68,6 +72,7 @@ const actualizarTarea = async (req, res) => {
     // Scrip para registrar en la bitacora
     await registrarBitacora(
       user_id,
+      User.sede_id,
       User.nombre,
       `Actualizo tarea con id: ${tarea_id}`,
       "Se actualizo tarea"

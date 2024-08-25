@@ -56,6 +56,13 @@ router.get('/bitacora/:user_id', authMiddleware, admin, listarBitacoraPorUsuario
  *     description: Obtiene una lista de todas las entradas de la bitácora en el sistema.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: sede_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la sede para la que se listarán las bitácoras
  *     responses:
  *       200:
  *         description: Lista completa de bitácoras
@@ -70,6 +77,6 @@ router.get('/bitacora/:user_id', authMiddleware, admin, listarBitacoraPorUsuario
  *       500:
  *         description: Error en el servidor
  */
-router.get('/bitacora', authMiddleware, admin, listarTodasBitacoras);
+router.get('/bitacora/:sede_id', authMiddleware, admin, listarTodasBitacoras);
 
 module.exports = router;

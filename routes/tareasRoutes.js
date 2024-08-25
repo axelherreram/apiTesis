@@ -16,12 +16,19 @@ const adminOrTerna = verifyRole([2, 3]);
 
 /**
  * @swagger
- * /api/tareas:
+ * /api/tareas/{sede_id}:
  *   get:
  *     summary: Lista todas las tareas
  *     tags: [Tareas]
  *     security:
  *       - bearerAuth: []
+*     parameters:
+ *       - in: path
+ *         name: sede_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: id de la sede para obtener las tareas
  *     responses:
  *       200:
  *         description: Retorna una lista de tareas.
@@ -36,11 +43,11 @@ const adminOrTerna = verifyRole([2, 3]);
  *       500:
  *         description: Error del servidor.
  */
-router.get("/tareas", authMiddleware, obtenerUserIdDeToken, listarTareas);
+router.get("/tareas/:sede_id", authMiddleware, obtenerUserIdDeToken, listarTareas);
 
 /**
  * @swagger
- * /api/tareas/curso/{curso_id}:
+ * /api/tareas/curso/{sede_id}/{curso_id}:
  *   get:
  *     summary: Lista todas las tareas de un curso específico
  *     tags: [Tareas]
@@ -53,6 +60,12 @@ router.get("/tareas", authMiddleware, obtenerUserIdDeToken, listarTareas);
  *           type: integer
  *         required: true
  *         description: ID del curso para obtener las tareas
+ *       - in: path
+ *         name: sede_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la sede para obtener las tareas
  *     responses:
  *       200:
  *         description: Retorna una lista de tareas del curso especificado.
@@ -69,7 +82,7 @@ router.get("/tareas", authMiddleware, obtenerUserIdDeToken, listarTareas);
  *       500:
  *         description: Error del servidor.
  */
-router.get("/tareas/curso/:curso_id", authMiddleware, obtenerUserIdDeToken, listarTareasPorCurso);
+router.get("/tareas/curso/:sede_id/:curso_id", authMiddleware, obtenerUserIdDeToken, listarTareasPorCurso);
 
 /**
  * @swagger

@@ -6,16 +6,16 @@ const upload = require("../middlewares/uploadExcel");
 /**
  * @swagger
  * tags:
- *   name: Estudiantes
- *   description: Operaciones para subir estudiantes por medio de un archivo Excel
+ *   name: UsuariosXexcel
+ *   description: Operaciones para subir Usuarios por medio de un archivo Excel
  */
 
 /**
  * @swagger
- * /api/estudiantes/cargaMasiva:
+ * /api/usuarios/cargaMasiva:
  *   post:
  *     summary: Cargar usuarios masivamente desde un archivo Excel
- *     tags: [Estudiantes]
+ *     tags: [UsuariosXexcel]
  *     consumes:
  *       - multipart/form-data
  *     requestBody:
@@ -33,10 +33,13 @@ const upload = require("../middlewares/uploadExcel");
  *                 type: integer
  *                 description: ID de la sede a asignar a los usuarios
  *                 required: true
+ *               rol_id:
+ *                 type: integer
+ *                 description: ID del rol a asignar a los usuarios
+ *                 required: true
  *               curso_id:
  *                 type: integer
- *                 description: ID del curso a asignar a los usuarios
- *                 required: true
+ *                 description: ID del curso a asignar a los usuarios (opcional)
  *     responses:
  *       201:
  *         description: Usuarios cargados exitosamente
@@ -45,6 +48,6 @@ const upload = require("../middlewares/uploadExcel");
  *       500:
  *         description: Error en el servidor
  */
-router.post("/estudiantes/cargaMasiva", upload.single('archivo'), cargarUsuariosMasivos);
+router.post("/usuarios/cargaMasiva", upload.single('archivo'), cargarUsuariosMasivos);
 
 module.exports = router;

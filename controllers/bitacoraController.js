@@ -2,8 +2,10 @@ const BitacoraApp = require('../models/bitacoraApp');
 
 
 const listarTodasBitacoras = async (req, res) => {
+  const { sede_id } = req.params;
+
   try {
-    const bitacoras = await BitacoraApp.findAll();
+    const bitacoras = await BitacoraApp.findAll({ where: { sede_id } });
 
     if (!bitacoras || bitacoras.length === 0) {
       return res.status(404).json({ message: 'No se encontraron entradas de bitácora' });
