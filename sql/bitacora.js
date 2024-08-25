@@ -1,6 +1,6 @@
 const BitacoraApp = require('../models/bitacoraApp');
 
-async function registrarBitacora(user_id, usuario, accion, detalles) {
+async function registrarBitacora(user_id, sede_id,usuario, accion, detalles) {
   try {
     if (!user_id || !usuario || !accion || !detalles) {
       console.error('Parámetros indefinidos o nulos:', { user_id, accion, detalles });
@@ -9,6 +9,7 @@ async function registrarBitacora(user_id, usuario, accion, detalles) {
 
     await BitacoraApp.create({
       user_id,
+      sede_id,
       usuario,
       accion,
       detalles,
