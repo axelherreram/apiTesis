@@ -125,11 +125,15 @@ router.post("/login", authController.loginUser);
  *           schema:
  *             type: object
  *             properties:
- *               password:
+ *               currentPassword:
+ *                 type: string
+ *                 description: Contraseña actual del usuario
+ *               newPassword:
  *                 type: string
  *                 description: Nueva contraseña del usuario
  *             example:
- *               password: "newpassword123"
+ *               currentPassword: "newpassword123"
+ *               newPassword: "newpassword1232"
  *     responses:
  *       200:
  *         description: Contraseña actualizada exitosamente
@@ -141,6 +145,10 @@ router.put(
   authMiddleware,
   authController.actualizarPassword
 );
+
+
+
+
 /**
  * @swagger
  * /auth/updateFotoPerfil:

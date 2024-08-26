@@ -125,26 +125,41 @@ const loginUser = async (req, res) => {
 };
 
 const actualizarPassword = async (req, res) => {
-  const { password } = req.body;
+  const { currentPassword, newPassword } = req.body; // Recibir contraseñas desde el cuerpo de la solicitud
   const user_id = req.user ? req.user.user_id : null;
 
   if (!user_id) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  if (!password) {
-    return res
-      .status(400)
-      .json({ message: "Se requiere una nueva contraseña" });
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({
+      message: "Se requieren la contraseña actual y la nueva contraseña",
+    });
   }
 
   try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await Usuarios.findOne({ where: { user_id } });
 
-    await Usuarios.update({ password: hashedPassword }, { where: { user_id } });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
 
+    // Comparar la contraseña actual con la almacenada en la base de datos
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: "La contraseña actual es incorrecta" });
+    }
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+
+    await Usuarios.update({ password: hashedNewPassword }, { where: { user_id } });
+
+    // Obtener los detalles del usuario actualizado
     const userUpdated = await Usuarios.findOne({ where: { user_id } });
 
+    // Registrar en la bitácora la actualización de la contraseña
     await registrarBitacora(
       user_id,
       userUpdated.sede_id,
@@ -153,11 +168,11 @@ const actualizarPassword = async (req, res) => {
       "Actualización de contraseña"
     );
 
+    // Responder con éxito
     res.json({ message: "Contraseña actualizada exitosamente" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error en el servidor", error: err.message });
+    // Manejar errores
+    res.status(500).json({ message: "Error en el servidor", error: err.message });
   }
 };
 
