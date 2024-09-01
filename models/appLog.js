@@ -1,53 +1,54 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Cursos = require("./cursos");
-const Sedes = require("./sede")
+const User = require("./user"); 
+const Sede = require("./sede");  
 
-const Tareas = sequelize.define(
-  "Tareas",
+const AppLog = sequelize.define( 
+  "AppLog",
   {
-    tarea_id: {
+    log_id: {  // bitacora_id
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    curso_id: {
+    user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Cursos,
-        key: "curso_id",
+        model: User,
+        key: "user_id",
       },
     },
-    sede_id:{
+    sede_id: {  // Sede se mantiene igual
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Sedes,
+        model: Sede,
         key: "sede_id",
       },
     },
-    titulo: {
+    username: {  // usuario
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    descripcion: {
+    action: {  // accion
       type: DataTypes.STRING(255),
       allowNull: false,
     },
-    inicioTarea: {
-      type: DataTypes.DATE,
-      allowNull: true,
+    details: {  // detalles
+      type: DataTypes.TEXT,
+      allowNull: false,
     },
-    finTarea: {
+    date: {  // fecha
       type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
     timestamps: false,
-    tableName: "Tareas",
+    tableName: "AppLog",  // BitacoraApp
   }
 );
 
-module.exports = Tareas;
+module.exports = AppLog;

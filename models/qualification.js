@@ -1,43 +1,45 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Cursos = require("./cursos");
-const Usuarios = require("./usuarios");
+// const Cursos = require("./cursos");
 // const Tareas = require("./tareas");
-const Entregas = require("./entregas");
-const Notas = sequelize.define(
-  "Notas",
+
+const User = require("./user");
+const Submissions = require("./submissions");
+
+const Qualification = sequelize.define(
+  "qualification",
   {
-    nota_id: {
+    qualification_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    curso_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: Cursos,
-        key: "curso_id",
-      },
-    },
+    // curso_id: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    //   references: {
+    //     model: Cursos,
+    //     key: "curso_id",
+    //   },
+    // },
     user_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Usuarios,
+        model: User,
         key: "user_id",
       },
     },
-    ciclo: {
+    cycle: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    entrega_id: {
+    submission_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Entregas,
-        key: "entrega_id",
+        model: Submissions,
+        key: "submission_id",
       }
     },
     // tarea_id: {
@@ -71,8 +73,8 @@ const Notas = sequelize.define(
   },
   {
     timestamps: false,
-    tableName: "Notas",
+    tableName: "qualification",
   }
 );
 
-module.exports = Notas;
+module.exports = Qualification;

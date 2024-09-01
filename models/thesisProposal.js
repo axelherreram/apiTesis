@@ -1,21 +1,21 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Usuarios = require("./usuarios");
-const Tareas = require("./tareas");
+const User = require("./user");
+const Task = require("./task");
 
-const PropuestaTesis = sequelize.define(
-  "PropuestaTesis",
+const thesisProposal = sequelize.define(
+  "thesisProposal",
   {
-    propuesta_id: {
+    proposal_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
-    titulo: {
+    title: {
       type: DataTypes.STRING(120),
       allowNull: false,
     },
-    propuesta: {
+    proposal: {
       type: DataTypes.TEXT,
       allowNull: false,
     },
@@ -23,24 +23,24 @@ const PropuestaTesis = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Usuarios,
+        model: User,
         key: "user_id",
       },
     },
-    tarea_id: {
+    task_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 1,
       references: {
-        model: Tareas,
-        key: "tarea_id",
+        model: Task,
+        key: "task_id",
       },
     },
   },
   {
     timestamps: false,
-    tableName: "PropuestaTesis",
+    tableName: "thesisProposal",
   }
 );
 
-module.exports = PropuestaTesis;
+module.exports = thesisProposal;

@@ -1,24 +1,20 @@
-// models/associateModels.js
-
-const Usuarios = require('./usuarios');
-const CursoAsignacion = require('./cursoAsignacion');
-const Cursos = require('./cursos');
-const AsignacionEstudiante = require('./asignacionEstudiante');
+const User = require('./user');
+const CourseAssignment = require('./courseAssignment');
+const Course = require('./course');
+const StudentAssignment = require('./studentAssignment');
 const Sede = require('./sede');
 
 module.exports = function associateModels() {
-  // Asegúrate de que los modelos estén correctamente asociados
-  Usuarios.hasMany(CursoAsignacion, { foreignKey: 'estudiante_id' });
-  Usuarios.hasMany(AsignacionEstudiante, { foreignKey: 'estudiante_id', as: 'asignacionesEstudiante' });
-  Usuarios.hasMany(AsignacionEstudiante, { foreignKey: 'catedratico_id', as: 'asignacionesCatedratico' });
+  User.hasMany(CourseAssignment, { foreignKey: 'student_id' });
+  User.hasMany(StudentAssignment, { foreignKey: 'student_id', as: 'studentAssignments' });
+  User.hasMany(StudentAssignment, { foreignKey: 'instructor_id', as: 'instructorAssignments' });
 
-  CursoAsignacion.belongsTo(Usuarios, { foreignKey: 'estudiante_id' });
-  CursoAsignacion.belongsTo(Cursos, { foreignKey: 'curso_id' });
+  CourseAssignment.belongsTo(User, { foreignKey: 'student_id' });
+  CourseAssignment.belongsTo(Course, { foreignKey: 'course_id' });
 
-  AsignacionEstudiante.belongsTo(Usuarios, { foreignKey: 'estudiante_id', as: 'estudiante' });
-  AsignacionEstudiante.belongsTo(Usuarios, { foreignKey: 'catedratico_id', as: 'catedratico' });
+  StudentAssignment.belongsTo(User, { foreignKey: 'student_id', as: 'student' });
+  StudentAssignment.belongsTo(User, { foreignKey: 'instructor_id', as: 'instructor' });
 
-  Usuarios.belongsTo(Sede, { foreignKey: 'sede_id', as: 'sede' });
-  Sede.hasMany(Usuarios, { foreignKey: 'sede_id' });
-  
+  User.belongsTo(Sede, { foreignKey: 'sede_id', as: 'location' });
+  Sede.hasMany(User, { foreignKey: 'sede_id' });
 };

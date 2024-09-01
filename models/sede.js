@@ -1,6 +1,6 @@
 const { DataTypes, Model } = require("sequelize");
 const sequelize = require("../config/database");
-const Usuarios = require("./usuarios");  // Asegúrate de que el modelo está correctamente importado
+const User = require("./user");  // Asegúrate de que el modelo está correctamente importado
 
 const Sede = sequelize.define("sede", {
   sede_id: {
@@ -8,7 +8,7 @@ const Sede = sequelize.define("sede", {
     primaryKey: true,
     autoIncrement: true,
   },
-  nombreSede: {
+  nameSede: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: true, 
@@ -18,8 +18,8 @@ const Sede = sequelize.define("sede", {
   tableName: 'sede'
 });
 
-Usuarios.associate = function (models) {
-  Sede.hasMany(models.Usuarios, { foreignKey: 'sede_id' });
+User.associate = function (models) {
+  Sede.hasMany(models.User, { foreignKey: 'sede_id' });
 
 }
 

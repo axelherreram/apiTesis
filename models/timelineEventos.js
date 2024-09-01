@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Usuario = require("./usuarios");
+const User = require("./user");
 
 const TimelineEventos = sequelize.define("TimelineEventos", {
   evento_id: {
@@ -12,7 +12,7 @@ const TimelineEventos = sequelize.define("TimelineEventos", {
     type: DataTypes.INTEGER,
     allowNull: false,
     references: {
-      model: Usuario,
+      model: User,
       key: "user_id",
     },
   },

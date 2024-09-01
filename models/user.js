@@ -3,8 +3,8 @@ const sequelize = require("../config/database");
 const Roles = require("./roles");
 const Sede = require("./sede");
 
-const Usuarios = sequelize.define(
-  "Usuarios",
+const User = sequelize.define(
+  "User",
   {
     user_id: {
       type: DataTypes.INTEGER,
@@ -19,7 +19,7 @@ const Usuarios = sequelize.define(
       type: DataTypes.STRING(200),
       allowNull: false,
     },
-    nombre: {
+    name: {
       type: DataTypes.STRING(200),
       allowNull: false,
     },
@@ -27,7 +27,7 @@ const Usuarios = sequelize.define(
       type: DataTypes.STRING(15),
       allowNull: true,
     },
-    anioRegistro: {
+    registrationYear: {
       type: DataTypes.INTEGER,
       allowNull: true,
       defaultValue: new Date().getFullYear(),
@@ -49,36 +49,36 @@ const Usuarios = sequelize.define(
         key: "rol_id",
       },
     },
-    FotoPerfil: {
+    profilePhoto: {
       type: DataTypes.STRING(200),
       allowNull: true,
     },
-    activoTerna: {
-     type: DataTypes.BOOLEAN,
-       allowNull: true,
-       defaultValue: false,
-    },
+    // activoTerna: {
+    //  type: DataTypes.BOOLEAN,
+    //    allowNull: true,
+    //    defaultValue: false,
+    // },
   },
   {
     timestamps: false,
-    tableName: "Usuarios",
+    tableName: "User",
   }
 );
 
-Usuarios.associate = function (models) {
-  Usuarios.hasMany(models.CursoAsignacion, { foreignKey: "estudiante_id" });
+User.associate = function (models) {
+  User.hasMany(models.CursoAsignacion, { foreignKey: "estudiante_id" });
   // Relación de muchos a uno entre usuarios y asignaciones como estudiantes
-  Usuarios.hasMany(models.AsignacionEstudiante, {
+  User.hasMany(models.AsignacionEstudiante, {
     foreignKey: "estudiante_id",
     as: "asignacionesEstudiante",
   });
 
-  Usuarios.hasMany(models.AsignacionEstudiante, {
+  User.hasMany(models.AsignacionEstudiante, {
     foreignKey: "catedratico_id",
     as: "asignacionesCatedratico",
   });
 
-  Usuarios.belongsTo(models.Sede, { foreignKey: "sede_id", as: "sede" });
+  User.belongsTo(models.Sede, { foreignKey: "sede_id", as: "sede" });
 };
 
-module.exports = Usuarios;
+module.exports = User;
