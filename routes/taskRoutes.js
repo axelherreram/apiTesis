@@ -1,11 +1,12 @@
 const express = require("express");
-const { listTasks, updateTask, listTasksByCourse } = require("../controllers/taskController");
+const { listTasks, updateTask, listTasksByCourse, createTask } = require("../controllers/taskController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
 
 const router = express.Router();
 const adminOrTerna = verifyRole([2, 3]);
+const admin = verifyRole([3]);
 
 /**
  * @swagger
@@ -22,7 +23,7 @@ const adminOrTerna = verifyRole([2, 3]);
  *     tags: [Tareas]
  *     security:
  *       - bearerAuth: []
-*     parameters:
+ *     parameters:
  *       - in: path
  *         name: sede_id
  *         schema:
@@ -84,7 +85,6 @@ router.get("/tareas/:sede_id", authMiddleware, obtenerUserIdDeToken, listTasks);
  */
 router.get("/tareas/curso/:sede_id/:course_id", authMiddleware, obtenerUserIdDeToken, listTasksByCourse);
 
-
 /**
  * @swagger
  * /api/tareas/{task_id}:
@@ -141,6 +141,67 @@ router.put(
   obtenerUserIdDeToken,
   adminOrTerna,
   updateTask
+);
+
+/**
+ * @swagger
+ * /api/tareas:
+ *   post:
+ *     summary: Crear una nueva tarea
+ *     tags: [Tareas]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               course_id:
+ *                 type: integer
+ *                 description: ID del curso
+ *                 example: 1
+ *               sede_id:
+ *                 type: integer
+ *                 description: ID de la sede
+ *                 example: 1
+ *               typeTask_id:
+ *                 type: integer
+ *                 description: ID del tipo de tarea
+ *                 example: 1
+ *               title:
+ *                 type: string
+ *                 description: Título de la tarea
+ *                 example: "CAPITULO 1"
+ *               description:
+ *                 type: string
+ *                 description: Descripción de la tarea
+ *                 example: "REALIZAR EL CAPÍTULO 1 DEL PROYECTO DE GRADUACIÓN"
+ *               taskStart:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha y hora de inicio de la tarea
+ *                 example: "2024-09-03T00:00:00Z"
+ *               endTask:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha y hora de finalización de la tarea
+ *                 example: "2024-09-10T00:00:00Z"
+ *     responses:
+ *       201:
+ *         description: Tarea creada exitosamente.
+ *       400:
+ *         description: Datos de entrada inválidos.
+ *       500:
+ *         description: Error al crear la tarea.
+ */
+router.post(
+  "/tareas",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  admin,
+  createTask
 );
 
 module.exports = router;
