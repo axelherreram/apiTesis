@@ -43,9 +43,9 @@ const createProposal = async (req, res) => {
     // Buscar todas las tareas asociadas al curso y usuario
     const tareas = await Task.findAll({
       where: {
-        course_id: 1, // 1 es el ID de "Proyecto de Graduación I"
+        course_id: 1, 
         sede_id: req.user.sede_id, 
-        typeTask_id: 1 // 1 es el ID de "Propuesta de tesis"
+        typeTask_id: 1 
       }
     });
 
@@ -53,10 +53,8 @@ const createProposal = async (req, res) => {
       return res.status(400).json({ message: "No se encontró una tarea válida para la propuesta de tesis." });
     }
 
-    // Obtener el task_id de la primera tarea válida
     const task_id = tareas[0].task_id;
 
-    // Crear la propuesta de tesis
     await ThesisProposal.create({
       user_id,
       title,
