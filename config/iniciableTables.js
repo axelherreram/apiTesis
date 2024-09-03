@@ -10,6 +10,7 @@ const TimelineEvents = require("../models/timelineEventos");
 const User = require("../models/user");
 const StudentAssignment = require("../models/studentAssignment");
 const CourseAssignment = require("../models/courseAssignment");
+const typeTask = require("../models/typeTask");
 
 const initializeTables = async () => {
   try {
@@ -23,41 +24,20 @@ const initializeTables = async () => {
     await Roles.findOrCreate({ where: { name: "Estudiante" } });
     await Roles.findOrCreate({ where: { name: "Catedrático" } });
     await Roles.findOrCreate({ where: { name: "Administrador" } });
+    await Roles.findOrCreate({ where: { name: "SuperAdmin" } });
+
 
     await Sede.findOrCreate({ where: { nameSede: "Guastatoya" } });
     await Sede.findOrCreate({ where: { nameSede: "Sanarate" } });
+
+    await typeTask.findOrCreate({ where: { name: "Propuesta de tesis" } });
+    await typeTask.findOrCreate({ where: { name: "Entrega de capitulos" } });
 
     await Course.findOrCreate({
       where: { courseName: "Proyecto De Graduación I" },
     });
     await Course.findOrCreate({
       where: { courseName: "Proyecto De Graduación II" },
-    });
-
-    await Task.findOrCreate({
-      where: {
-        course_id: 1,
-        title: "Propuestas De Tesis",
-        sede_id: 1,
-      },
-      defaults: {
-        description: "Sube Tus 3 Propuestas De Tesis",
-        taskStart: now,
-        endTask: oneMonthLater,
-      },
-    });
-
-    await Task.findOrCreate({
-      where: {
-        course_id: 1,
-        title: "Propuestas De Tesis",
-        sede_id: 2,
-      },
-      defaults: {
-        description: "Sube Tus 3 Propuestas De Tesis",
-        taskStart: now,
-        endTask: oneMonthLater,
-      },
     });
 
     console.log("Tablas Inicializadas Correctamente En La BD");
