@@ -1,6 +1,7 @@
 const ThesisProposal = require("../models/thesisProposal");
 const { logActivity } = require("../sql/appLog");
 const User = require("../models/user");
+const Task = require("../models/task");
 
 const listProposalsByUser = async (req, res) => {
   const { user_id } = req.params;
@@ -30,6 +31,7 @@ const createProposal = async (req, res) => {
   const { user_id, title, proposal } = req.body;
 
   try {
+    // Verificar si el usuario ya tiene 3 propuestas
     const count = await ThesisProposal.count({ where: { user_id } });
     if (count >= 3) {
       return res.status(400).json({
@@ -37,15 +39,33 @@ const createProposal = async (req, res) => {
           "No se pueden tener más de 3 propuestas. Elimine o actualice una existente.",
       });
     }
-    const user = await User.findByPk(user_id);
 
+    // Buscar todas las tareas asociadas al curso y usuario
+    const tareas = await Task.findAll({
+      where: {
+        course_id: 1, // 1 es el ID de "Proyecto de Graduación I"
+        sede_id: req.user.sede_id, 
+        typeTask_id: 1 // 1 es el ID de "Propuesta de tesis"
+      }
+    });
+
+    if (tareas.length === 0) {
+      return res.status(400).json({ message: "No se encontró una tarea válida para la propuesta de tesis." });
+    }
+
+    // Obtener el task_id de la primera tarea válida
+    const task_id = tareas[0].task_id;
+
+    // Crear la propuesta de tesis
     await ThesisProposal.create({
       user_id,
       title,
       proposal,
+      task_id,
     });
 
-    // Script para registrar en la bitácora
+    // Registrar en la bitácora
+    const user = await User.findByPk(user_id);
     await logActivity(
       user_id,
       user.sede_id,
