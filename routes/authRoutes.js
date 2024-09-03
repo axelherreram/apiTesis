@@ -3,80 +3,88 @@ const authController = require("../controllers/authController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const router = express.Router();
 const { upload, handleMulterErrors } = require("../middlewares/uploadMiddleware");
+
 /**
  * @swagger
  * tags:
- *   name: Autenticación
- *   description: Operaciones de autenticación
+ *   name: Authentication
+ *   description: Operaciones de autenticación de usuarios
  *
  * components:
  *   schemas:
- *     Usuario:
+ *     User:
  *       type: object
  *       required:
  *         - email
  *         - password
- *         - nombre
+ *         - name
  *         - carnet
  *         - sede_id
  *         - rol_id
  *       properties:
  *         user_id:
  *           type: integer
- *           description: ID autogenerado del usuario
+ *           description: Auto-generated ID of the user
  *         email:
  *           type: string
- *           description: Email del usuario
+ *           description: User's email
  *         password:
  *           type: string
- *           description: Contraseña del usuario
- *         nombre:
+ *           description: User's password
+ *         name:
  *           type: string
- *           description: Nombre del usuario
+ *           description: User's name
  *         carnet:
  *           type: string
- *           description: Carnet del usuario
+ *           description: User's ID card number
  *         sede_id:
  *           type: integer
- *           description: ID de la sede del usuario
+ *           description: ID of the user's location
  *         rol_id:
  *           type: integer
- *           description: ID del rol del usuario
- *         anioRegistro:
+ *           description: ID of the user's role
+ *         registrationYear:
  *           type: integer
- *           description: Año de registro del usuario
- *         fotoPerfil:
+ *           description: Year of user's registration
+ *         profilePhoto:
  *           type: string
- *           description: Foto de perfil del usuario
+ *           description: User's profile photo
  *         activoTerna:
  *           type: boolean
- *           description: Activo o inactivo en la terna
+ *           description: Active status in the terna
  *       example:
  *         email: example@gmail.com
  *         password: example123
- *         nombre: Juan Pérez
+ *         name: Juan Pérez
  *         carnet: 123456789
  *         sede_id: 1
- *         anioRegistro: 2021
+ *         rol_id: 1
+ *         registrationYear: 2021
+ *
+ * securitySchemes:
+ *   bearerAuth:
+ *     type: http
+ *     scheme: bearer
+ *     bearerFormat: JWT
  */
 
 /**
  * @swagger
  * /auth/register:
  *   post:
- *     summary: Registra un nuevo usuario
- *     tags: [Autenticación]
+ *     summary: Registrar nuevo usuario
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Usuario'
+ *             $ref: '#/components/schemas/User'
  *     responses:
  *       201:
- *         description: Usuario creado exitosamente
+ *         description: User successfully created
  *       400:
- *         description: Error en la creación del usuario
+ *         description: Error in user creation
  */
 router.post("/register", authController.registerUser);
 
@@ -84,8 +92,8 @@ router.post("/register", authController.registerUser);
  * @swagger
  * /auth/login:
  *   post:
- *     summary: Inicia sesión con un usuario
- *     tags: [Autenticación]
+ *     summary: Inicia sesión en la aplicación
+ *     tags: [Authentication]
  *     requestBody:
  *       required: true
  *       content:
@@ -95,18 +103,18 @@ router.post("/register", authController.registerUser);
  *             properties:
  *               email:
  *                 type: string
- *                 description: Email del usuario
+ *                 description: User's email
  *               password:
  *                 type: string
- *                 description: Contraseña del usuario
+ *                 description: User's password
  *             example:
  *               email: example@gmail.com
  *               password: example123
  *     responses:
  *       200:
- *         description: Inicio de sesión exitoso
+ *         description: Successful login
  *       400:
- *         description: Credenciales inválidas
+ *         description: Invalid credentials
  */
 router.post("/login", authController.loginUser);
 
@@ -115,7 +123,7 @@ router.post("/login", authController.loginUser);
  * /auth/updatePassword:
  *   put:
  *     summary: Actualiza la contraseña del usuario
- *     tags: [Autenticación]
+ *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -127,34 +135,31 @@ router.post("/login", authController.loginUser);
  *             properties:
  *               currentPassword:
  *                 type: string
- *                 description: Contraseña actual del usuario
+ *                 description: User's current password
  *               newPassword:
  *                 type: string
- *                 description: Nueva contraseña del usuario
+ *                 description: User's new password
  *             example:
- *               currentPassword: "newpassword123"
- *               newPassword: "newpassword1232"
+ *               currentPassword: "example123"
+ *               newPassword: "newpassword123"
  *     responses:
  *       200:
- *         description: Contraseña actualizada exitosamente
+ *         description: Password successfully updated
  *       400:
- *         description: Error al actualizar la contraseña
+ *         description: Error updating the password
  */
 router.put(
   "/updatePassword",
   authMiddleware,
-  authController.actualizarPassword
+  authController.updatePassword
 );
-
-
-
 
 /**
  * @swagger
- * /auth/updateFotoPerfil:
+ * /auth/updateProfilePhoto:
  *   put:
  *     summary: Actualiza la foto de perfil del usuario
- *     tags: [Autenticación]
+ *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -164,21 +169,21 @@ router.put(
  *           schema:
  *             type: object
  *             properties:
- *               fotoPerfil:
+ *               profilePhoto:
  *                 type: string
  *                 format: binary
- *                 description: Nueva foto de perfil del usuario
+ *                 description: New profile photo for the user
  *     responses:
  *       200:
- *         description: Foto de perfil actualizada exitosamente
+ *         description: Profile photo successfully updated
  *       400:
- *         description: Error al actualizar la foto de perfil
+ *         description: Error updating the profile photo
  */
 router.put(
-  "/updateFotoPerfil",
+  "/updateProfilePhoto",
   authMiddleware,
-  upload.single("fotoPerfil"),
-  authController.actualizarFotoPerfil,
+  upload.single("profilePhoto"),
+  authController.updateProfilePhoto,
   handleMulterErrors
 );
 

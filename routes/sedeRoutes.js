@@ -1,5 +1,5 @@
 const express = require('express');
-const { listarSedes, crearSede } = require('../controllers/sedeController');
+const { listSede, createSede } = require('../controllers/sedeController');
 const verifyRole = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
 const obtenerUserIdDeToken = require('../middlewares/obtenerUserIdDeToken');
@@ -19,16 +19,16 @@ const adminOrTerna = verifyRole([2,3]);
  *     Sede:
  *       type: object
  *       required:
- *         - nombreSede
+ *         - nameSede
  *       properties:
  *         sede_id:
  *          type: integer
  *          description: Identificador único de la sede
- *         nombreSede:
+ *         nameSede:
  *           type: string
  *           description: Nombre de la sede
  *       example:
- *         nombreSede: "Sede Centro"
+ *         nameSede: "Sede Centro"
  */
 
 /**
@@ -71,7 +71,7 @@ const adminOrTerna = verifyRole([2,3]);
  *         description: Error interno del servidor al intentar crear la sede.
  */
 
-router.get('/sedes',authMiddleware ,listarSedes);
-router.post('/sedes', authMiddleware, obtenerUserIdDeToken, adminOrTerna, crearSede);
+router.get('/sedes',authMiddleware ,listSede);
+router.post('/sedes', authMiddleware, obtenerUserIdDeToken, adminOrTerna, createSede);
 
 module.exports = router;

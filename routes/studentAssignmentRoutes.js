@@ -1,15 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const { crearAsignacion, listarEstudiantesPorCatedratico } = require('../controllers/asignacionEstudianteController');
+const {  createAssignment,  listStudentsByInstructor } = require('../controllers/studentAssignmentController');
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
 
 const admin = verifyRole([3]);
-const adminOrTerna = verifyRole([2,3]);
+const adminOrTerna = verifyRole([2, 3]);
 
 /**
  * @swagger
+ * tags:
+ *   name: Catedráticos
+ *   description: Asignación de estudiantes a catedráticos
+ * 
  * components:
  *   securitySchemes:
  *     bearerAuth:
@@ -23,6 +27,9 @@ const adminOrTerna = verifyRole([2,3]);
  * /api/crear:
  *   post:
  *     summary: Crear una asignación
+ *     operationId: crearAsignacionCatedraticoEstudiante
+ *     tags: 
+ *       - Catedráticos 
  *     description: Crea una asignación entre un catedrático y un estudiante
  *     security:
  *       - bearerAuth: []   # Requiere autenticación
@@ -33,10 +40,10 @@ const adminOrTerna = verifyRole([2,3]);
  *           schema:
  *             type: object
  *             properties:
- *               catedratico_id:
+ *               instructor_id:
  *                 type: integer
  *                 example: 1
- *               estudiante_id:
+ *               student_id:
  *                 type: integer
  *                 example: 2
  *     responses:
@@ -55,28 +62,31 @@ const adminOrTerna = verifyRole([2,3]);
  *                   properties:
  *                     asignacion_id:
  *                       type: integer
- *                     catedratico_id:
+ *                     instructor_id:
  *                       type: integer
- *                     estudiante_id:
+ *                     student_id:
  *                       type: integer
  *       400:
  *         description: Error de validación
  *       500:
  *         description: Error del servidor
  */
-router.post('/crear', authMiddleware, obtenerUserIdDeToken, adminOrTerna, crearAsignacion);
+router.post('/crear', authMiddleware, obtenerUserIdDeToken, adminOrTerna, createAssignment);
 
 /**
  * @swagger
- * /api/estudiantes/{catedratico_id}:
+ * /api/estudiantes/{instructor_id}:
  *   get:
  *     summary: Listar estudiantes asignados a un catedrático
+ *     operationId: listarEstudiantesCatedratico
+ *     tags: 
+ *       - Catedráticos
  *     description: Lista todos los estudiantes asignados a un catedrático específico
  *     security:
  *       - bearerAuth: []   # Requiere autenticación
  *     parameters:
  *       - in: path
- *         name: catedratico_id
+ *         name: instructor_id
  *         required: true
  *         description: ID del catedrático
  *         schema:
@@ -110,6 +120,6 @@ router.post('/crear', authMiddleware, obtenerUserIdDeToken, adminOrTerna, crearA
  *       500:
  *         description: Error del servidor
  */
-router.get('/estudiantes/:catedratico_id', authMiddleware, obtenerUserIdDeToken, adminOrTerna, listarEstudiantesPorCatedratico);
+router.get('/estudiantes/:instructor_id', authMiddleware, obtenerUserIdDeToken, adminOrTerna, listStudentsByInstructor);
 
 module.exports = router;

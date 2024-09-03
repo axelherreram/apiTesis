@@ -6,16 +6,15 @@ const initializetables = require('./config/iniciableTables');
 const authRoutes = require('./routes/authRoutes');
 const { swaggerUi, swaggerDocs } = require('./docs/swagger'); 
 const userRoutes = require('./routes/userRoutes');
-const bitacoraRoutes = require('./routes/bitacoraRoutes');
+const AppLogRoutes = require('./routes/appLogRoutes');
 const sedeRoutes = require('./routes/sedeRoutes');
-const tareaRoutes = require('./routes/tareasRoutes');
-const PropuestaTesis = require('./routes/propuestaTesisRoutes');
+const TaskRoutes = require('./routes/taskRoutes');
+const ThesisProposalRoutes = require('./routes/thesisProposalRoutes');
 const rolRoutes = require('./routes/rolRoutes');
-const cursoRoutes = require('./routes/cursoRoutes');
-const AsignacionEstudianteRoutes = require('./routes/asignacionEstudianteRoutes');
+const CourseRoutes = require('./routes/CourseRoutes');
+const studentAssignmentRoutes = require('./routes/studentAssignmentRoutes');
 const TernasRoutes = require('./routes/ternaRoutes');
-const estudianteRoutes = require('./routes/estudianteRoutes');
-const ternaRoutes = require('./routes/ternaRoutesEx');
+const StudentRoutes = require('./routes/studentRoutes');
 
 const path = require('path');
 const cors = require('cors');
@@ -39,16 +38,15 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 app.use('/auth', authRoutes);
 app.use('/api', userRoutes);
-app.use('/api', bitacoraRoutes);
+app.use('/api', AppLogRoutes);
 app.use('/api', sedeRoutes);
-app.use('/api', tareaRoutes);
-app.use('/api', PropuestaTesis);
+app.use('/api', TaskRoutes);
+app.use('/api', ThesisProposalRoutes);
 app.use('/api', rolRoutes);
-app.use('/api', cursoRoutes);
-app.use('/api', AsignacionEstudianteRoutes);
+app.use('/api', CourseRoutes);
+app.use('/api', studentAssignmentRoutes);
 app.use('/api', TernasRoutes);
-app.use('/api', estudianteRoutes);
-app.use('/api', ternaRoutes);
+app.use('/api', StudentRoutes);
 
 sequelize.sync({ alter: false, force: false })
   .then(async () => {

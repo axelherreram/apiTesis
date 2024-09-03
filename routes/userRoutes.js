@@ -109,7 +109,7 @@ router.get(
 
 /**
  * @swagger
- * /api/usuarios/anio/{anioRegistro}:
+ * /api/usuarios/anio/{registrationYear}:
  *   get:
  *     summary: Filtrar usuarios por año de registro
  *     tags: [Usuarios]
@@ -117,7 +117,7 @@ router.get(
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: anioRegistro
+ *         name: registrationYear
  *         schema:
  *           type: integer
  *         required: true
@@ -150,17 +150,17 @@ router.get(
  *         description: Acceso denegado
  */
 router.get(
-  "/usuarios/anio/:anioRegistro",
+  "/usuarios/anio/:registrationYear",
   authMiddleware,
   adminOrTerna,
   obtenerUserIdDeToken,
-  userController.filterUsersByAnio
+  userController.filterUsersByYear
 );
 
 
 /**
  * @swagger
- * /api/cursos/{curso_id}/usuarios:
+ * /api/cursos/{course_id}/usuarios:
  *   get:
  *     summary: Listar todos los usuarios asignados a un curso
  *     tags: [Usuarios]
@@ -168,7 +168,7 @@ router.get(
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: curso_id
+ *         name: course_id
  *         schema:
  *           type: integer
  *         required: true
@@ -199,11 +199,11 @@ router.get(
  *         description: Error en el servidor
  */
 router.get(
-  "/cursos/:curso_id/usuarios",
+  "/cursos/:course_id/usuarios",
   authMiddleware,
   adminOrTerna,
   obtenerUserIdDeToken,
-  userController.obtenerUsuariosPorCurso
+  userController.getUsersByCourse
 );
 
 module.exports = router;

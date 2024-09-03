@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
 const {
-  listarPropuestasPorUsuario,
-  crearPropuesta,
-  actualizarPropuesta,
-  eliminarPropuesta,
-} = require("../controllers/propuestaTesisController");
+  listProposalsByUser,
+  createProposal,
+  updateProposal,
+  deleteProposal,
+} = require("../controllers/thesisProposalController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
@@ -38,7 +38,7 @@ router.get(
   "/propuestas/:user_id",
   authMiddleware,
   obtenerUserIdDeToken,
-  listarPropuestasPorUsuario
+  listProposalsByUser
 );
 
 /**
@@ -58,13 +58,13 @@ router.get(
  *             properties:
  *               user_id:
  *                 type: integer
- *               titulo:
+ *               title:
  *                 type: string
- *               propuesta:
+ *               proposal:
  *                 type: string
  *             required:
  *               - user_id
- *               - propuesta
+ *               - proposal
  *     responses:
  *       201:
  *         description: Propuesta creada exitosamente
@@ -77,12 +77,12 @@ router.post(
   "/propuestas",
   authMiddleware,
   obtenerUserIdDeToken,
-  crearPropuesta
+  createProposal
 );
 
 /**
  * @swagger
- * /api/propuestas/{propuesta_id}:
+ * /api/propuestas/{proposal_id}:
  *   put:
  *     summary: Actualiza una propuesta de tesis
  *     tags: [Propuesta Tesis]
@@ -90,7 +90,7 @@ router.post(
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: propuesta_id
+ *         name: proposal_id
  *         required: true
  *         schema:
  *           type: integer
@@ -102,10 +102,13 @@ router.post(
  *           schema:
  *             type: object
  *             properties:
- *               titulo:
+ *               title:
  *                 type: string
- *               propuesta:
+ *               proposal:
  *                 type: string
+ *             example:  # Añadir un ejemplo correcto aquí
+ *               title: "Propuesta de tesis actualizada"
+ *               proposal: "Esta es la nueva propuesta de tesis actualizada"
  *     responses:
  *       200:
  *         description: Propuesta actualizada correctamente
@@ -115,15 +118,15 @@ router.post(
  *         description: Error del servidor
  */
 router.put(
-  "/propuestas/:propuesta_id",
+  "/propuestas/:proposal_id",
   authMiddleware,
   obtenerUserIdDeToken,
-  actualizarPropuesta
+  updateProposal
 );
 
 /**
  * @swagger
- * /api/propuestas/{propuesta_id}:
+ * /api/propuestas/{proposal_id}:
  *   delete:
  *     summary: Elimina una propuesta de tesis
  *     tags: [Propuesta Tesis]
@@ -131,7 +134,7 @@ router.put(
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: propuesta_id
+ *         name: proposal_id
  *         required: true
  *         schema:
  *           type: integer
@@ -145,10 +148,10 @@ router.put(
  *         description: Error del servidor
  */
 router.delete(
-  "/propuestas/:propuesta_id",
+  "/propuestas/:proposal_id",
   authMiddleware,
   obtenerUserIdDeToken,
-  eliminarPropuesta
+  deleteProposal
 );
 
 module.exports = router;

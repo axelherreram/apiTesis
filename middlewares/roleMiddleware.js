@@ -1,5 +1,5 @@
 // middlewares/roleMiddleware.js
-const Usuarios = require('../models/usuarios');
+const User = require('../models/user');
 
 const verifyRole = (rolesPermitidos) => {
   return async (req, res, next) => {
@@ -10,7 +10,7 @@ const verifyRole = (rolesPermitidos) => {
     }
 
     try {
-      const user = await Usuarios.findByPk(userId);
+      const user = await User.findByPk(userId);
 
       if (!user) {
         return res.status(404).json({ message: 'Usuario no encontrado' });

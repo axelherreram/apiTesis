@@ -1,58 +1,46 @@
-const Usuarios = require("../models/usuarios");
-const { registrarBitacora } = require("../sql/bitacora");
-const sede = require("../models/sede");
-const CursoAsignacion = require("../models/cursoAsignacion");
-const Cursos = require("../models/cursos");
+const User = require("../models/user");
+const { logActivity } = require("../sql/appLog");
+const Sede = require("../models/sede");
+const CourseAssignment = require("../models/courseAssignment");
+const Course = require("../models/course");
 
-// const listUsuariosAdmin = async (req, res) => {
-//   try {
-//     const users = await Usuarios.findAll({ where: { rol_id: 2 } });
-
-//     const formattedUsers = users.map((user) => ({
-//       user_id: user.user_id,
-//       email: user.email,
-//       userName: user.nombre,
-//       fotoPerfil: user.fotoPerfil,
-//       carnet: user.carnet,
-//       sede: user.sede_id,
-//       rol_id: user.rol_id,
-//       anio: user.anioRegistro,
-//     }));
-
-//     res.status(200).json(formattedUsers);
-//   } catch (error) {
-//     res.status(500).json({ message: "Error al obtener usuarios" });
-//   }
-// };
-
+// Listar todos los estudiantes
 const listStudents = async (req, res) => {
   try {
-    const students = await Usuarios.findAll({ where: { rol_id: 1 } });
-
+    const students = await User.findAll({ where: { rol_id: 1 } });
     const user_id = req.user_id;
-    const formattedStudents = students.map((student) => ({
-      user_id: student.user_id,
-      email: student.email,
-      userName: student.nombre,
-      fotoPerfil: user.fotoPerfil,
-      carnet: student.carnet,
-      sede: student.sede_id,
-      anio: student.anioRegistro,
-    }));
 
-    const User = await Usuarios.findByPk(user_id);
+    const formattedStudents = students.map((student) => {
+      const profilePhoto = student.dataValues.profilePhoto;
+      const profilePhotoUrl = profilePhoto
+        ? `http://localhost:3000/public/fotoPerfil/${profilePhoto}`
+        : null;
 
-    // Scrip para registrar en la bitacora
-    await registrarBitacora(
+      return {
+        user_id: student.user_id,
+        email: student.email,
+        userName: student.name,
+        profilePhoto: profilePhotoUrl,
+        carnet: student.carnet,
+        sede: student.sede_id,
+        registrationYear: student.registrationYear,
+      };
+    });
+
+    const requestingUser = await User.findByPk(user_id);
+
+    // Registrar en la bitácora
+    await logActivity(
       user_id,
-      User.sede_id,
-      User.nombre,
+      requestingUser.sede_id,
+      requestingUser.name,
       "Listar estudiantes",
-      `Listo todos los estudiantes`
+      "Listo todos los estudiantes"
     );
+
     res.status(200).json(formattedStudents);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener estudiantes" });
+    res.status(500).json({ message: "Error al obtener estudiantes", error: error.message });
   }
 };
 
@@ -62,121 +50,176 @@ const filterUsersBySede = async (req, res) => {
   const user_id = req.user_id;
 
   try {
-    const sedes = await sede.findOne({ where: { sede_id } });
+    const sede = await Sede.findOne({ where: { sede_id } });
 
-    const users = await Usuarios.findAll({ where: { sede_id, rol_id: 1 } });
+    if (!sede) {
+      return res.status(404).json({ message: "Sede no encontrada" });
+    }
 
-    const formattedUsers = users.map((user) => ({
-      user_id: user.user_id,
-      email: user.email,
-      userName: user.nombre,
-      fotoPerfil: user.fotoPerfil,
-      carnet: user.carnet,
-      sede: user.sede_id,
-      anio: user.anioRegistro,
-    }));
+    const students = await User.findAll({
+      where: { rol_id: 1, sede_id },
+      attributes: [
+        "user_id",
+        "email",
+        "name",
+        "carnet",
+        "registrationYear",
+        "sede_id",
+        "rol_id",
+        "profilePhoto",
+      ],
+    });
 
-    const User = await Usuarios.findByPk(user_id);
+    const formattedStudents = students.map((student) => {
+      const profilePhoto = student.dataValues.profilePhoto;
+      const profilePhotoUrl = profilePhoto
+        ? `http://localhost:3000/public/fotoPerfil/${profilePhoto}`
+        : null;
 
-    // Scrip para registrar en la bitacora
-    await registrarBitacora(
+      return {
+        user_id: student.user_id,
+        email: student.email,
+        userName: student.name,
+        profilePhoto: profilePhotoUrl,
+        carnet: student.carnet,
+        sede: student.sede_id,
+        registrationYear: student.registrationYear,
+      };
+    });
+
+    const requestingUser = await User.findByPk(user_id);
+
+    // Registrar en la bitácora
+    await logActivity(
       user_id,
-      User.sede_id,
-      User.nombre,
+      requestingUser.sede_id,
+      requestingUser.name,
       "Listar estudiantes",
-      `Listo todos los estudiantes de la sede: ${sedes.nombreSede}`
+      `Listo todos los estudiantes de la sede: ${sede.nombreSede}`
     );
 
-    res.status(200).json(formattedUsers);
+    res.status(200).json(formattedStudents);
   } catch (error) {
-    res.status(500).json({ message: "Error al filtrar usuarios por sede" });
+    res.status(500).json({ message: "Error al filtrar usuarios por sede", error: error.message });
   }
 };
 
 // Filtrar usuarios por año de registro
-const filterUsersByAnio = async (req, res) => {
-  const { anioRegistro } = req.params;
+const filterUsersByYear = async (req, res) => {
+  const { registrationYear } = req.params;
   const user_id = req.user_id;
 
   try {
-    const users = await Usuarios.findAll({
-      where: { anioRegistro, rol_id: 1 },
+    if (!registrationYear || isNaN(registrationYear)) {
+      return res.status(400).json({ message: "Año de registro inválido" });
+    }
+
+    const users = await User.findAll({
+      where: { registrationYear, rol_id: 1 },
     });
 
-    const formattedUsers = users.map((user) => ({
-      user_id: user.user_id,
-      email: user.email,
-      userName: user.nombre,
-      fotoPerfil: user.fotoPerfil,
+    const formattedUsers = users.map((user) => {
+      const profilePhoto = user.dataValues.profilePhoto;
+      const profilePhotoUrl = profilePhoto
+        ? `http://localhost:3000/public/fotoPerfil/${profilePhoto}`
+        : null;
 
-      carnet: user.carnet,
-      sede: user.sede_id,
-      anio: user.anioRegistro,
-    }));
+      return {
+        user_id: user.user_id,
+        email: user.email,
+        userName: user.name,
+        profilePhoto: profilePhotoUrl,
+        carnet: user.carnet,
+        sede: user.sede_id,
+        registrationYear: user.registrationYear,
+      };
+    });
 
-    const User = await Usuarios.findByPk(user_id);
-    
-    // Scrip para registrar en la bitacora
-    await registrarBitacora(
+    const requestingUser = await User.findByPk(user_id);
+
+    // Registrar en la bitácora
+    await logActivity(
       user_id,
-      User.sede_id,
-      User.nombre,
+      requestingUser.sede_id,
+      requestingUser.name,
       "Listar estudiantes",
-      `Listo todos los estudiantes del año ${anioRegistro}`
+      `Listo todos los estudiantes del año ${registrationYear}`
     );
 
     res.status(200).json(formattedUsers);
   } catch (error) {
-    res.status(500).json({ message: "Error al filtrar usuarios por año" });
+    res.status(500).json({ message: "Error al filtrar usuarios por año", error: error.message });
   }
 };
 
-
-
-const obtenerUsuariosPorCurso = async (req, res) => {
-  const { curso_id } = req.params;
+// Obtener usuarios por curso
+const getUsersByCourse = async (req, res) => {
+  const { course_id } = req.params;
   const user_id = req.user_id;
 
   try {
-      const usuarios = await Usuarios.findAll({
-          include: [
-              {
-                  model: CursoAsignacion,
-                  where: { curso_id },
-                  attributes: ['curso_id'],
-              },
-          ],
-          attributes: ['user_id', 'email', 'nombre', 'carnet', 'anioRegistro', 'sede_id', 'rol_id', 'fotoPerfil'],
-      });
+    const users = await User.findAll({
+      include: [
+        {
+          model: CourseAssignment,
+          where: { course_id },
+          attributes: ["course_id"],
+        },
+      ],
+      attributes: [
+        "user_id",
+        "email",
+        "name",
+        "carnet",
+        "registrationYear",
+        "sede_id",
+        "rol_id",
+        "profilePhoto",
+      ],
+    });
 
-      if (usuarios.length === 0) {
-          return res.status(404).json({ message: "No se encontraron usuarios asignados a este curso" });
-      }
+    if (users.length === 0) {
+      return res.status(404).json({ message: "No se encontraron usuarios asignados a este curso" });
+    }
 
-      const Curso = await Cursos.findByPk(curso_id);
+    const course = await Course.findByPk(course_id);
+    const requestingUser = await User.findByPk(user_id);
 
-      const User = await Usuarios.findByPk(user_id);
+    const formattedUsers = users.map((user) => {
+      const profilePhoto = user.profilePhoto;
+      const profilePhotoUrl = profilePhoto
+        ? `http://localhost:3000/public/fotoPerfil/${profilePhoto}`
+        : null;
 
-      await registrarBitacora(
-        user_id,
-        User.sede_id,
-        User.nombre,
-        "Listar estudiantes",
-        `Listo todos los estudiantes del curso: ${Curso.nombreCurso}`
-      );
+      return {
+        user_id: user.user_id,
+        email: user.email,
+        userName: user.name,
+        profilePhoto: profilePhotoUrl,
+        carnet: user.carnet,
+        sede: user.sede_id,
+        registrationYear: user.registrationYear,
+      };
+    });
 
-      res.status(200).json(usuarios);
+    // Registrar en la bitácora
+    await logActivity(
+      user_id,
+      requestingUser.sede_id,
+      requestingUser.name,
+      "Listar estudiantes",
+      `Listo todos los estudiantes del curso: ${course.courseName}`
+    );
+
+    res.status(200).json(formattedUsers);
   } catch (error) {
-      res.status(500).json({ message: "Error al obtener los usuarios asignados al curso", error });
+    res.status(500).json({ message: "Error al obtener los usuarios asignados al curso", error: error.message });
   }
 };
-
-
-
 
 module.exports = {
   listStudents,
   filterUsersBySede,
-  filterUsersByAnio,
-  obtenerUsuariosPorCurso,
+  filterUsersByYear,
+  getUsersByCourse,
 };

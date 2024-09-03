@@ -1,19 +1,17 @@
-const Entregas = require("../models/entregas");
-const BitacoraApp = require("../models/bitacoraApp");
-const Cursos = require("../models/cursos");
-const notas = require("../models/notas");
-const PropuestaTesis = require("../models/propuestaTesis");
+const Submissions = require("../models/submissions");
+const AppLog = require("../models/appLog");
+const Course = require("../models/course");
+const Qualification = require("../models/qualification");
+const ThesisProposal = require("../models/thesisProposal");
 const Roles = require("../models/roles");
-const Sedes = require("../models/sede");
-const Tareas = require("../models/tareas");
-const TimelineEventos = require("../models/timelineEventos");
-const Usuarios = require("../models/usuarios");
-const AsignacionEstudiante = require("../models/asignacionEstudiante");
-const CursoAsignacion = require("../models/cursoAsignacion");
+const Sede = require("../models/sede");
+const Task = require("../models/task");
+const TimelineEvents = require("../models/timelineEventos");
+const User = require("../models/user");
+const StudentAssignment = require("../models/studentAssignment");
+const CourseAssignment = require("../models/courseAssignment");
 
-
-// Inicializar tables in la BD
-const initializetables = async () => {
+const initializeTables = async () => {
   try {
     const now = new Date();
     const oneMonthLater = new Date(
@@ -22,97 +20,50 @@ const initializetables = async () => {
       now.getDate()
     );
 
-    // Creacion de roles
-    await Roles.findOrCreate({ where: { nombreRol: "Estudiante" } });
-    await Roles.findOrCreate({ where: { nombreRol: "Catedrático" } });
-    await Roles.findOrCreate({ where: { nombreRol: "Administrador" } });
+    await Roles.findOrCreate({ where: { name: "Estudiante" } });
+    await Roles.findOrCreate({ where: { name: "Catedrático" } });
+    await Roles.findOrCreate({ where: { name: "Administrador" } });
 
-    // Creacion de sedes
-    await Sedes.findOrCreate({ where: { nombreSede: "Guastatoya" } });
-    await Sedes.findOrCreate({ where: { nombreSede: "Sanarate" } });
+    await Sede.findOrCreate({ where: { nameSede: "Guastatoya" } });
+    await Sede.findOrCreate({ where: { nameSede: "Sanarate" } });
 
-    await Cursos.findOrCreate({
-      where: { nombreCurso: "Proyecto De Graduación I" },
+    await Course.findOrCreate({
+      where: { courseName: "Proyecto De Graduación I" },
     });
-    await Cursos.findOrCreate({
-      where: { nombreCurso: "Proyecto De Graduación II" },
+    await Course.findOrCreate({
+      where: { courseName: "Proyecto De Graduación II" },
     });
-    
-    // Creación De Las Tareas De Propuesta De Tesis Solo 3 Por Usuario
-    await Tareas.findOrCreate({
+
+    await Task.findOrCreate({
       where: {
-        curso_id: 1,
-        titulo: "Propuestas De Tesis",
+        course_id: 1,
+        title: "Propuestas De Tesis",
+        sede_id: 1,
       },
       defaults: {
-        descripcion: "Sube Tus 3 Propuestas De Tesis",
-        inicioTarea: now,
-        finTarea: oneMonthLater,
+        description: "Sube Tus 3 Propuestas De Tesis",
+        taskStart: now,
+        endTask: oneMonthLater,
       },
     });
 
-    // Creación De Las Tareas De Los 3 Capítulos De Proyecto De Graduación I
-    await Tareas.findOrCreate({
+    await Task.findOrCreate({
       where: {
-        curso_id: 1,
-        titulo: "Capitulo 1",
+        course_id: 1,
+        title: "Propuestas De Tesis",
+        sede_id: 2,
       },
       defaults: {
-        descripcion: "Realizar El Capítulo 1 Del Proyecto De Graduación",
-      },
-    });
-    await Tareas.findOrCreate({
-      where: {
-        curso_id: 1,
-        titulo: "Capitulo 2",
-      },
-      defaults: {
-        descripcion: "Realizar El Capítulo 2 Del Proyecto De Graduación",
-      },
-    });
-    await Tareas.findOrCreate({
-      where: {
-        curso_id: 1,
-        titulo: "Capitulo 3",
-      },
-      defaults: {
-        descripcion: "Realizar El Capítulo 3 Del Proyecto De Graduación",
+        description: "Sube Tus 3 Propuestas De Tesis",
+        taskStart: now,
+        endTask: oneMonthLater,
       },
     });
 
-    // Creación De Las Tareas De Los 3 Capítulos De Proyecto De Graduación II
-    await Tareas.findOrCreate({
-      where: {
-        curso_id: 2,
-        titulo: "Capitulo 4",
-      },
-      defaults: {
-        descripcion: "Realizar El Capítulo 4 Del Proyecto De Graduación",
-      },
-    });
-    await Tareas.findOrCreate({
-      where: {
-        curso_id: 2,
-        titulo: "Capitulo 5",
-      },
-      defaults: {
-        descripcion: "Realizar El Capítulo 5 Del Proyecto De Graduación",
-      },
-    });
-    await Tareas.findOrCreate({
-      where: {
-        curso_id: 2,
-        titulo: "Capitulo 6",
-      },
-      defaults: {
-        descripcion: "Realizar El Capítulo 6 Del Proyecto De Graduación",
-      },
-    });
-
-    console.log(`Tablas Inicializadas Correctamente En La BD`);
+    console.log("Tablas Inicializadas Correctamente En La BD");
   } catch (error) {
-    console.error("Error Initializing:", error);
+    console.error("Error al inicializar:", error);
   }
 };
 
-module.exports = initializetables;
+module.exports = initializeTables;

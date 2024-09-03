@@ -1,8 +1,8 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const Usuarios = require("../models/usuarios");
-const { registrarBitacora } = require("../sql/bitacora");
-const CursoAsignacion = require("../models/cursoAsignacion");
+const User = require("../models/user");
+const { logActivity } = require("../sql/appLog");
+const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
 
@@ -10,53 +10,53 @@ const registerUser = async (req, res) => {
   const {
     email,
     password,
-    nombre,
+    name,
     carnet,
     sede_id,
     rol_id,
-    anioRegistro,
-    curso_id,
+    registrationYear,
+    course_id,
   } = req.body;
 
   try {
-    let user = await Usuarios.findOne({ where: { email } });
+    let user = await User.findOne({ where: { email } });
 
     if (!user) {
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      user = await Usuarios.create({
+      user = await User.create({
         email,
         password: hashedPassword,
-        nombre,
+        name,
         carnet,
         sede_id,
         rol_id,
-        anioRegistro,
+        registrationYear,
       });
 
-      if (!curso_id) {
+      if (!course_id) {
         return res
           .status(201)
           .json({ message: "Usuario registrado exitosamente" });
       }
     }
 
-    const asignacionExistente = await CursoAsignacion.findOne({
+    const existingAssignment = await CourseAssignment.findOne({
       where: {
-        estudiante_id: user.user_id,
-        curso_id: curso_id,
+        student_id: user.user_id,
+        course_id: course_id,
       },
     });
 
-    if (asignacionExistente) {
+    if (existingAssignment) {
       return res.status(400).json({
-        message: `El usuario ya está asignado al curso con ID ${curso_id}`,
+        message: `El usuario ya está asignado al curso con ID ${course_id}`,
       });
     }
 
-    await CursoAsignacion.create({
-      estudiante_id: user.user_id,
-      curso_id: curso_id,
+    await CourseAssignment.create({
+      student_id: user.user_id,
+      course_id: course_id,
     });
 
     res
@@ -73,7 +73,7 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await Usuarios.findOne({ where: { email } });
+    const user = await User.findOne({ where: { email } });
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
@@ -96,27 +96,28 @@ const loginUser = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-    await registrarBitacora(
+
+    await logActivity(
       user.user_id,
       user.sede_id,
-      user.nombre,
+      user.name,
       `El usuario inició sesión`,
       "Inicio de sesión"
     );
 
-    const fotoPerfilUrl = user.FotoPerfil
-      ? `http://localhost:3000/public/fotoPerfil/${user.FotoPerfil}`
+    const profilePhotoUrl = user.profilePhoto
+      ? `http://localhost:3000/public/fotoPerfil/${user.profilePhoto}`
       : null;
 
     res.status(200).json({
       message: "Inicio de sesión exitoso",
       email: user.email,
-      userName: user.nombre,
+      userName: user.name,
       carnet: user.carnet,
-      fotoPerfil: fotoPerfilUrl,
+      profilePhoto: profilePhotoUrl,
       sede: user.sede_id,
       rol: user.rol_id,
-      anio: user.anioRegistro,
+      registrationYear: user.registrationYear,
       token,
     });
   } catch (error) {
@@ -124,8 +125,8 @@ const loginUser = async (req, res) => {
   }
 };
 
-const actualizarPassword = async (req, res) => {
-  const { currentPassword, newPassword } = req.body; // Recibir contraseñas desde el cuerpo de la solicitud
+const updatePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
   const user_id = req.user ? req.user.user_id : null;
 
   if (!user_id) {
@@ -139,13 +140,12 @@ const actualizarPassword = async (req, res) => {
   }
 
   try {
-    const user = await Usuarios.findOne({ where: { user_id } });
+    const user = await User.findOne({ where: { user_id } });
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Comparar la contraseña actual con la almacenada en la base de datos
     const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
 
     if (!isPasswordValid) {
@@ -154,54 +154,50 @@ const actualizarPassword = async (req, res) => {
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-    await Usuarios.update({ password: hashedNewPassword }, { where: { user_id } });
+    await User.update({ password: hashedNewPassword }, { where: { user_id } });
 
-    // Obtener los detalles del usuario actualizado
-    const userUpdated = await Usuarios.findOne({ where: { user_id } });
+    const updatedUser = await User.findOne({ where: { user_id } });
 
-    // Registrar en la bitácora la actualización de la contraseña
-    await registrarBitacora(
+    await logActivity(
       user_id,
-      userUpdated.sede_id,
-      userUpdated.nombre,
+      updatedUser.sede_id,
+      updatedUser.name,
       `El usuario actualizó su contraseña`,
       "Actualización de contraseña"
     );
 
-    // Responder con éxito
     res.json({ message: "Contraseña actualizada exitosamente" });
   } catch (err) {
-    // Manejar errores
     res.status(500).json({ message: "Error en el servidor", error: err.message });
   }
 };
 
-const actualizarFotoPerfil = async (req, res) => {
+const updateProfilePhoto = async (req, res) => {
   const user_id = req.user ? req.user.user_id : null;
-  const fotoPerfil = req.file ? req.file.filename : null;
+  const profilePhoto = req.file ? req.file.filename : null;
 
   if (!user_id) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
-  if (!fotoPerfil) {
+  if (!profilePhoto) {
     return res
       .status(400)
       .json({ message: "No se proporcionó una nueva foto de perfil" });
   }
 
   try {
-    const user = await Usuarios.findOne({ where: { user_id } });
+    const user = await User.findOne({ where: { user_id } });
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    if (user.FotoPerfil) {
+    if (user.profilePhoto) {
       const oldImagePath = path.join(
         __dirname,
         "../public/fotoPerfil",
-        user.FotoPerfil
+        user.profilePhoto
       );
 
       if (fs.existsSync(oldImagePath)) {
@@ -215,29 +211,27 @@ const actualizarFotoPerfil = async (req, res) => {
       }
     }
 
-    await Usuarios.update({ FotoPerfil: fotoPerfil }, { where: { user_id } });
+    await User.update({ profilePhoto: profilePhoto }, { where: { user_id } });
 
-    const userUpdated = await Usuarios.findOne({ where: { user_id } });
+    const updatedUser = await User.findOne({ where: { user_id } });
 
-    await registrarBitacora(
+    await logActivity(
       user_id,
-      userUpdated.sede_id,
-      userUpdated.nombre,
+      updatedUser.sede_id,
+      updatedUser.name,
       `El usuario actualizó su foto de perfil`,
       "Actualización de foto de perfil"
     );
 
     res.json({ message: "Foto de perfil actualizada exitosamente" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error en el servidor", error: err.message });
+    res.status(500).json({ message: "Error en el servidor", error: err.message });
   }
 };
 
 module.exports = {
   registerUser,
   loginUser,
-  actualizarPassword,
-  actualizarFotoPerfil,
+  updatePassword,
+  updateProfilePhoto,
 };

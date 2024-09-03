@@ -1,4 +1,3 @@
-const { Op } = require("sequelize"); // Asegúrate de importar Op
 const Role = require("../models/roles");
 
 const listarRoles = async (req, res) => {

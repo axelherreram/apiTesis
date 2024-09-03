@@ -1,5 +1,5 @@
 const express = require("express");
-const { listarTareas, actualizarTarea, listarTareasPorCurso } = require("../controllers/tareasController");
+const { listTasks, updateTask, listTasksByCourse } = require("../controllers/taskController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
@@ -43,11 +43,11 @@ const adminOrTerna = verifyRole([2, 3]);
  *       500:
  *         description: Error del servidor.
  */
-router.get("/tareas/:sede_id", authMiddleware, obtenerUserIdDeToken, listarTareas);
+router.get("/tareas/:sede_id", authMiddleware, obtenerUserIdDeToken, listTasks);
 
 /**
  * @swagger
- * /api/tareas/curso/{sede_id}/{curso_id}:
+ * /api/tareas/curso/{sede_id}/{course_id}:
  *   get:
  *     summary: Lista todas las tareas de un curso específico
  *     tags: [Tareas]
@@ -55,7 +55,7 @@ router.get("/tareas/:sede_id", authMiddleware, obtenerUserIdDeToken, listarTarea
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: curso_id
+ *         name: course_id
  *         schema:
  *           type: integer
  *         required: true
@@ -82,11 +82,12 @@ router.get("/tareas/:sede_id", authMiddleware, obtenerUserIdDeToken, listarTarea
  *       500:
  *         description: Error del servidor.
  */
-router.get("/tareas/curso/:sede_id/:curso_id", authMiddleware, obtenerUserIdDeToken, listarTareasPorCurso);
+router.get("/tareas/curso/:sede_id/:course_id", authMiddleware, obtenerUserIdDeToken, listTasksByCourse);
+
 
 /**
  * @swagger
- * /api/tareas/{tarea_id}:
+ * /api/tareas/{task_id}:
  *   put:
  *     summary: Actualiza una tarea específica
  *     tags: [Tareas]
@@ -94,7 +95,7 @@ router.get("/tareas/curso/:sede_id/:curso_id", authMiddleware, obtenerUserIdDeTo
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: tarea_id
+ *         name: task_id
  *         schema:
  *           type: integer
  *         required: true
@@ -106,20 +107,20 @@ router.get("/tareas/curso/:sede_id/:curso_id", authMiddleware, obtenerUserIdDeTo
  *           schema:
  *             type: object
  *             properties:
- *               titulo:
+ *               title:
  *                 type: string
  *                 description: Título actualizado de la tarea
  *                 example: "CAPITULO 6"
- *               descripcion:
+ *               description:
  *                 type: string
  *                 description: Descripción detallada de la tarea
  *                 example: "REALIZAR EL CAPÍTULO 6 DEL PROYECTO DE GRADUACIÓN"
- *               inicioTarea:
+ *               taskStart:
  *                 type: string
  *                 format: date-time
  *                 description: Fecha y hora de inicio de la tarea, opcional
  *                 example: null
- *               finTarea:
+ *               endTask:
  *                 type: string
  *                 format: date-time
  *                 description: Fecha y hora de finalización de la tarea, opcional
@@ -135,11 +136,11 @@ router.get("/tareas/curso/:sede_id/:curso_id", authMiddleware, obtenerUserIdDeTo
  *         description: Error al actualizar la tarea.
  */
 router.put(
-  "/tareas/:tarea_id",
+  "/tareas/:task_id",
   authMiddleware,
   obtenerUserIdDeToken,
   adminOrTerna,
-  actualizarTarea
+  updateTask
 );
 
 module.exports = router;

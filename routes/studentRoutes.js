@@ -1,7 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const { cargarUsuariosMasivos } = require("../controllers/estudianteController");
-const upload = require("../middlewares/uploadExcel"); 
+const {
+  bulkUploadUsers,
+} = require("../controllers/studentController");
+const upload = require("../middlewares/uploadExcel");
+const verifyRole = require("../middlewares/roleMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
+const admin = verifyRole([3]);
 
 /**
  * @swagger
@@ -15,6 +20,8 @@ const upload = require("../middlewares/uploadExcel");
  * /api/usuarios/cargaMasiva:
  *   post:
  *     summary: Cargar usuarios masivamente desde un archivo Excel
+*     security:
+ *       - bearerAuth: []
  *     tags: [UsuariosXexcel]
  *     consumes:
  *       - multipart/form-data
@@ -37,7 +44,7 @@ const upload = require("../middlewares/uploadExcel");
  *                 type: integer
  *                 description: ID del rol a asignar a los usuarios
  *                 required: true
- *               curso_id:
+ *               course_id:
  *                 type: integer
  *                 description: ID del curso a asignar a los usuarios (opcional)
  *     responses:
@@ -48,6 +55,12 @@ const upload = require("../middlewares/uploadExcel");
  *       500:
  *         description: Error en el servidor
  */
-router.post("/usuarios/cargaMasiva", upload.single('archivo'), cargarUsuariosMasivos);
+router.post(
+  "/usuarios/cargaMasiva",
+  authMiddleware,
+  admin,
+  upload.single("archivo"),
+  bulkUploadUsers
+);
 
 module.exports = router;

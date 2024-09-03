@@ -1,11 +1,11 @@
 const Sede = require("../models/sede");
-const { registrarBitacora } = require("../sql/bitacora");
-const Usuario = require("../models/usuarios");
+const { logActivity } = require("../sql/appLog");
+const User = require("../models/user");
 
-const listarSedes = async (req, res) => {
+const listSede = async (req, res) => {
   try {
-    const sedes = await Sede.findAll();
-    res.status(200).json(sedes);
+    const locations = await Sede.findAll();
+    res.status(200).json(locations);
   } catch (error) {
     res
       .status(500)
@@ -13,28 +13,28 @@ const listarSedes = async (req, res) => {
   }
 };
 
-const crearSede = async (req, res) => {
+const createSede = async (req, res) => {
   try {
-    const { nombreSede } = req.body;
+    const { nameSede } = req.body;
     const user_id = req.user_id;
 
-    if (!nombreSede) {
+    if (!nameSede) {
       return res
         .status(400)
         .json({ message: "El nombre de la sede es necesario" });
     }
 
-    const User = await Usuario.findByPk(user_id);
+    const user = await User.findByPk(user_id);
 
-    // Scrip para registrar en la bitacora
-    await registrarBitacora(
+    // Script para registrar en la bitacora
+    await logActivity(
       user_id,
-      User.sede_id,
-      User.nombre, 
+      user.sede_id,
+      user.name, 
       "Creación de sede",
-      `Una nueva sede: (${nombreSede}), fue creada.`
+      `Una nueva sede: (${nameSede}), fue creada.`
     );
-    await Sede.create({ nombreSede });
+    await Sede.create({ nameSede });
 
     res.status(201).json({ message: "Sede creada satisfactoriamente" });
   } catch (error) {
@@ -42,4 +42,4 @@ const crearSede = async (req, res) => {
   }
 };
 
-module.exports = { listarSedes, crearSede };
+module.exports = { listSede, createSede };

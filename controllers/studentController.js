@@ -1,11 +1,11 @@
 const xlsx = require("xlsx");
 const bcrypt = require("bcrypt");
-const Usuarios = require("../models/usuarios");
-const CursoAsignacion = require("../models/cursoAsignacion");
+const User = require("../models/user");
+const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
 
-const cargarUsuariosMasivos = async (req, res) => {
+const bulkUploadUsers = async (req, res) => {
   let filePath;
   try {
     if (!req.file) {
@@ -17,59 +17,59 @@ const cargarUsuariosMasivos = async (req, res) => {
     filePath = path.join(
       __dirname,
       "../public/uploads/excels",
-      req.file.filename
+      req.file.filename 
     );
     const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
 
-    const usuariosData = xlsx.utils.sheet_to_json(sheet);
+    const usersData = xlsx.utils.sheet_to_json(sheet);
 
     const sede_id = req.body.sede_id;
-    const anioRegistro = new Date().getFullYear();
+    const registrationYear = new Date().getFullYear();
     const rol_id = req.body.rol_id;
-    const curso_id = req.body.curso_id;  
+    const course_id = req.body.course_id;  
 
-    for (const usuario of usuariosData) {
-      const { email, nombre, carnet } = usuario;
+    for (const user of usersData) {
+      const { email, nombre, carnet } = user;
 
-      let user = await Usuarios.findOne({ where: { email } });
+      let existingUser = await User.findOne({ where: { email } });
 
-      if (!user) {
-        const passwordAleatoria = Math.random().toString(36).slice(-8);
-        console.log(`Contraseña generada para ${email}: ${passwordAleatoria}`);
+      if (!existingUser) {
+        const randomPassword = Math.random().toString(36).slice(-8);
+        console.log(`Contraseña generada para ${email}: ${randomPassword}`);
 
-        const hashedPassword = await bcrypt.hash(passwordAleatoria, 10);
+        const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
         // Crear usuario
-        user = await Usuarios.create({
+        existingUser = await User.create({
           email,
           password: hashedPassword,
-          nombre,
+          name: nombre,
           carnet,
           rol_id,
           sede_id,
-          anioRegistro,
+          registrationYear,
         });
       }
 
-      // Si el curso_id está presente, hacer la asignación
-      if (curso_id) {
-        const asignacionExistente = await CursoAsignacion.findOne({
+      // Si el course_id está presente, hacer la asignación
+      if (course_id) {
+        const existingAssignment = await CourseAssignment.findOne({
           where: {
-            estudiante_id: user.user_id,
-            curso_id: curso_id,
+            student_id: existingUser.user_id,
+            course_id: course_id,
           },
         });
 
-        if (!asignacionExistente) {
-          await CursoAsignacion.create({
-            estudiante_id: user.user_id,
-            curso_id: curso_id,
+        if (!existingAssignment) {
+          await CourseAssignment.create({
+            student_id: existingUser.user_id,
+            course_id: course_id,
           });
-          console.log(`Usuario con email ${email} asignado al curso con ID ${curso_id}`);
+          console.log(`Usuario con email ${email} asignado al curso con ID ${course_id}`);
         } else {
-          console.log(`El usuario con email ${email} ya está asignado al curso con ID ${curso_id}`);
+          console.log(`El usuario con email ${email} ya está asignado al curso con ID ${course_id}`);
         }
       }
     }
@@ -103,5 +103,5 @@ const cargarUsuariosMasivos = async (req, res) => {
 };
 
 module.exports = {
-  cargarUsuariosMasivos,
+  bulkUploadUsers,
 };

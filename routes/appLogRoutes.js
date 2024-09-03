@@ -1,5 +1,5 @@
 const express = require('express');
-const { listarBitacoraPorUsuario, listarTodasBitacoras } = require('../controllers/bitacoraController');
+const { listAllLogs, listLogsByUser } = require('../controllers/appLogController');
 const verifyRole = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
 
@@ -45,11 +45,11 @@ const admin = verifyRole([3]);
  *       500:
  *         description: Error en el servidor
  */
-router.get('/bitacora/:user_id', authMiddleware, admin, listarBitacoraPorUsuario);
+router.get('/bitacora/:user_id', authMiddleware, admin, listLogsByUser);
 
 /**
  * @swagger
- * /api/bitacora:
+ * /api/bitacora/{sede_id}:
  *   get:
  *     tags: [Bitácora]
  *     summary: Listar todas las bitácoras
@@ -77,6 +77,6 @@ router.get('/bitacora/:user_id', authMiddleware, admin, listarBitacoraPorUsuario
  *       500:
  *         description: Error en el servidor
  */
-router.get('/bitacora/:sede_id', authMiddleware, admin, listarTodasBitacoras);
+router.get('/bitacora/:sede_id', authMiddleware, admin, listLogsByUser);
 
 module.exports = router;

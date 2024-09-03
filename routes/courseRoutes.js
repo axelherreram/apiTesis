@@ -1,5 +1,5 @@
 const express = require("express");
-const { listarCursos } = require("../controllers/cursoController");
+const { listCourses } = require("../controllers/courseController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 
@@ -37,6 +37,6 @@ const router = express.Router();
  *       500:
  *         description: Error en el servidor
  */
-router.get("/cursos", authMiddleware, listarCursos);
+router.get("/cursos", authMiddleware, listCourses);
 
 module.exports = router;
