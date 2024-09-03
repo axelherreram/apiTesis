@@ -30,7 +30,6 @@ const thesisProposal = sequelize.define(
     task_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: 1,
       references: {
         model: Task,
         key: "task_id",
