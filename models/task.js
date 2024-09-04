@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
-const Course = require("./course");
 const Sedes = require("./sede");
 const typeTask = require("./typeTask");
+const CourseSedeAssignment = require("./courseSedeAssignment");
 
 const Task = sequelize.define(
   "Task",
@@ -16,8 +16,8 @@ const Task = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Course,
-        key: "course_id",
+        model: CourseSedeAssignment,
+        key: "asigCourse_id",
       },
     },
     sede_id:{
