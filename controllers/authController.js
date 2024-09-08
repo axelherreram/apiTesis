@@ -111,6 +111,7 @@ const loginUser = async (req, res) => {
 
     res.status(200).json({
       message: "Inicio de sesión exitoso",
+      id: user.user_id,
       email: user.email,
       userName: user.name,
       carnet: user.carnet,
