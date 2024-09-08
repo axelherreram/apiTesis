@@ -106,16 +106,21 @@ router.get(
   obtenerUserIdDeToken,
   userController.filterUsersBySede
 );
-
 /**
  * @swagger
- * /api/usuarios/anio/{registrationYear}:
+ * /api/usuarios/anio/{sede_id}/{registrationYear}:
  *   get:
  *     summary: Filtrar usuarios por año de registro
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - in: path
+ *         name: sede_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la sede para filtrar los usuarios
  *       - in: path
  *         name: registrationYear
  *         schema:
@@ -134,45 +139,64 @@ router.get(
  *                 properties:
  *                   email:
  *                     type: string
+ *                     description: Correo electrónico del usuario
  *                   userName:
  *                     type: string
+ *                     description: Nombre completo del usuario
  *                   carnet:
  *                     type: string
+ *                     description: Carnet del usuario
  *                   sede:
  *                     type: integer
- *                   rol:
+ *                     description: ID de la sede del usuario
+ *                   registrationYear:
  *                     type: integer
- *                   anio:
- *                     type: integer
+ *                     description: Año de registro del usuario
+ *                   profilePhoto:
+ *                     type: string
+ *                     description: URL de la foto de perfil del usuario
  *       401:
  *         description: No autorizado
  *       403:
  *         description: Acceso denegado
+ *       404:
+ *         description: No se encontraron usuarios
  */
 router.get(
-  "/usuarios/anio/:registrationYear",
+  "/usuarios/anio/:sede_id/:registrationYear",
   authMiddleware,
   adminOrTerna,
   obtenerUserIdDeToken,
   userController.filterUsersByYear
 );
 
-
 /**
  * @swagger
- * /api/cursos/{course_id}/usuarios:
+ * /api/sedes/{sede_id}/cursos/{course_id}/usuarios/{registrationYear}:
  *   get:
- *     summary: Listar todos los usuarios asignados a un curso
+ *     summary: Listar todos los usuarios asignados a un curso en una sede específica y registrados en un año determinado
  *     tags: [Usuarios]
  *     security:
  *       - bearerAuth: []
  *     parameters:
+ *       - in: path
+ *         name: sede_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la sede para listar los usuarios
  *       - in: path
  *         name: course_id
  *         schema:
  *           type: integer
  *         required: true
  *         description: ID del curso para listar los usuarios asignados
+ *       - in: path
+ *         name: registrationYear
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Año de registro para filtrar a los usuarios
  *     responses:
  *       200:
  *         description: Lista de usuarios asignados al curso obtenida exitosamente
@@ -194,12 +218,12 @@ router.get(
  *       401:
  *         description: No autorizado
  *       404:
- *         description: Curso no encontrado o no hay usuarios asignados
+ *         description: Curso, sede o usuarios no encontrados
  *       500:
  *         description: Error en el servidor
  */
 router.get(
-  "/cursos/:course_id/usuarios",
+  "/sedes/:sede_id/cursos/:course_id/usuarios/:registrationYear",
   authMiddleware,
   adminOrTerna,
   obtenerUserIdDeToken,

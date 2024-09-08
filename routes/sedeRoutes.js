@@ -6,6 +6,7 @@ const obtenerUserIdDeToken = require('../middlewares/obtenerUserIdDeToken');
 
 const router = express.Router();
 const adminOrTerna = verifyRole([2,3]);
+const superAdmin = verifyRole([4]);
 
 
 /**
@@ -72,6 +73,6 @@ const adminOrTerna = verifyRole([2,3]);
  */
 
 router.get('/sedes',authMiddleware ,listSede);
-router.post('/sedes', authMiddleware, obtenerUserIdDeToken, adminOrTerna, createSede);
+router.post('/sedes', authMiddleware, obtenerUserIdDeToken, superAdmin, createSede);
 
 module.exports = router;
