@@ -17,6 +17,7 @@ const TernasRoutes = require('./routes/ternaRoutes');
 const StudentRoutes = require('./routes/studentRoutes');
 const typeTaskRoutes = require('./routes/typeTaskRoute');
 const CourseSedeAssignmentRoutes = require('./routes/courseSedeAssignmentRoutes');
+const YearRoutes = require('./routes/yearRoutes')
 
 const path = require('path');
 const cors = require('cors');
@@ -51,6 +52,7 @@ app.use('/api', TernasRoutes);
 app.use('/api', StudentRoutes);
 app.use('/api', typeTaskRoutes);
 app.use('/api', CourseSedeAssignmentRoutes);
+app.use('/api', YearRoutes)
 
 sequelize.sync({ alter: false, force: false })
   .then(async () => {

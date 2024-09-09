@@ -43,7 +43,7 @@ const { upload, handleMulterErrors } = require("../middlewares/uploadMiddleware"
  *         rol_id:
  *           type: integer
  *           description: ID of the user's role
- *         registrationYear:
+ *         year:
  *           type: integer
  *           description: Year of user's registration
  *         profilePhoto:
@@ -59,7 +59,7 @@ const { upload, handleMulterErrors } = require("../middlewares/uploadMiddleware"
  *         carnet: 123456789
  *         sede_id: 1
  *         rol_id: 1
- *         registrationYear: 2021
+ *         year: 2021
  *
  * securitySchemes:
  *   bearerAuth:

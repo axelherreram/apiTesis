@@ -11,6 +11,8 @@ const User = require("../models/user");
 const StudentAssignment = require("../models/studentAssignment");
 const CourseAssignment = require("../models/courseAssignment");
 const typeTask = require("../models/typeTask");
+const CourseSedeAssignment = require("../models/courseSedeAssignment");
+const Year = require("../models/year");
 
 const initializeTables = async () => {
   try {
@@ -20,6 +22,9 @@ const initializeTables = async () => {
       now.getMonth() + 1,
       now.getDate()
     );
+    
+    await Year.findOrCreate({ where: { year: now.getFullYear() } });
+
 
     await Roles.findOrCreate({ where: { name: "Estudiante" } });
     await Roles.findOrCreate({ where: { name: "Catedrático" } });

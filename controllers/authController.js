@@ -5,6 +5,8 @@ const { logActivity } = require("../sql/appLog");
 const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
+const Year = require("../models/year");
+
 
 const registerUser = async (req, res) => {
   const {
@@ -14,16 +16,34 @@ const registerUser = async (req, res) => {
     carnet,
     sede_id,
     rol_id,
-    registrationYear,
+    year, 
     course_id,
   } = req.body;
 
   try {
+    // Obtener el año actual
+    const currentYear = new Date().getFullYear();
+
+    // Verificar si el año proporcionado es mayor al año actual
+    if (year > currentYear) {
+      return res.status(400).json({
+        message: `No se puede crear un año mayor al actual (${currentYear}).`,
+      });
+    }
+
+    // Verificar que el año exista en la tabla Year o crearlo si no existe
+    const [yearRecord] = await Year.findOrCreate({
+      where: { year: year },
+      defaults: { year: year }, // Crea el año si no existe
+    });
+
+    // Verificar si el usuario ya está registrado
     let user = await User.findOne({ where: { email } });
 
     if (!user) {
       const hashedPassword = await bcrypt.hash(password, 10);
 
+      // Crear el usuario con el year_id del año encontrado o creado
       user = await User.create({
         email,
         password: hashedPassword,
@@ -31,7 +51,7 @@ const registerUser = async (req, res) => {
         carnet,
         sede_id,
         rol_id,
-        registrationYear,
+        year_id: yearRecord.year_id, // Asociar el year_id
       });
 
       if (!course_id) {
@@ -41,6 +61,7 @@ const registerUser = async (req, res) => {
       }
     }
 
+    // Verificar si ya existe una asignación del curso para el usuario
     const existingAssignment = await CourseAssignment.findOne({
       where: {
         student_id: user.user_id,
@@ -54,6 +75,7 @@ const registerUser = async (req, res) => {
       });
     }
 
+    // Crear la asignación del curso
     await CourseAssignment.create({
       student_id: user.user_id,
       course_id: course_id,
@@ -68,6 +90,7 @@ const registerUser = async (req, res) => {
       .json({ message: "Error en el servidor", error: err.message });
   }
 };
+
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -118,7 +141,7 @@ const loginUser = async (req, res) => {
       profilePhoto: profilePhotoUrl,
       sede: user.sede_id,
       rol: user.rol_id,
-      registrationYear: user.registrationYear,
+      year_id: user.year_id,
       token,
     });
   } catch (error) {

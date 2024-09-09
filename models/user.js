@@ -2,6 +2,7 @@ const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 const Roles = require("./roles");
 const Sede = require("./sede");
+const Year = require("./year");
 
 const User = sequelize.define(
   "User",
@@ -27,11 +28,6 @@ const User = sequelize.define(
       type: DataTypes.STRING(15),
       allowNull: true,
     },
-    registrationYear: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: new Date().getFullYear(),
-    },
     sede_id: {
       type: DataTypes.INTEGER,
       allowNull: true,
@@ -47,6 +43,14 @@ const User = sequelize.define(
       references: {
         model: Roles,
         key: "rol_id",
+      },
+    },
+    year_id: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: Year,
+        key: "year_id",
       },
     },
     profilePhoto: {

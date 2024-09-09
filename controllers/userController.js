@@ -5,7 +5,7 @@ const CourseAssignment = require("../models/courseAssignment");
 const Course = require("../models/course");
 
 // Listar todos los estudiantes
-const listStudents = async (req, res) => {
+/* const listStudents = async (req, res) => {
   try {
     const students = await User.findAll({ where: { rol_id: 1 } });
     const user_id = req.user_id;
@@ -42,10 +42,10 @@ const listStudents = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error al obtener estudiantes", error: error.message });
   }
-};
+}; */
 
 // Filtrar usuarios por sede
-const filterUsersBySede = async (req, res) => {
+/* const filterUsersBySede = async (req, res) => {
   const { sede_id } = req.params;
   const user_id = req.user_id;
 
@@ -102,9 +102,9 @@ const filterUsersBySede = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error al filtrar usuarios por sede", error: error.message });
   }
-};
+}; */
 
-// Filtrar usuarios por año de registro
+/* // Filtrar usuarios por año de registro
 const filterUsersByYear = async (req, res) => {
   const { sede_id, registrationYear } = req.params;
   const user_id = req.user_id;
@@ -162,16 +162,16 @@ const filterUsersByYear = async (req, res) => {
     });
   }
 };
-
+ */
 
 const getUsersByCourse = async (req, res) => {
-  const { sede_id, course_id, registrationYear } = req.params;
-  const user_id = req.user_id; // Asumiendo que proviene del middleware de autenticación
+  const { sede_id, course_id, year_id } = req.params;
+  const user_id = req.user_id; 
 
   try {
     // Buscar usuarios con rol de estudiante (rol_id: 1), que pertenezcan a la sede y al año de registro
     const users = await User.findAll({
-      where: { rol_id: 1, sede_id, registrationYear },
+      where: { rol_id: 1, sede_id, year_id },
       include: [
         {
           model: CourseAssignment,
@@ -184,7 +184,6 @@ const getUsersByCourse = async (req, res) => {
         "email",
         "name",
         "carnet",
-        "registrationYear",
         "sede_id",
         "rol_id",
         "profilePhoto",
@@ -244,8 +243,8 @@ const getUsersByCourse = async (req, res) => {
 
 
 module.exports = {
-  listStudents,
-  filterUsersBySede,
-  filterUsersByYear,
+  // listStudents,
+  // filterUsersBySede,
+  // filterUsersByYear,
   getUsersByCourse,
 };

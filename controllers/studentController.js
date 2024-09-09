@@ -4,6 +4,7 @@ const User = require("../models/user");
 const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
+const Year = require("../models/year");
 
 const bulkUploadUsers = async (req, res) => {
   let filePath;
@@ -26,9 +27,19 @@ const bulkUploadUsers = async (req, res) => {
     const usersData = xlsx.utils.sheet_to_json(sheet);
 
     const sede_id = req.body.sede_id;
-    const registrationYear = new Date().getFullYear();
     const rol_id = req.body.rol_id;
-    const course_id = req.body.course_id;  
+    const course_id = req.body.course_id;
+
+    // Obtener el año actual
+    const currentYear = new Date().getFullYear();
+
+    // Buscar el año actual en la tabla Year, si no existe, crearlo
+    const [yearRecord, created] = await Year.findOrCreate({
+      where: { year: currentYear },
+      defaults: { year: currentYear }, // Si no existe, lo crea
+    });
+
+    const year_id = yearRecord.year_id; 
 
     for (const user of usersData) {
       const { email, nombre, carnet } = user;
@@ -41,7 +52,7 @@ const bulkUploadUsers = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-        // Crear usuario
+        // Crear usuario con el year_id del año actual o recién creado
         existingUser = await User.create({
           email,
           password: hashedPassword,
@@ -49,7 +60,7 @@ const bulkUploadUsers = async (req, res) => {
           carnet,
           rol_id,
           sede_id,
-          registrationYear,
+          year_id, // Asociar el ID del año actual de registro
         });
       }
 
@@ -96,9 +107,7 @@ const bulkUploadUsers = async (req, res) => {
       });
     }
 
-    res
-      .status(500)
-      .json({ message: "Error al cargar usuarios", error: error.message });
+    res.status(500).json({ message: "Error al cargar usuarios", error: error.message });
   }
 };
 
