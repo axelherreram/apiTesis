@@ -3,9 +3,15 @@ const router = express.Router();
 const {
   updateTernaStatus,
   listTernas,
-  listActiveTernas
+  listActiveTernas,
+  deleteTerna, // Agregamos la nueva función deleteTerna
 } = require("../controllers/ternaController");
 const authMiddleware = require("../middlewares/authMiddleware");
+const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+const verifyRole = require("../middlewares/roleMiddleware");
+
+// Verificación de rol para administradores (rol_id = 3)
+const admin = verifyRole([3]);
 
 /**
  * @swagger
@@ -63,7 +69,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
  *       500:
  *         description: Error al obtener usuarios
  */
-router.get("/ternas", authMiddleware, listTernas);
+router.get("/ternas", authMiddleware, admin, listTernas);
 
 /**
  * @swagger
@@ -104,7 +110,7 @@ router.get("/ternas", authMiddleware, listTernas);
  *       500:
  *         description: Error al obtener usuarios
  */
-router.get("/ternas/activos", authMiddleware, listActiveTernas);
+router.get("/ternas/activos", authMiddleware, admin, listActiveTernas);
 
 /**
  * @swagger
@@ -153,6 +159,32 @@ router.get("/ternas/activos", authMiddleware, listActiveTernas);
  *       500:
  *         description: Error en el servidor al actualizar el campo activoTerna
  */
-router.patch("/ternas/:user_id/status", authMiddleware, updateTernaStatus);
+router.patch("/ternas/:user_id/status", authMiddleware, admin, updateTernaStatus);
+
+/**
+ * @swagger
+ * /api/ternas/{user_id}:
+ *   delete:
+ *     summary: Eliminar una terna
+ *     description: Permite eliminar a un usuario con el rol de terna (rol_id = 2).
+ *     tags: [Ternas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         description: ID del usuario a eliminar
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Usuario eliminado exitosamente
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error al eliminar el usuario
+ */
+router.delete("/ternas/:user_id", authMiddleware, admin, obtenerUserIdDeToken	,deleteTerna);
 
 module.exports = router;

@@ -18,7 +18,7 @@ const admin = verifyRole([3]);
 
 /**
  * @swagger
- * /api/sedes/{sede_id}/cursos/{course_id}/usuarios/{year_id}:
+ * /api/sedes/{sede_id}/cursos/{course_id}/usuarios/{year}:
  *   get:
  *     summary: Listar todos los usuarios asignados a un curso en una sede específica y registrados en un año determinado
  *     tags: [Usuarios]
@@ -38,7 +38,7 @@ const admin = verifyRole([3]);
  *         required: true
  *         description: ID del curso para listar los usuarios asignados
  *       - in: path
- *         name: year_id
+ *         name: year
  *         schema:
  *           type: integer
  *         required: true
@@ -69,7 +69,7 @@ const admin = verifyRole([3]);
  *         description: Error en el servidor
  */
 router.get(
-  "/sedes/:sede_id/cursos/:course_id/usuarios/:year_id",
+  "/sedes/:sede_id/cursos/:course_id/usuarios/:year",
   authMiddleware,
   adminOrTerna,
   obtenerUserIdDeToken,

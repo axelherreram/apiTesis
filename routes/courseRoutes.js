@@ -5,6 +5,8 @@ const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = express.Router();
 
+const admin = verifyRole[1];
+
 /**
  * @swagger
  * tags:
