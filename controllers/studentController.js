@@ -34,7 +34,7 @@ const bulkUploadUsers = async (req, res) => {
     const currentYear = new Date().getFullYear();
 
     // Buscar el año actual en la tabla Year, si no existe, crearlo
-    const [yearRecord, created] = await Year.findOrCreate({
+    const [yearRecord] = await Year.findOrCreate({
       where: { year: currentYear },
       defaults: { year: currentYear }, // Si no existe, lo crea
     });

@@ -1,6 +1,6 @@
+const AppLog = require("../models/appLog");
 const User = require("../models/user");
 const { logActivity } = require("../sql/appLog");
-
 
 const updateTernaStatus = async (req, res) => {
   const { activoTerna } = req.body;
@@ -96,8 +96,50 @@ const listActiveTernas = async (req, res) => {
   }
 };
 
+
+const deleteTerna = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const loggedUserId = req.user_id; 
+
+    // Verificar que el usuario administrador que ejecuta la acción existe
+    const userAdmin = await User.findOne({ where: { user_id: loggedUserId } });
+    if (!userAdmin) {
+      return res.status(404).json({ message: "Usuario administrador no encontrado" });
+    }
+
+    // Buscar al usuario que se va a eliminar
+    const user = await User.findOne({ where: { user_id } });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    // Registrar la actividad antes de eliminar el usuario
+    await logActivity(
+      loggedUserId,        
+      userAdmin.sede_id,   
+      userAdmin.name,     
+      `Terna eliminado: ${user.name}`, 
+      "Eliminación de terna"          
+    );
+
+    // Eliminar los registros en AppLog relacionados con el user_id
+    await AppLog.destroy({ where: { user_id } });
+
+    // Eliminar el usuario de la base de datos
+    await User.destroy({ where: { user_id } });
+
+    res.status(200).json({ message: "Usuario eliminado exitosamente" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar usuario", error: error.message });
+  }
+};
+
+
+
 module.exports = {
   updateTernaStatus,
   listTernas,
   listActiveTernas,
+  deleteTerna,
 };

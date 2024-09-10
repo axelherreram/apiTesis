@@ -1,8 +1,9 @@
 const User = require("../models/user");
 const { logActivity } = require("../sql/appLog");
-const Sede = require("../models/sede");
+// const Sede = require("../models/sede");
 const CourseAssignment = require("../models/courseAssignment");
 const Course = require("../models/course");
+const Year = require("../models/year");
 
 // Listar todos los estudiantes
 /* const listStudents = async (req, res) => {
@@ -165,10 +166,18 @@ const filterUsersByYear = async (req, res) => {
  */
 
 const getUsersByCourse = async (req, res) => {
-  const { sede_id, course_id, year_id } = req.params;
+  const { sede_id, course_id, year } = req.params;
   const user_id = req.user_id; 
 
   try {
+    // Verificar si el año existe en la tabla 'Year' y obtener el 'id'
+    const yearRecord = await Year.findOne({ where: { year: year } });
+    
+    if (!yearRecord) {
+      return res.status(404).json({ message: "El año especificado no existe" });
+    }
+    const year_id = yearRecord.dataValues.year_id;
+
     // Buscar usuarios con rol de estudiante (rol_id: 1), que pertenezcan a la sede y al año de registro
     const users = await User.findAll({
       where: { rol_id: 1, sede_id, year_id },
@@ -220,7 +229,7 @@ const getUsersByCourse = async (req, res) => {
         profilePhoto: profilePhotoUrl,
         carnet: user.carnet,
         sede: user.sede_id,
-        registrationYear: user.registrationYear,
+        registrationYear: yearRecord.year, // Cambiado para devolver el año correctamente
       };
     });
 
