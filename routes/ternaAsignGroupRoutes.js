@@ -1,5 +1,5 @@
 const express = require("express");
-const { createTernaAsignGroup } = require("../controllers/ternaAsignGroupController");
+const { createTernaAsignGroup,listGroupAsingTerna } = require("../controllers/ternaAsignGroupController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
@@ -74,4 +74,78 @@ const admin = verifyRole([3]);
  */
 router.post("/terna-asign-group/create", authMiddleware, obtenerUserIdDeToken, admin, createTernaAsignGroup);
 
+/**
+ * @swagger
+ * /api/group-asing-Terna/{groupTerna_id}:
+ *   get:
+ *     summary: Listar todos los usuarios asignados a un grupo.
+ *     description: Obtiene una lista de todos los usuarios asignados a un grupo de ternas por ID de grupo.
+ *     tags:
+ *       - Terna Asign Group
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupTerna_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del grupo.
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Lista de grupos de ternas junto con los usuarios asignados
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   groupTerna_id:
+ *                     type: integer
+ *                     description: ID del grupo de terna
+ *                   sede_id:
+ *                     type: integer
+ *                     description: ID de la sede
+ *                   year_id:
+ *                     type: integer
+ *                     description: ID del año
+ *                   users:
+ *                     type: array
+ *                     description: Lista de usuarios asignados al grupo
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         user_id:
+ *                           type: integer
+ *                           description: ID del usuario
+ *                         name:
+ *                           type: string
+ *                           description: Nombre del usuario
+ *       400:
+ *         description: Parámetros inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Parámetros inválidos
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Internal Server Error
+ */
+router.get("/group-asing-Terna/:groupTerna_id", authMiddleware, obtenerUserIdDeToken, admin, listGroupAsingTerna);
+
+
 module.exports = router;
+ 
