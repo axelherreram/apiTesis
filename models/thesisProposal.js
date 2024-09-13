@@ -35,6 +35,10 @@ const thesisProposal = sequelize.define(
         key: "task_id",
       },
     },
+    thesisAprobation: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+    },
   },
   {
     timestamps: false,
