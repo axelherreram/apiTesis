@@ -13,6 +13,10 @@ const CourseAssignment = require("../models/courseAssignment");
 const typeTask = require("../models/typeTask");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const Year = require("../models/year");
+const rolTerna = require("../models/rolTerna");
+const groupTerna = require("../models/groupTerna");
+const ternaAsignGroup = require("../models/ternaAsignGroup");
+const asigStudentTerna = require("../models/asigStudentTerna");
 
 const initializeTables = async () => {
   try {
@@ -25,6 +29,9 @@ const initializeTables = async () => {
     
     await Year.findOrCreate({ where: { year: now.getFullYear() } });
 
+    await rolTerna.findOrCreate({ where: { rolTernaName: "Presidente" } });
+    await rolTerna.findOrCreate({ where: { rolTernaName: "Secretario" } });
+    await rolTerna.findOrCreate({ where: { rolTernaName: "Vocal" } });
 
     await Roles.findOrCreate({ where: { name: "Estudiante" } });
     await Roles.findOrCreate({ where: { name: "Catedrático" } });
