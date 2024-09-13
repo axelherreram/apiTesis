@@ -105,4 +105,52 @@ const createTernaAsignGroup = async (req, res) => {
   }
 };
 
-module.exports = { createTernaAsignGroup };
+const listGroupAsingTerna = async (req, res) => {
+  const { groupTerna_id } = req.params; // Captura el parámetro de la URL
+
+  if (!groupTerna_id) {
+    return res.status(400).json({ message: "El ID del grupo es requerido" });
+  }
+
+  try {
+    // Buscar los grupos de ternas correspondientes al groupTerna_id
+    const groups = await groupTerna.findAll({
+      where: {
+        groupTerna_id, // Usa el parámetro correctamente
+      },
+      include: [
+        {
+          model: ternaAsignGroup,
+          attributes: ['rolTerna_id'], // Incluye el rol asignado al usuario en la terna
+          include: [
+            {
+              model: User,
+              attributes: ['user_id', 'name'], // Solo obtenemos los campos necesarios
+            },
+          ],
+        },
+      ],
+    });
+
+    if (groups.length === 0) {
+      return res.status(404).json({ message: "No se encontraron grupos de ternas para el ID proporcionado" });
+    }
+
+    // Estructurar la respuesta incluyendo los usuarios asignados y su rol en la terna
+    const response = groups.map(group => ({
+      groupTerna_id: group.groupTerna_id,
+      users: group.ternaAsignGroups.map(assignment => ({
+        user_id: assignment.User.user_id,
+        name: assignment.User.name,
+        rolTerna_id: assignment.rolTerna_id, // Incluye el rol del usuario en la terna
+      })),
+    }));
+
+    res.status(200).json(response);
+  } catch (error) {
+    console.error("Error al listar los grupos de ternas:", error);
+    res.status(500).json({ message: "Error interno del servidor", error: error.message });
+  }
+};
+
+module.exports = { createTernaAsignGroup, listGroupAsingTerna };
