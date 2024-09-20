@@ -17,7 +17,7 @@ const admin = verifyRole([3]);
 
 /**
  * @swagger
- * /api/bitacora/{user_id}:
+ * /api/bitacoraxuser/{user_id}:
  *   get:
  *     tags: [Bitácora]
  *     summary: Listar las bitácoras de un usuario
@@ -45,7 +45,7 @@ const admin = verifyRole([3]);
  *       500:
  *         description: Error en el servidor
  */
-router.get('/bitacora/:user_id', authMiddleware, admin, listLogsByUser);
+router.get('/bitacoraxuser/:user_id', authMiddleware, admin, listLogsByUser);
 
 /**
  * @swagger
@@ -77,6 +77,6 @@ router.get('/bitacora/:user_id', authMiddleware, admin, listLogsByUser);
  *       500:
  *         description: Error en el servidor
  */
-router.get('/bitacora/:sede_id', authMiddleware, admin, listLogsByUser);
+router.get('/bitacora/:sede_id', authMiddleware, admin, listAllLogs);
 
 module.exports = router;
