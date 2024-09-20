@@ -6,8 +6,8 @@ const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
 const router = express.Router();
 
 // Middleware para verificar que el usuario tenga rol de Admin o Terna
-const adminOrTerna = verifyRole([2, 3]);
-const admin = verifyRole([3]);
+const adminOrTerna = verifyRole([2, 3]); // Rol 2 para Terna, Rol 3 para Admin
+const admin = verifyRole([3]); // Solo Admin
 
 /**
  * @swagger
@@ -57,9 +57,15 @@ const admin = verifyRole([3]);
  *                     type: integer
  *                   email:
  *                     type: string
- *                   nombre:
+ *                   userName:
  *                     type: string
  *                   carnet:
+ *                     type: string
+ *                   sede:
+ *                     type: integer
+ *                   registrationYear:
+ *                     type: integer
+ *                   roleName:
  *                     type: string
  *       401:
  *         description: No autorizado
@@ -70,10 +76,56 @@ const admin = verifyRole([3]);
  */
 router.get(
   "/sedes/:sede_id/cursos/:course_id/usuarios/:year",
-  authMiddleware,
-  adminOrTerna,
-  obtenerUserIdDeToken,
-  userController.getUsersByCourse
+  authMiddleware,              // Verifica si el usuario está autenticado
+  adminOrTerna,                // Solo Admin o Terna pueden acceder
+  obtenerUserIdDeToken,        // Extrae el user_id del token JWT
+  userController.getUsersByCourse // Llama al controlador para listar usuarios por curso y sede
+);
+
+/**
+ * @swagger
+ * /api/usuarios/perfil:
+ *   get:
+ *     summary: Obtener perfil del usuario autenticado por token
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Información del perfil del usuario obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user_id:
+ *                   type: integer
+ *                 email:
+ *                   type: string
+ *                 userName:
+ *                   type: string
+ *                 profilePhoto:
+ *                   type: string
+ *                 carnet:
+ *                   type: string
+ *                 sede:
+ *                   type: integer
+ *                 registrationYear:
+ *                   type: integer
+ *                 roleName:
+ *                   type: string
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Usuario no encontrado
+ *       500:
+ *         description: Error en el servidor
+ */
+router.get(
+  "/usuarios/perfil",
+  authMiddleware,              
+  obtenerUserIdDeToken,   
+  userController.listuserbytoken 
 );
 
 module.exports = router;

@@ -7,6 +7,7 @@ const CourseSedeAssignment = require('./courseSedeAssignment');
 const groupTerna = require('./groupTerna');
 const rolTerna = require('./rolTerna');
 const ternaAsignGroup = require('./ternaAsignGroup');
+const Roles = require('./roles');
 
 module.exports = function associateModels() {
   // Relación entre User y Sede (muchos usuarios pertenecen a una sede)
@@ -47,4 +48,7 @@ module.exports = function associateModels() {
   // Relación entre ternaAsignGroup y rolTerna (una asignación de terna tiene un rol)
   ternaAsignGroup.belongsTo(rolTerna, { foreignKey: 'rolTerna_id' });
   rolTerna.hasMany(ternaAsignGroup, { foreignKey: 'rolTerna_id' });
+
+
+  User.belongsTo(Roles, { foreignKey: 'rol_id', as: 'role' });
 };

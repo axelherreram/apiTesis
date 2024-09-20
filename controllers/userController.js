@@ -4,6 +4,7 @@ const { logActivity } = require("../sql/appLog");
 const CourseAssignment = require("../models/courseAssignment");
 const Course = require("../models/course");
 const Year = require("../models/year");
+const Roles = require("../models/roles");
 
 // Listar todos los estudiantes
 /* const listStudents = async (req, res) => {
@@ -250,10 +251,48 @@ const getUsersByCourse = async (req, res) => {
   }
 };
 
+const listuserbytoken = async (req, res) => {
+  const user_id = req.user_id;
+  try {
+    const user = await User.findOne({
+      where: { user_id },
+      include: [{
+        model: Roles, 
+        as: 'role', 
+        attributes: ['name'], 
+      }],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const profilePhoto = user.profilePhoto;
+    const profilePhotoUrl = profilePhoto
+      ? `http://localhost:3000/public/fotoPerfil/${profilePhoto}`
+      : null;
+
+    const formattedUser = {
+      user_id: user.user_id,
+      email: user.email,
+      userName: user.name,
+      profilePhoto: profilePhotoUrl,
+      carnet: user.carnet,
+      sede: user.sede_id,
+      registrationYear: user.registrationYear,
+      roleName: user.rol_id ? user.role.name : null, 
+    };
+
+    res.status(200).json(formattedUser);
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener el usuario", error: error.message });
+  }
+};
 
 module.exports = {
   // listStudents,
   // filterUsersBySede,
   // filterUsersByYear,
   getUsersByCourse,
+  listuserbytoken,
 };
