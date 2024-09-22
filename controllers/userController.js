@@ -168,17 +168,26 @@ const filterUsersByYear = async (req, res) => {
 
 const getUsersByCourse = async (req, res) => {
   const { sede_id, course_id, year } = req.params;
-  const user_id = req.user_id; 
+  const user_id = req.user_id;
 
   try {
     // Verificar si el año existe en la tabla 'Year' y obtener el 'id'
     const yearRecord = await Year.findOne({ where: { year: year } });
-    
+
     if (!yearRecord) {
       return res.status(404).json({ message: "El año especificado no existe" });
     }
     const year_id = yearRecord.dataValues.year_id;
 
+    const userCount = await User.count({
+      where: { rol_id: 1, sede_id, year_id },
+      include: [
+        {
+          model: CourseAssignment,
+          where: { course_id },
+        },
+      ],
+    });
     // Buscar usuarios con rol de estudiante (rol_id: 1), que pertenezcan a la sede y al año de registro
     const users = await User.findAll({
       where: { rol_id: 1, sede_id, year_id },
@@ -202,19 +211,28 @@ const getUsersByCourse = async (req, res) => {
 
     // Si no se encuentran usuarios
     if (users.length === 0) {
-      return res.status(404).json({ message: "No se encontraron usuarios asignados a este curso para el año y sede especificados" });
+      return res
+        .status(404)
+        .json({
+          message:
+            "No se encontraron usuarios asignados a este curso para el año y sede especificados",
+        });
     }
 
     // Buscar información del curso
     const course = await Course.findByPk(course_id);
     if (!course) {
-      return res.status(404).json({ message: "No se encontró el curso especificado" });
+      return res
+        .status(404)
+        .json({ message: "No se encontró el curso especificado" });
     }
 
     // Usuario solicitante
     const requestingUser = await User.findByPk(user_id);
     if (!requestingUser) {
-      return res.status(404).json({ message: "No se encontró el usuario solicitante" });
+      return res
+        .status(404)
+        .json({ message: "No se encontró el usuario solicitante" });
     }
 
     // Formatear usuarios para la respuesta
@@ -231,6 +249,7 @@ const getUsersByCourse = async (req, res) => {
         carnet: user.carnet,
         sede: user.sede_id,
         registrationYear: yearRecord.year, // Cambiado para devolver el año correctamente
+        coutUsers: userCount,
       };
     });
 
@@ -243,11 +262,18 @@ const getUsersByCourse = async (req, res) => {
       `Listo todos los estudiantes del curso: ${course.courseName}`
     );
 
-    // Enviar la respuesta con los usuarios formateados
-    res.status(200).json(formattedUsers);
+    res.status(200).json({
+      countUsers: userCount,
+      users: formattedUsers,
+    });
   } catch (error) {
-    console.error('Error al obtener los usuarios asignados al curso:', error);
-    res.status(500).json({ message: "Error al obtener los usuarios asignados al curso", error: error.message });
+    console.error("Error al obtener los usuarios asignados al curso:", error);
+    res
+      .status(500)
+      .json({
+        message: "Error al obtener los usuarios asignados al curso",
+        error: error.message,
+      });
   }
 };
 
@@ -256,11 +282,13 @@ const listuserbytoken = async (req, res) => {
   try {
     const user = await User.findOne({
       where: { user_id },
-      include: [{
-        model: Roles, 
-        as: 'role', 
-        attributes: ['name'], 
-      }],
+      include: [
+        {
+          model: Roles,
+          as: "role",
+          attributes: ["name"],
+        },
+      ],
     });
 
     if (!user) {
@@ -280,12 +308,14 @@ const listuserbytoken = async (req, res) => {
       carnet: user.carnet,
       sede: user.sede_id,
       registrationYear: user.registrationYear,
-      roleName: user.rol_id ? user.role.name : null, 
+      roleName: user.rol_id ? user.role.name : null,
     };
 
     res.status(200).json(formattedUser);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener el usuario", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener el usuario", error: error.message });
   }
 };
 

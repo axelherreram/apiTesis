@@ -135,13 +135,9 @@ const loginUser = async (req, res) => {
     res.status(200).json({
       message: "Inicio de sesión exitoso",
       id: user.user_id,
-      email: user.email,
-      userName: user.name,
-      carnet: user.carnet,
-      profilePhoto: profilePhotoUrl,
       sede: user.sede_id,
       rol: user.rol_id,
-      year_id: user.year_id,
+      passwordUpdate: user.passwordUpdate,
       token,
     });
   } catch (error) {
@@ -178,7 +174,7 @@ const updatePassword = async (req, res) => {
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-    await User.update({ password: hashedNewPassword }, { where: { user_id } });
+    await User.update({ password: hashedNewPassword, passwordUpdate: true }, { where: { user_id } });
 
     const updatedUser = await User.findOne({ where: { user_id } });
 
