@@ -21,6 +21,7 @@ const YearRoutes = require('./routes/yearRoutes')
 const ternaAsignGroupRoutes = require('./routes/ternaAsignGroupRoutes');
 const GroupTernaRoutes = require('./routes/groupTernaRoutes');
 const professorRoutes = require('./routes/professorRoutes');
+const TimeLineRoutes = require('./routes/timeLineRoutes');
 
 const path = require('path');
 const cors = require('cors');
@@ -59,6 +60,8 @@ app.use('/api', YearRoutes)
 app.use('/api', ternaAsignGroupRoutes);
 app.use('/api', GroupTernaRoutes);
 app.use('/api', professorRoutes);
+app.use('/api', TimeLineRoutes);
+
 
 
 sequelize.sync({ alter: false, force: false })
