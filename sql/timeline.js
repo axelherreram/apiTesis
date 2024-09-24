@@ -13,7 +13,7 @@ async function addTimeline(user_id, tipoEvento, descripcion, course_id, task_id)
       descripcion,
       course_id,
       task_id: task_id || null, // Opcionalmente se puede pasar null si no hay task_id
-      fecha: new Date(), // Asignar la fecha actual automáticamente
+      fecha: new Date(), 
     });
 
   } catch (err) {
