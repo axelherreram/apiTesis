@@ -69,9 +69,9 @@ const bulkUploadUsers = async (req, res) => {
           password: randomPassword
         };
 
-        // Enviar correo electrónico con la contraseña temporal
+       /*  // Enviar correo electrónico con la contraseña temporal
         await sendEmailPassword('Registro exitoso', `Hola ${nombre}, tu contraseña temporal es: ${randomPassword}`, email, templateVariables);
-
+ */
         
       }
 
