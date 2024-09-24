@@ -5,6 +5,7 @@ const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
+const { sendEmailPassword } = require('./emailController');
 
 const bulkUploadUsers = async (req, res) => {
   let filePath;
@@ -60,8 +61,18 @@ const bulkUploadUsers = async (req, res) => {
           carnet,
           rol_id,
           sede_id,
-          year_id, // Asociar el ID del año actual de registro
+          year_id, 
         });
+        
+        const templateVariables = {
+          nombre: nombre,
+          password: randomPassword
+        };
+
+        // Enviar correo electrónico con la contraseña temporal
+        await sendEmailPassword('Registro exitoso', `Hola ${nombre}, tu contraseña temporal es: ${randomPassword}`, email, templateVariables);
+
+        
       }
 
       // Si el course_id está presente, hacer la asignación

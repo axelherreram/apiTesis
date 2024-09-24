@@ -2,6 +2,8 @@ const Task = require("../models/task");
 const { logActivity } = require("../sql/appLog");
 const User = require("../models/user");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
+const CourseAssignment = require("../models/courseAssignment");
+const { sendEmailTask } = require('./emailController');
 
 const createTask = async (req, res) => {
   const {
@@ -26,6 +28,20 @@ const createTask = async (req, res) => {
         message: "No se encontró una asignación válida de curso y sede.",
       });
     }
+    const userEmails = await User.findAll({
+      where: { rol_id: 1, sede_id },
+      include: [
+        {
+          model: CourseAssignment,
+          where: { course_id },
+        },
+      ],
+      attributes: [
+        "name",
+        "email",
+      ],
+    });
+
 
     const asigCourse_id = courseSedeAssignment.asigCourse_id;
 
@@ -60,6 +76,24 @@ const createTask = async (req, res) => {
       `El usuario creó una nueva tarea con título: ${title}`,
       "Creación de tarea"
     );
+
+    // Enviar notificación por correo electrónico a los estudiantes
+    for (const userEmail of userEmails) {
+      const templateVariables = {
+        nombre: userEmail.name,
+        titulo: title, 
+        descripcion: description, 
+        fecha: new Date(endTask).toLocaleDateString(), 
+        autor: user.name 
+      };
+
+       await sendEmailTask(
+         'Nueva tarea creada: ' + title, 
+         `Se ha creado una nueva tarea en la plataforma TesM con el título: ${title}`,
+         userEmail.email, 
+         templateVariables 
+       );
+    }
 
     res.status(201).json({
       message: "Tarea creada exitosamente",
