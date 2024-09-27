@@ -4,7 +4,6 @@ const {
   updateTernaStatus,
   listTernas,
   listActiveTernas,
-  deleteTerna, // Agregamos la nueva función deleteTerna
 } = require("../controllers/ternaController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
@@ -161,30 +160,5 @@ router.get("/ternas/activos", authMiddleware, admin, listActiveTernas);
  */
 router.patch("/ternas/:user_id/status", authMiddleware, admin, updateTernaStatus);
 
-/**
- * @swagger
- * /api/ternas/{user_id}:
- *   delete:
- *     summary: Eliminar una terna
- *     description: Permite eliminar a un usuario con el rol de terna (rol_id = 2).
- *     tags: [Ternas]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: user_id
- *         required: true
- *         description: ID del usuario a eliminar
- *         schema:
- *           type: integer
- *     responses:
- *       200:
- *         description: Usuario eliminado exitosamente
- *       404:
- *         description: Usuario no encontrado
- *       500:
- *         description: Error al eliminar el usuario
- */
-router.delete("/ternas/:user_id", authMiddleware, admin, obtenerUserIdDeToken	,deleteTerna);
 
 module.exports = router;

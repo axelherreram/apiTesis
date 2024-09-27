@@ -188,6 +188,10 @@ router.put(
  *                 format: date-time
  *                 description: Fecha y hora de finalización de la tarea
  *                 example: "2024-09-10T00:00:00Z"
+ *               note:
+ *                 type: string
+ *                 description: Nota de la tarea
+ *                 example: "35"
  *     responses:
  *       201:
  *         description: Tarea creada exitosamente.

@@ -2,7 +2,7 @@ const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/database");  
 
 const typeTask = sequelize.define("typeTask", {
-    typeTask_id: {
+  typeTask_id: {
     type: DataTypes.INTEGER,
     primaryKey: true,
     autoIncrement: true,
@@ -12,6 +12,7 @@ const typeTask = sequelize.define("typeTask", {
     allowNull: false,
     unique: true, 
   }
+  
 },{
   timestamps: false,
   tableName: 'typeTask'

@@ -52,6 +52,10 @@ const Task = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    note: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
   },
   {
     timestamps: false,
