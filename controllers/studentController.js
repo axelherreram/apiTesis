@@ -5,35 +5,19 @@ const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
-const Document = require("../models/document");
 const { sendEmailPassword } = require("./emailController");
+const CourseSedeAssignment = require("../models/courseSedeAssignment");
 
 const bulkUploadUsers = async (req, res) => {
   try {
     if (!req.file) {
       return res
         .status(400)
-        .json({ message: "Se requiere un archivo Excel para la carga masiva" });
+        .json({ message: "Se requiere un archivo Excel" });
     }
     const filename = path.basename(req.file.originalname);
     const filePath = path.join(__dirname, "../public/uploads/excels", filename);
-    const existingDocument = await Document.findOne({
-      where: { name: filename },
-    });
 
-    if (existingDocument) {
-      try {
-        fs.unlinkSync(filePath);
-      } catch (error) {
-        console.error(`Error al eliminar el archivo Excel: ${error.message}`);
-      }
-      return res.status(400).json({ message: "Estudiantes ya creados o asignados" });
-    }
-
-    // Guardar el documento en la base de datos
-    const newDocument = await Document.create({
-      name: filename,
-    });
 
     const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
@@ -43,6 +27,18 @@ const bulkUploadUsers = async (req, res) => {
     const sede_id = req.body.sede_id;
     const rol_id = req.body.rol_id;
     const course_id = req.body.course_id;
+
+    const sedeCourseAssignment = await CourseSedeAssignment.findOne({
+      where: {
+        sede_id,
+        course_id,
+      },
+    });
+    if (!sedeCourseAssignment) {
+      return res.status(404).json({
+        message: "No existe asiganación de curso para la sede seleccionada",
+      });
+    }
 
     // Obtener el año actual
     const currentYear = new Date().getFullYear();
