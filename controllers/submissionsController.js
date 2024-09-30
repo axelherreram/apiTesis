@@ -3,10 +3,12 @@ const Task = require("../models/task");
 const User = require("../models/user");
 const path = require("path");
 const fs = require("fs");
+const { logActivity } = require("../sql/appLog");
 
 // Create a new submission
 const createSubmission = async (req, res) => {
   const { task_id, user_id } = req.body;
+  const user_idToken = req.user_id;
 
   // Verificar si se subió un archivo
   if (!req.file) {
@@ -26,6 +28,8 @@ const createSubmission = async (req, res) => {
         message: "Tarea no encontrada",
       });
     }
+    // Obtener la información del usuario del token
+    const userToken = await User.findByPk(user_idToken);
 
     // Verificar que el usuario exista
     const user = await User.findByPk(user_id);
@@ -51,9 +55,17 @@ const createSubmission = async (req, res) => {
       submission_date,
     });
 
+    // Registrar la actividad del usuario
+    await logActivity(
+      user_idToken,
+      userToken.sede_id,
+      userToken.name,
+      `Entrega realizada por: ${user.name} para la tarea: ${task.title}`,
+      "Creación de tarea"
+    );
+
     res.status(201).json({
       message: "Entrega realizada exitosamente",
-      submission: newSubmission,
     });
   } catch (error) {
     res.status(500).json({
@@ -86,9 +98,9 @@ const listSubmissions = async (req, res) => {
   }
 };
 
-// Delete a submission and its file
 const deleteSubmissions = async (req, res) => {
   const { submission_id } = req.params;
+  const user_idToken = req.user_id;
   try {
     const submission = await Submissions.findByPk(submission_id);
     if (!submission) {
@@ -96,33 +108,60 @@ const deleteSubmissions = async (req, res) => {
         message: "Entrega no encontrada",
       });
     }
+    const task = await Task.findByPk(submission.task_id);
 
-    const filePath = path.resolve("public", submission.directory);
+    // Obtener la información del usuario
+    const userToken = await User.findByPk(user_idToken);
+
+    const filePath = path.join(__dirname, "../public", submission.directory);
+
     // Verificar si el archivo existe antes de intentar eliminarlo
     if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+      // Eliminar el archivo
+      fs.unlink(filePath, async (err) => {
+        if (err) {
+          console.error("Error al eliminar el archivo:", err);
+          return res.status(500).json({
+            message: "Error al eliminar el archivo de la entrega",
+          });
+        }
+
+        // Registrar la actividad del usuario después de eliminar el archivo
+        await logActivity(
+          user_idToken,
+          userToken.sede_id,
+          userToken.name,
+          `El estudiante: ${userToken.name}, ha eliminado la entrega para la tarea: ${task.title}`,
+          "Eliminación de entrega"
+        );
+
+        // Eliminar el registro de la base de datos
+        await submission.destroy();
+
+        // Responder con éxito
+        return res.status(200).json({
+          message: "Entrega eliminada exitosamente junto con su archivo",
+        });
+      });
     } else {
-      res.status(404).json({
-        message: "Error al emilinar la entrega: archivo no encontrado",
+      // Si el archivo no existe, devolver un error
+      return res.status(404).json({
+        message: "Error al eliminar la entrega: archivo no encontrado",
       });
     }
-
-    // Eliminar el registro de la base de datos solo después de eliminar el archivo
-    await submission.destroy();
-    res.status(200).json({
-      message: "Entrega eliminada exitosamente junto con su archivo",
-    });
   } catch (error) {
     console.error("Error al eliminar la entrega:", error);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error al eliminar la entrega",
       error: error.message || error,
     });
   }
 };
 
+
 const updateSubmission = async (req, res) => {
   const { submission_id } = req.params;
+  const user_idToken = req.user_id;
 
   try {
     const submission = await Submissions.findByPk(submission_id);
@@ -131,6 +170,7 @@ const updateSubmission = async (req, res) => {
         message: "Entrega no encontrada",
       });
     }
+    const task = await Task.findByPk(submission.task_id);
 
     if (req.file) {
       // Construir la ruta completa del archivo anterior
@@ -148,10 +188,21 @@ const updateSubmission = async (req, res) => {
           currentDirectory
         );
       }
+      // Obtener la información del usuario del token
+      const userToken = await User.findByPk(user_idToken);
 
       // Construir la nueva ruta del archivo dentro de "public/uploads/submissions"
       const newDirectory = path.join("/uploads/submissions", req.file.filename);
 
+      // Registrar la actividad del usuario
+      await logActivity(
+        user_idToken,
+        userToken.sede_id,
+        userToken.name,
+        `Entrega actualizada por: ${userToken.name} para la tarea: ${task.title}`,
+        "Actualización de entrega"
+      );
+  
       // Actualizar la información de la entrega en la base de datos
       await submission.update({
         directory: newDirectory,
