@@ -23,6 +23,7 @@ const GroupTernaRoutes = require('./routes/groupTernaRoutes');
 const professorRoutes = require('./routes/professorRoutes');
 const TimeLineRoutes = require('./routes/timeLineRoutes');
 const submisionRoute = require('./routes/submissionsRoute');
+const ternaAsignStudentRoutes = require('./routes/TernaAsignStudentRoutes');
 
 const path = require('path');
 const cors = require('cors');
@@ -63,6 +64,7 @@ app.use('/api', GroupTernaRoutes);
 app.use('/api', professorRoutes);
 app.use('/api', TimeLineRoutes);
 app.use('/api', submisionRoute);
+app.use('/api', ternaAsignStudentRoutes);
 
 
 
