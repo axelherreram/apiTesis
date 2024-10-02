@@ -1,6 +1,7 @@
 const  TernaAsignStudent  = require("../models/ternaAsignStudent");
 const  User  = require("../models/user");
 const  groupTerna  = require("../models/groupTerna");
+const { logActivity } = require("../sql/appLog");
 
 const createTernaAsignStudent = async (req, res) => {
   const { groupTerna_id, student_id } = req.body;
@@ -24,6 +25,15 @@ const createTernaAsignStudent = async (req, res) => {
     if (existingAssignment) {
       return res.status(400).json({ error: "El estudiante ya está asignado a este grupo terna" });
     }
+
+
+    await logActivity(
+      student_id,
+      studentExists.sede_id,
+      studentExists.name,
+      `Se asignó al estudiante: ${studentExists.name} a un grupo terna`,
+      "Asignación de estudiante a grupo terna"
+    );
 
     // Crear la asignación
     const ternaAsignStudent = await TernaAsignStudent.create({

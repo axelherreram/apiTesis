@@ -16,7 +16,7 @@ const Year = require("../models/year");
 const rolTerna = require("../models/rolTerna");
 const groupTerna = require("../models/groupTerna");
 const ternaAsignGroup = require("../models/ternaAsignGroup");
-const asigStudentTerna = require("../models/asigStudentTerna");
+const ternaAsignStudent = require("../models/ternaAsignStudent");
 
 const initializeTables = async () => {
   try {

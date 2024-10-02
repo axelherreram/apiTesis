@@ -61,7 +61,7 @@ const createSubmission = async (req, res) => {
       userToken.sede_id,
       userToken.name,
       `Entrega realizada por: ${user.name} para la tarea: ${task.title}`,
-      "Creación de tarea"
+      "Entrega de tarea"
     );
 
     res.status(201).json({

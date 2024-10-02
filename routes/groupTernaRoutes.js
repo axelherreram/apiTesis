@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { listGroupTerna, deleteGroupTerna } = require('../controllers/groupTernaController');
+const { listGroupTerna } = require('../controllers/groupTernaController');
 const verifyRole = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
 const obtenerUserIdDeToken = require('../middlewares/obtenerUserIdDeToken');
@@ -130,6 +130,6 @@ router.get('/groupTerna', authMiddleware, obtenerUserIdDeToken, admin, listGroup
  *       500:
  *         description: Error en el servidor.
  */
-router.delete('/groupTerna/:groupTerna_id', authMiddleware, obtenerUserIdDeToken, admin, deleteGroupTerna);
+// router.delete('/groupTerna/:groupTerna_id', authMiddleware, obtenerUserIdDeToken, admin, deleteGroupTerna);
 
 module.exports = router;

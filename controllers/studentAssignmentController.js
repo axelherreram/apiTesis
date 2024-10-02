@@ -41,7 +41,7 @@ const createAssignment = async (req, res) => {
       .json({ message: "Error al crear la asignación", error });
   }
 };
-
+/* 
 const listStudentsByInstructor = async (req, res) => {
   try {
     const { instructor_id } = req.params;
@@ -102,8 +102,8 @@ const listStudentsByInstructor = async (req, res) => {
     });
   }
 };
-
+ */
 module.exports = {
   createAssignment,
-  listStudentsByInstructor,
+  // listStudentsByInstructor,
 };

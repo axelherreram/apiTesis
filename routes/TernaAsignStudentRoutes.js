@@ -1,6 +1,15 @@
 const express = require("express");
-const { createTernaAsignStudent, listStudentsByGroupTerna } = require("../controllers/ternaAsignStudentController");
+const {
+  createTernaAsignStudent,
+  listStudentsByGroupTerna,
+} = require("../controllers/ternaAsignStudentController");
 const router = express.Router();
+const authMiddleware = require("../middlewares/authMiddleware");
+const verifyRole = require("../middlewares/roleMiddleware");
+const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+
+const adminOrTerna = verifyRole([2, 3]); // Rol 2 para Terna, Rol 3 para Admin
+const admin = verifyRole([3]); // Solo Admin
 
 /**
  * @swagger
@@ -9,6 +18,8 @@ const router = express.Router();
  *     summary: Asigna un estudiante a un grupo de terna
  *     tags:
  *       - TernaAsignStudent
+ *     security:
+ *       - bearerAuth: []  # Añadir seguridad con JWT
  *     requestBody:
  *       required: true
  *       content:
@@ -49,7 +60,13 @@ const router = express.Router();
  *       500:
  *         description: Error en el servidor
  */
-router.post("/terna-asign-student", createTernaAsignStudent);
+router.post(
+  "/terna-asign-student",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  admin,
+  createTernaAsignStudent
+);
 
 /**
  * @swagger
@@ -58,6 +75,8 @@ router.post("/terna-asign-student", createTernaAsignStudent);
  *     summary: Lista los estudiantes asignados a un grupo de terna
  *     tags:
  *       - TernaAsignStudent
+ *     security:
+ *       - bearerAuth: []  # Añadir seguridad con JWT
  *     parameters:
  *       - in: path
  *         name: groupTerna_id
@@ -89,6 +108,6 @@ router.post("/terna-asign-student", createTernaAsignStudent);
  *       500:
  *         description: Error en el servidor
  */
-router.get("/terna-asign-student/:groupTerna_id", listStudentsByGroupTerna);
+router.get("/terna-asign-student/:groupTerna_id",authMiddleware, adminOrTerna,listStudentsByGroupTerna);
 
 module.exports = router;

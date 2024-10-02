@@ -37,39 +37,39 @@ const listGroupTerna = async (req, res) => {
   }
 };
 
-const deleteGroupTerna = async (req, res) => {
-  const { groupTerna_id } = req.params;
-  const user_id = req.user_id;  
+// const deleteGroupTerna = async (req, res) => {
+//   const { groupTerna_id } = req.params;
+//   const user_id = req.user_id;  
   
-  try {
-    // Primero, eliminamos los registros asociados en la tabla ternaAsignGroup
-    await TernaAsignGroup.destroy({
-      where: { groupTerna_id }
-    });
+//   try {
+//     // Primero, eliminamos los registros asociados en la tabla ternaAsignGroup
+//     await TernaAsignGroup.destroy({
+//       where: { groupTerna_id }
+//     });
 
-    // Luego, eliminamos el grupo de la tabla groupTerna
-    await groupTerna.destroy({ where: { groupTerna_id } });
+//     // Luego, eliminamos el grupo de la tabla groupTerna
+//     await groupTerna.destroy({ where: { groupTerna_id } });
 
-    // Buscamos al usuario que está eliminando la terna
-    const user = await User.findOne({ where: { user_id } });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
+//     // Buscamos al usuario que está eliminando la terna
+//     const user = await User.findOne({ where: { user_id } });
+//     if (!user) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
 
-    // Registrar la actividad correctamente
-    await logActivity(
-      user_id,  
-      user.sede_id,
-      user.name,
-      `Terna eliminada No.${groupTerna_id} por: ${user.name}`,
-      "Eliminación de terna"
-    );
+//     // Registrar la actividad correctamente
+//     await logActivity(
+//       user_id,  
+//       user.sede_id,
+//       user.name,
+//       `Terna eliminada No.${groupTerna_id} por: ${user.name}`,
+//       "Eliminación de terna"
+//     );
 
-    res.json({ message: "Terna eliminada exitosamente" });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
+//     res.json({ message: "Terna eliminada exitosamente" });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ message: "Internal Server Error" });
+//   }
+// };
 
-module.exports = { listGroupTerna, deleteGroupTerna };
+module.exports = { listGroupTerna };

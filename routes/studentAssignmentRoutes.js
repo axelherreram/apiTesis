@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {  createAssignment,  listStudentsByInstructor } = require('../controllers/studentAssignmentController');
+const {  createAssignment } = require('../controllers/studentAssignmentController');
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
@@ -120,6 +120,6 @@ router.post('/crear', authMiddleware, obtenerUserIdDeToken, adminOrTerna, create
  *       500:
  *         description: Error del servidor
  */
-router.get('/estudiantes/:instructor_id', authMiddleware, obtenerUserIdDeToken, adminOrTerna, listStudentsByInstructor);
+// router.get('/estudiantes/:instructor_id', authMiddleware, obtenerUserIdDeToken, adminOrTerna, listStudentsByInstructor);
 
 module.exports = router;
