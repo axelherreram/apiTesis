@@ -105,31 +105,5 @@ const admin = verifyRole([3]);
  */
 router.get('/groupTerna', authMiddleware, obtenerUserIdDeToken, admin, listGroupTerna);
 
-/**
- * @swagger
- *  /api/groupTerna/{groupTerna_id}:
- *   delete:
- *     summary: Eliminar un grupo de ternas y sus asignaciones.
- *     tags: [GroupTerna]
- *     security:
- *       - bearerAuth: []  # Se requiere autenticación por token
- *     parameters:
- *       - in: path
- *         name: groupTerna_id
- *         schema:
- *           type: integer
- *         required: true
- *         description: ID del grupo de terna a eliminar.
- *     responses:
- *       200:
- *         description: Terna eliminada exitosamente.
- *       401:
- *         $ref: '#/components/responses/UnauthorizedError'
- *       404:
- *         $ref: '#/components/responses/NotFoundError'
- *       500:
- *         description: Error en el servidor.
- */
-// router.delete('/groupTerna/:groupTerna_id', authMiddleware, obtenerUserIdDeToken, admin, deleteGroupTerna);
 
 module.exports = router;
