@@ -86,6 +86,12 @@ router.get("/ternas", authMiddleware, admin, listTernas);
  *         description: ID de la sede para filtrar las ternas activas
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: year
+ *         required: true
+ *         description: año para la solicitud
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Lista de ternas activas

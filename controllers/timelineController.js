@@ -45,6 +45,7 @@ const createTimeline = async (req, res) => {
       tipoEvento: "Comentario",
       descripcion: description,
       course_id,
+      task_id,
       fecha: new Date(),
     });
 
