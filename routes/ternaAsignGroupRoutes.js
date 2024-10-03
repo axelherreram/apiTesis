@@ -9,7 +9,7 @@ const admin = verifyRole([3]);
 
 /**
  * @swagger
- * /api/terna-asign-group:
+ * /api/terna-asign-group/create:
  *   post:
  *     summary: Asigna múltiples terna a un grupo
  *     tags:
