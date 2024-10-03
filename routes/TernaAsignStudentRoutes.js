@@ -15,7 +15,7 @@ const admin = verifyRole([3]); // Solo Admin
  * @swagger
  * /api/terna-asign-student:
  *   post:
- *     summary: Asigna un estudiante a un grupo de terna
+ *     summary: Asigna múltiples estudiantes a grupos de terna
  *     tags:
  *       - TernaAsignStudent
  *     security:
@@ -25,34 +25,34 @@ const admin = verifyRole([3]); // Solo Admin
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               groupTerna_id:
- *                 type: integer
- *                 description: ID del grupo terna
- *               student_id:
- *                 type: integer
- *                 description: ID del estudiante
- *             example:
- *               groupTerna_id: 1
- *               student_id: 101
- *     responses:
- *       201:
- *         description: Asignación creada exitosamente
- *         content:
- *           application/json:
- *             schema:
+ *             type: array
+ *             items:
  *               type: object
  *               properties:
- *                 ternaAsignStudent_id:
- *                   type: integer
- *                   description: ID de la asignación de estudiante
  *                 groupTerna_id:
  *                   type: integer
  *                   description: ID del grupo terna
  *                 student_id:
  *                   type: integer
  *                   description: ID del estudiante
+ *             example:
+ *               - groupTerna_id: 1
+ *                 student_id: 101
+ *               - groupTerna_id: 2
+ *                 student_id: 101
+ *               - groupTerna_id: 3
+ *                 student_id: 101
+ *     responses:
+ *       201:
+ *         description: Asignaciones creadas exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Mensaje de éxito
  *       400:
  *         description: El estudiante ya está asignado a este grupo terna
  *       404:
@@ -67,6 +67,7 @@ router.post(
   admin,
   createTernaAsignStudent
 );
+
 
 /**
  * @swagger
