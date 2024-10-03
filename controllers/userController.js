@@ -5,8 +5,10 @@ const CourseAssignment = require("../models/courseAssignment");
 const Course = require("../models/course");
 const Year = require("../models/year");
 const Roles = require("../models/roles");
-
+const { Op } = require('sequelize');
+const { sequelize } = require("../config/database");
 // Listar todos los estudiantes
+
 /* const listStudents = async (req, res) => {
   try {
     const students = await User.findAll({ where: { rol_id: 1 } });
@@ -316,10 +318,92 @@ const listuserbytoken = async (req, res) => {
   }
 };
 
+const listStudentNotTerna = async (req, res) => {
+  const { sede_id, year} = req.params;
+  const user_id = req.user_id;
+
+  try {
+    // Verificar si el año existe en la tabla 'Year' y obtener el 'id'
+    const yearRecord = await Year.findOne({ where: { year: year } });
+
+    if (!yearRecord) {
+      return res.status(404).json({ message: "El año especificado no existe" });
+    }
+
+    const year_id = yearRecord.year_id;
+
+    // Obtener los estudiantes que no están asignados en la tabla ternaAsignStudent
+    const users = await User.findAll({
+      where: {
+        rol_id: 1,
+        sede_id,
+        year_id,
+        user_id: {
+          [Op.notIn]: sequelize.literal(`(SELECT student_id FROM ternaAsignStudent)`),
+        },
+      },
+      include: [
+        {
+          model: CourseAssignment,
+          where: { course_id: 2, year_id },
+          attributes: ["course_id"],
+        },
+      ],
+      attributes: [
+        "user_id",
+        "email",
+        "name",
+        "carnet",
+        "profilePhoto",
+      ],
+    });
+
+    // Si no se encuentran usuarios
+    if (!users || users.length === 0) {
+      return res.status(404).json({
+        message: "No se encontraron estudiantes no asignados a la terna para este curso y sede.",
+      });
+    }
+
+    // Formatear los usuarios para la respuesta
+    const formattedUsers = users.map((user) => ({
+      user_id: user.user_id,
+      email: user.email,
+      userName: user.name,
+      carnet: user.carnet,
+      profilePhoto: user.profilePhoto
+        ? `http://localhost:3000/public/fotoPerfil/${user.profilePhoto}`
+        : null,
+    }));
+
+    // Registrar actividad en la bitácora
+    const requestingUser = await User.findByPk(user_id);
+    await logActivity(
+      user_id,
+      requestingUser.sede_id,
+      requestingUser.name,
+      "Listar estudiantes no asignados a terna",
+      `Listó los estudiantes que no están asignados a ninguna terna en el año de: ${year}`
+    );
+    // Responder con los estudiantes encontrados
+    res.status(200).json({
+      countUsers: formattedUsers.length,
+      users: formattedUsers,
+    });
+  } catch (error) {
+    console.error("Error al obtener los estudiantes no asignados a terna:", error);
+    res.status(500).json({
+      message: "Error al obtener los estudiantes no asignados a terna",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   // listStudents,
   // filterUsersBySede,
   // filterUsersByYear,
   getUsersByCourse,
   listuserbytoken,
+  listStudentNotTerna,
 };

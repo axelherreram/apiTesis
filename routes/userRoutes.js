@@ -128,4 +128,63 @@ router.get(
   userController.listuserbytoken 
 );
 
+/**
+ * @swagger
+ * /api/sedes/{sede_id}/usuarios/no-terna/{year}:
+ *   get:
+ *     summary: Listar todos los estudiantes que no están asignados a ninguna terna en una sede específica y registrados en un año determinado
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: sede_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la sede para listar los estudiantes
+ *       - in: path
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Año de registro para filtrar a los estudiantes
+ *     responses:
+ *       200:
+ *         description: Lista de estudiantes no asignados a terna obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   user_id:
+ *                     type: integer
+ *                   email:
+ *                     type: string
+ *                   userName:
+ *                     type: string
+ *                   carnet:
+ *                     type: string
+ *                   sede:
+ *                     type: integer
+ *                   profilePhoto:
+ *                     type: string
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: Estudiantes no encontrados
+ *       500:
+ *         description: Error en el servidor
+ */
+router.get(
+  "/sedes/:sede_id/usuarios/no-terna/:year",
+  authMiddleware,            
+  admin,               
+  obtenerUserIdDeToken,        
+  userController.listStudentNotTerna 
+);
+
+
 module.exports = router;
