@@ -1,7 +1,7 @@
 const { DataTypes } = require("sequelize");
 const Sedes = require("./sede");
 const typeTask = require("./typeTask");
-const { sequelize } = require('../config/database'); // Asegúrate de usar la ruta correcta
+const { sequelize } = require('../config/database'); 
 const Course = require("./course");
 
 const Task = sequelize.define(

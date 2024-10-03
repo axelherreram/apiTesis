@@ -86,7 +86,7 @@ const admin = verifyRole([3]);
  *         schema:
  *           type: integer
  *         required: true
- *         description: año
+ *         description: year
  *     responses:
  *       200:
  *         description: Lista de grupos de ternas.

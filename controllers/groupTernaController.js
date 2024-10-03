@@ -2,12 +2,22 @@ const groupTerna = require("../models/groupTerna");
 const { logActivity } = require("../sql/appLog");
 const User = require("../models/user");
 const TernaAsignGroup = require("../models/ternaAsignGroup");
+const Year = require("../models/year");
 
 const listGroupTerna = async (req, res) => {
-  const { sede_id, year_id } = req.query;
+  const { sede_id, year } = req.query;
   const user_id = req.user_id;  // Obtenemos el user_id del middleware
   
   try {
+
+    // Buscamos el year_id
+    const yearRecord = await Year.findOne({ where: { year } });
+    if (!yearRecord) {
+      return res.status(404).json({ message: "Año no existe" });
+    }
+    const year_id = yearRecord.year_id;
+
+
     const groupTernas = await groupTerna.findAll({
       where: {
         sede_id,  // Filtra por sede_id
