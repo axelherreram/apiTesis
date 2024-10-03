@@ -26,16 +26,16 @@ const admin = verifyRole([3]);
  *         sede_id:
  *           type: integer
  *           description: ID de la sede
- *         year_id:
+ *         year:
  *           type: integer
- *           description: ID del año
+ *           description: año
  *       required:
  *         - sede_id
- *         - year_id
+ *         - year
  *       example:
  *         groupTerna_id: 1
  *         sede_id: 3
- *         year_id: 2023
+ *         year: 2023
  *   responses:
  *     UnauthorizedError:
  *       description: No autorizado. El token de autenticación no está presente o es inválido.
@@ -82,11 +82,11 @@ const admin = verifyRole([3]);
  *         required: true
  *         description: ID de la sede
  *       - in: query
- *         name: year_id
+ *         name: year
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID del año
+ *         description: año
  *     responses:
  *       200:
  *         description: Lista de grupos de ternas.

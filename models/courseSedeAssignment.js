@@ -1,7 +1,8 @@
 const { DataTypes } = require("sequelize");
 const Course = require("./course");
 const Sede = require("./sede");
-const { sequelize } = require("../config/database");  
+const { sequelize } = require("../config/database");
+const Year = require("./year");
 
 const CourseSedeAssignment = sequelize.define(
   "CourseSedeAssignment",
@@ -13,6 +14,7 @@ const CourseSedeAssignment = sequelize.define(
     },
     course_id: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
         model: Course,
         key: "course_id",
@@ -20,6 +22,7 @@ const CourseSedeAssignment = sequelize.define(
     },
     sede_id: {
       type: DataTypes.INTEGER,
+      allowNull: false,
       references: {
         model: Sede,
         key: "sede_id",
@@ -27,7 +30,14 @@ const CourseSedeAssignment = sequelize.define(
     },
     courseActive: {
       type: DataTypes.BOOLEAN,
+    },
+    year_id: {
+      type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: Year,
+        key: "year_id",
+      },
     },
   },
   {
@@ -35,7 +45,5 @@ const CourseSedeAssignment = sequelize.define(
     tableName: "CourseSedeAssignment",
   }
 );
-
-
 
 module.exports = CourseSedeAssignment;

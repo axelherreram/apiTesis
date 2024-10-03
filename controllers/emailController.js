@@ -31,7 +31,7 @@ const sendEmailPassword = async (subject, text, to, templateVariables) => {
     const htmlContent = loadTemplate(templatePath, templateVariables);
 
     const mailOptions = {
-      from: process.env.EMAIL_USER, // Desde el correo definido en las variables de entorno
+      from: process.env.EMAIL_USER, // Correo definido en las variables de entorno
       to: to, // Dirección de correo del destinatario
       subject: subject, // Asunto del correo
       text: text, // Contenido en texto plano
@@ -54,7 +54,7 @@ const sendEmailTask = async (subject, text, to, templateVariables) => {
     const mailOptions = {
       from: process.env.EMAIL_USER, 
       to: to, 
-      subject: subject, // Asunto del correo (por ejemplo, "Creación de tarea" o "Nuevo comentario")
+      subject: subject, // Asunto del correo 
       text: text, // Contenido en texto plano
       html: htmlContent, // Contenido en formato HTML
     };
@@ -75,7 +75,7 @@ const sendCommentEmail = async (subject, text, to, templateVariables) => {
     const mailOptions = {
       from: process.env.EMAIL_USER, 
       to: to, 
-      subject: subject, // Asunto del correo (por ejemplo, "Creación de tarea" o "Nuevo comentario")
+      subject: subject, // Asunto del correo (
       text: text, // Contenido en texto plano
       html: htmlContent, // Contenido en formato HTML
     };

@@ -1,8 +1,8 @@
 const { DataTypes } = require("sequelize");
 const Sedes = require("./sede");
 const typeTask = require("./typeTask");
-const CourseSedeAssignment = require("./courseSedeAssignment");
 const { sequelize } = require('../config/database'); // Asegúrate de usar la ruta correcta
+const Course = require("./course");
 
 const Task = sequelize.define(
   "Task",
@@ -16,8 +16,8 @@ const Task = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: CourseSedeAssignment,
-        key: "asigCourse_id",
+        model: Course,
+        key: "course_id",
       },
     },
     sede_id:{
