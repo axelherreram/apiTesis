@@ -17,19 +17,25 @@ const admin = verifyRole([3]);
 
 /**
  * @swagger
- * /api/tareas/{sede_id}:
+ * /api/tareas/{sede_id}/{year}:
  *   get:
  *     summary: Lista todas las tareas
  *     tags: [Tareas]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: path
+*       - in: path
  *         name: sede_id
  *         schema:
  *           type: integer
  *         required: true
  *         description: id de la sede para obtener las tareas
+ *       - in: path
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: año para obtener las tareas
  *     responses:
  *       200:
  *         description: Retorna una lista de tareas.
@@ -44,11 +50,11 @@ const admin = verifyRole([3]);
  *       500:
  *         description: Error del servidor.
  */
-router.get("/tareas/:sede_id", authMiddleware, obtenerUserIdDeToken, listTasks);
+router.get("/tareas/:sede_id/:year", authMiddleware, obtenerUserIdDeToken, listTasks);
 
 /**
  * @swagger
- * /api/tareas/curso/{sede_id}/{course_id}:
+ * /api/tareas/curso/{sede_id}/{course_id}/{year}:
  *   get:
  *     summary: Lista todas las tareas de un curso específico
  *     tags: [Tareas]
@@ -67,6 +73,12 @@ router.get("/tareas/:sede_id", authMiddleware, obtenerUserIdDeToken, listTasks);
  *           type: integer
  *         required: true
  *         description: ID de la sede para obtener las tareas
+ *       - in: path
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: año para obtener las tareas del curso
  *     responses:
  *       200:
  *         description: Retorna una lista de tareas del curso especificado.
@@ -83,7 +95,7 @@ router.get("/tareas/:sede_id", authMiddleware, obtenerUserIdDeToken, listTasks);
  *       500:
  *         description: Error del servidor.
  */
-router.get("/tareas/curso/:sede_id/:course_id", authMiddleware, obtenerUserIdDeToken, listTasksByCourse);
+router.get("/tareas/curso/:sede_id/:course_id/:year", authMiddleware, obtenerUserIdDeToken, listTasksByCourse);
 
 /**
  * @swagger
