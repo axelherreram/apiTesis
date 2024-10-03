@@ -1,37 +1,41 @@
-const { sequelize, Sequelize } = require('../config/database');
+const { sequelize, Sequelize } = require("../config/database");
 const ternaAsignGroup = require("../models/ternaAsignGroup");
 const groupTerna = require("../models/groupTerna");
 const { logActivity } = require("../sql/appLog");
 const User = require("../models/user");
-const Year = require('../models/year');
-const Sede = require('../models/sede');
+const Year = require("../models/year");
+const Sede = require("../models/sede");
 
 const createTernaAsignGroup = async (req, res) => {
   const assignments = req.body; // Aquí se espera un array de asignaciones
   const admin_user_id = req.user_id;
-  
+
   try {
     const yearNow = new Date().getFullYear();
     
+    // Verificar si el año existe en la base de datos
+    let year = assignments[0].year; // Asumiendo que el año está en el array de asignaciones
+    if (year > yearNow) {
+      return res
+        .status(400)
+        .json({ message: "El año no puede ser mayor al actual" });
+    }
+    
+    let yearRecord = await Year.findOne({ where: { year } });
+    if (!yearRecord) {
+      yearRecord = await Year.create({ year });
+    }
+    const year_id = yearRecord.year_id;
+
+    // Crear un nuevo grupo basado en la información de sede y año
+    const sede_id = assignments[0].sede_id; // Asumiendo que la sede_id viene en las asignaciones
+    const newGroup = await groupTerna.create({
+      sede_id,
+      year_id,
+    });
+    const groupTernaId = newGroup.groupTerna_id;
+
     for (const { user_id, sede_id, year, rolTerna_id } of assignments) {
-      if (year > yearNow) {
-        return res.status(400).json({ message: "El año no puede ser mayor al actual" });
-      }
-
-      // Verificar si el año existe
-      let yearRecord = await Year.findOne({ where: { year } });
-      if (!yearRecord) {
-        yearRecord = await Year.create({ year });
-      }
-      const year_id = yearRecord.year_id;
-
-      // Crear un nuevo grupo basado en la información recibida
-      const newGroup = await groupTerna.create({
-        sede_id,
-        year_id,
-      });
-      const groupTernaId = newGroup.groupTerna_id;
-
       // Crear el registro en la tabla ternaAsignGroup
       await ternaAsignGroup.create({
         user_id,
@@ -40,14 +44,16 @@ const createTernaAsignGroup = async (req, res) => {
       });
 
       // Buscar la información del usuario administrador
-      const userAdmin = await User.findOne({ where: { user_id: admin_user_id } });
+      const userAdmin = await User.findOne({
+        where: { user_id: admin_user_id },
+      });
 
       if (!userAdmin) {
         return res.status(404).json({ message: "Admin user not found" });
       }
 
       // Buscar la información de la sede
-      const sede = await Sede.findOne({ where: { sede_id } });  
+      const sede = await Sede.findOne({ where: { sede_id } });
       const userAsing = await User.findOne({ where: { user_id } });
 
       // Registrar la actividad
@@ -84,11 +90,11 @@ const listGroupAsingTerna = async (req, res) => {
       include: [
         {
           model: ternaAsignGroup,
-          attributes: ['rolTerna_id'], // Incluye el rol asignado al usuario en la terna
+          attributes: ["rolTerna_id"], // Incluye el rol asignado al usuario en la terna
           include: [
             {
               model: User,
-              attributes: ['user_id', 'name'], // Solo obtenemos los campos necesarios
+              attributes: ["user_id", "name"], // Solo obtenemos los campos necesarios
             },
           ],
         },
@@ -96,13 +102,18 @@ const listGroupAsingTerna = async (req, res) => {
     });
 
     if (groups.length === 0) {
-      return res.status(404).json({ message: "No se encontraron grupos de ternas para el ID proporcionado" });
+      return res
+        .status(404)
+        .json({
+          message:
+            "No se encontraron grupos de ternas para el ID proporcionado",
+        });
     }
 
     // Estructurar la respuesta incluyendo los usuarios asignados y su rol en la terna
-    const response = groups.map(group => ({
+    const response = groups.map((group) => ({
       groupTerna_id: group.groupTerna_id,
-      users: group.ternaAsignGroups.map(assignment => ({
+      users: group.ternaAsignGroups.map((assignment) => ({
         user_id: assignment.User.user_id,
         name: assignment.User.name,
         rolTerna_id: assignment.rolTerna_id, // Incluye el rol del usuario en la terna
@@ -112,7 +123,9 @@ const listGroupAsingTerna = async (req, res) => {
     res.status(200).json(response);
   } catch (error) {
     console.error("Error al listar los grupos de ternas:", error);
-    res.status(500).json({ message: "Error interno del servidor", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error interno del servidor", error: error.message });
   }
 };
 

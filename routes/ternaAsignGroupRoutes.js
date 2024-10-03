@@ -9,40 +9,54 @@ const admin = verifyRole([3]);
 
 /**
  * @swagger
- * /api/terna-asign-group/create:
+ * /api/terna-asign-group:
  *   post:
- *     summary: Asignar un usuario a un grupo
- *     description: Crea una nueva asignación de usuario a un grupo, cada grupo puede tener un máximo de 3 usuarios.
+ *     summary: Asigna múltiples terna a un grupo
  *     tags:
- *       - Terna Asign Group
+ *        - Terna Asign Group
  *     security:
- *       - bearerAuth: []
+ *       - bearerAuth: []  # Añadir seguridad con JWT si es necesario
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               user_id:
- *                 type: integer
- *                 description: ID del usuario que será asignado al grupo.
- *                 example: 1
- *               sede_id:
- *                 type: integer
- *                 description: ID de la sede.
- *                 example: 1
- *               year:
- *                 type: integer
- *                 description: Año actual.
- *                 example: 2024
- *               rolTerna_id:
- *                 type: integer
- *                 description: ID del rol del usuario en la terna.
- *                 example: 1
+ *             type: array
+ *             items:
+ *               type: object
+ *               properties:
+ *                 user_id:
+ *                   type: integer
+ *                   description: ID del usuario que se va a asignar
+ *                 sede_id:
+ *                   type: integer
+ *                   description: ID de la sede a la cual pertenece el grupo terna
+ *                 year:
+ *                   type: integer
+ *                   description: Año de la asignación
+ *                 rolTerna_id:
+ *                   type: integer
+ *                   description: Rol asignado en el grupo terna
+ *             example:
+ *               - user_id: 1
+ *                 sede_id: 1
+ *                 year: 2024
+ *                 rolTerna_id: 1
+ *               - user_id: 17
+ *                 sede_id: 1
+ *                 year: 2024
+ *                 rolTerna_id: 1
+ *               - user_id: 16
+ *                 sede_id: 1
+ *                 year: 2024
+ *                 rolTerna_id: 2
+ *               - user_id: 15
+ *                 sede_id: 1
+ *                 year: 2024
+ *                 rolTerna_id: 3
  *     responses:
  *       201:
- *         description: Asignación creada exitosamente
+ *         description: Asignaciones creadas exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -50,9 +64,9 @@ const admin = verifyRole([3]);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Asignación creada exitosamente
+ *                   example: Asignaciones creadas exitosamente
  *       400:
- *         description: El grupo ya tiene 3 usuarios asignados
+ *         description: Error en la solicitud, como un año inválido
  *         content:
  *           application/json:
  *             schema:
@@ -60,7 +74,7 @@ const admin = verifyRole([3]);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Este grupo ya tiene 3 usuarios asignados.
+ *                   example: El año no puede ser mayor al actual
  *       500:
  *         description: Error interno del servidor
  *         content:
@@ -70,16 +84,17 @@ const admin = verifyRole([3]);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: Internal Server Error
+ *                   example: Error al crear las asignaciones
  */
 router.post("/terna-asign-group/create", authMiddleware, obtenerUserIdDeToken, admin, createTernaAsignGroup);
+
 
 /**
  * @swagger
  * /api/group-asing-Terna/{groupTerna_id}:
  *   get:
- *     summary: Listar todos los usuarios asignados a un grupo.
- *     description: Obtiene una lista de todos los usuarios asignados a un grupo de ternas por ID de grupo.
+ *     summary: Listar todos los catedraticos asignados a una terna.
+ *     description: Obtiene una lista de todos los catedraticos asignados a un grupo de ternas por ID de grupo.
  *     tags:
  *       - Terna Asign Group
  *     security:
