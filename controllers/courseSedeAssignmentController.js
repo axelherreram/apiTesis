@@ -4,7 +4,7 @@ const Sede = require("../models/sede");
 const Year = require("../models/year");
 
 const createSedeAssignment = async (req, res) => {
-  const { course_id, sede_id} = req.body;
+  const { course_id, sede_id } = req.body;
 
   try {
     // Obtener el año actual
@@ -43,7 +43,7 @@ const createSedeAssignment = async (req, res) => {
       where: {
         course_id,
         sede_id,
-        year_id
+        year_id,
       },
     });
 
@@ -81,9 +81,26 @@ const createSedeAssignment = async (req, res) => {
 };
 
 const getCoursesBySede = async (req, res) => {
-  const { sede_id } = req.params; // Obtener el ID de la sede desde los parámetros de la ruta
+  const { sede_id } = req.params;
 
   try {
+    // Obtener el año actual
+    const currentYear = new Date().getFullYear();
+
+    // Buscar el año actual en la tabla Year
+    const yearRecord = await Year.findOne({
+      where: { year: currentYear },
+    });
+
+    // Si no se encuentra el año, devolver un error
+    if (!yearRecord) {
+      return res.status(404).json({
+        message: `No se encontró un registro para el año ${currentYear}.`,
+      });
+    }
+
+    const year_id = yearRecord.year_id;
+
     // Verificar si la sede existe
     const sede = await Sede.findByPk(sede_id);
     if (!sede) {
@@ -92,27 +109,30 @@ const getCoursesBySede = async (req, res) => {
       });
     }
 
-    // Buscar los cursos asignados a esa sede
+    // Buscar los cursos asignados a esa sede y año
     const assignments = await CourseSedeAssignment.findAll({
-      where: { sede_id },
+      where: { sede_id, year_id },
       include: [
         {
           model: Course,
-          attributes: ["courseName"], // Obtener solo el nombre del curso
+          attributes: ["course_id", "courseName"],
         },
       ],
     });
 
+    // Si no se encontraron asignaciones, devolver una lista vacía
     if (assignments.length === 0) {
-      return res.status(404).json({
-        message: `No se encontraron cursos asignados a la sede ${sede.nameSede}.`,
+      return res.status(200).json({
+        message: `No se encontraron cursos asignados a la sede ${sede.nameSede} para el año ${currentYear}.`,
+        data: [],
       });
     }
-
+    // Mapear los resultados para devolver solo los datos del curso
+    const courses = assignments.map((assignment) => assignment.Course);
     // Responder con los cursos asignados
     res.status(200).json({
-      message: `Cursos asignados a la sede ${sede.nameSede} recuperados exitosamente.`,
-      data: assignments,
+      message: `Cursos asignados a la sede ${sede.nameSede} para el año ${currentYear} recuperados exitosamente.`,
+      data: courses,
     });
   } catch (error) {
     console.error("Error al recuperar los cursos asignados a la sede:", error);
