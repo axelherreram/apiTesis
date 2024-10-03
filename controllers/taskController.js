@@ -56,7 +56,7 @@ const createTask = async (req, res) => {
 
     // Crear la nueva tarea
     const newTask = await Task.create({
-      course_id: asigCourse_id,
+      course_id: course_id,
       sede_id,
       typeTask_id,
       title,
