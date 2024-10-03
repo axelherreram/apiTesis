@@ -194,7 +194,7 @@ const getUsersByCourse = async (req, res) => {
       include: [
         {
           model: CourseAssignment,
-          where: { course_id },
+          where: { course_id, year_id },
           attributes: ["course_id"],
         },
       ],
@@ -247,9 +247,6 @@ const getUsersByCourse = async (req, res) => {
         userName: user.name,
         profilePhoto: profilePhotoUrl,
         carnet: user.carnet,
-        sede: user.sede_id,
-        registrationYear: yearRecord.year, // Cambiado para devolver el año correctamente
-        coutUsers: userCount,
       };
     });
 

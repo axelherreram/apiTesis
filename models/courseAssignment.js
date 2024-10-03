@@ -2,11 +2,11 @@ const { DataTypes } = require("sequelize");
 const User = require("./user");
 const Course = require("./course");
 const { sequelize } = require("../config/database");  
-
+const Year = require("./year");
 const CourseAssignment = sequelize.define(
-  "CourseAssignment",  // CursoAsignacion
+  "CourseAssignment",  
   {
-    courseAssignment_id: {  // asignacionCurso_id
+    courseAssignment_id: {  
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -25,10 +25,17 @@ const CourseAssignment = sequelize.define(
         key: "course_id",
       },
     },
+    year_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: Year,
+        key: "year_id",
+      },
+    },
   },
   {
     timestamps: false,
-    tableName: "CourseAssignment",  // CursoAsignacion
+    tableName: "CourseAssignment", 
   }
 );
 

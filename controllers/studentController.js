@@ -21,24 +21,6 @@ const bulkUploadUsers = async (req, res) => {
     const sheet = workbook.Sheets[sheetName];
     const usersData = xlsx.utils.sheet_to_json(sheet);
 
-    const sede_id = req.body.sede_id;
-    const rol_id = req.body.rol_id;
-    const course_id = req.body.course_id;
-
-    if (course_id) {
-      const sedeCourseAssignment = await CourseSedeAssignment.findOne({
-        where: {
-          sede_id,
-          course_id,
-        },
-      });
-      if (!sedeCourseAssignment) {
-        return res.status(404).json({
-          message: "No existe asiganación de curso para la sede seleccionada",
-        });
-      }
-    }
-
     // Obtener el año actual
     const currentYear = new Date().getFullYear();
 
@@ -49,6 +31,25 @@ const bulkUploadUsers = async (req, res) => {
     });
 
     const year_id = yearRecord.year_id;
+
+    const sede_id = req.body.sede_id;
+    const rol_id = req.body.rol_id;
+    const course_id = req.body.course_id;
+
+    if (course_id) {
+      const sedeCourseAssignment = await CourseSedeAssignment.findOne({
+        where: {
+          sede_id,
+          course_id,
+          year_id,
+        },
+      });
+      if (!sedeCourseAssignment) {
+        return res.status(404).json({
+          message: "No existe asiganación de curso para la sede seleccionada",
+        });
+      }
+    }
 
     for (const user of usersData) {
       const { email, nombre, carnet } = user;
@@ -94,6 +95,7 @@ const bulkUploadUsers = async (req, res) => {
           await CourseAssignment.create({
             student_id: existingUser.user_id,
             course_id: course_id,
+            year_id,
           });
         }
       }
