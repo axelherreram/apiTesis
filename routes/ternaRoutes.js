@@ -45,6 +45,12 @@ const admin = verifyRole([3]);
  *         description: ID de la sede para filtrar las ternas
  *         schema:
  *           type: integer
+ *       - in: query
+ *         name: year
+ *         required: true
+ *         description: año para la solicitud
+ *         schema:
+ *           type: integer
  *     responses:
  *       200:
  *         description: Lista de ternas
