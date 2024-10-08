@@ -1,4 +1,6 @@
 const AppLog = require('../models/appLog');
+const Roles = require('../models/roles');
+const User = require('../models/user');
 
 const listAllLogs = async (req, res) => {
   const { sede_id } = req.params;
@@ -6,18 +8,26 @@ const listAllLogs = async (req, res) => {
   try {
     const logs = await AppLog.findAll({
       where: { sede_id },
-      order: [['date', 'DESC']] // Ordenar por fecha de manera descendente
+      order: [['date', 'DESC']],
     });
 
     if (!logs || logs.length === 0) {
       return res.status(404).json({ message: 'No se encontraron entradas de bitácora' });
     }
 
-    const formattedLogs = logs.map((log) => ({
-      username: log.username,
-      action: log.action,
-      description: log.details,
-      date: log.date,
+    const formattedLogs = await Promise.all(logs.map(async (log) => {
+      const user = await User.findOne({ where: { user_id: log.user_id } });
+      const Role = await Roles.findOne({ where: { rol_id: user.rol_id } });
+
+      return {
+        user_id: log.user_id,
+        username: user ? user.username : 'Usuario desconocido',
+        role: Role ? Role.name : 'Rol desconocido',
+        action: log.action,
+        description: log.details,
+        date: log.date,
+        
+      };
     }));
 
     res.json({
