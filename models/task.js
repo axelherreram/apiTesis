@@ -46,11 +46,11 @@ const Task = sequelize.define(
       allowNull: false,
     },
     taskStart: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: true,
     },
     endTask: {
-      type: DataTypes.DATEONLY,
+      type: DataTypes.DATE,
       allowNull: true,
     },
     note: {

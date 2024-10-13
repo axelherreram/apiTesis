@@ -167,6 +167,21 @@ const filterUsersByYear = async (req, res) => {
   }
 };
  */
+const dataGraphics = async (req, res) => {
+  const { sede_id } = req.params;
+
+  const totalStudents = await User.count({ where: { rol_id: 1 } });
+  const totalStudentsSede = await User.count({where: { rol_id: 1, sede_id }});
+  // const totalStudentsClosedGlobal = await User.count({where: { rol_id: 1, closedPlan: 1 }});
+  // const totalStudentsClosed = await User.count({where: { rol_id: 1, sede_id, closedPlan: 1 }});
+
+  res.status(200).json({
+    totalStudents,
+    totalStudentsSede,
+/*     totalStudentsClosedGlobal,
+    totalStudentsClosed */
+  });
+}  
 
 const getUsersByCourse = async (req, res) => {
   const { sede_id, course_id, year } = req.params;
@@ -406,4 +421,5 @@ module.exports = {
   getUsersByCourse,
   listuserbytoken,
   listStudentNotTerna,
+  dataGraphics
 };
