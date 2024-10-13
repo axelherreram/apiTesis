@@ -8,6 +8,7 @@ const Year = require("../models/year");
 const { sendEmailTask } = require("./emailController");
 const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
+const Subbmissions = require("../models/submissions");
 
 const createTask = async (req, res) => {
   const {
@@ -159,11 +160,9 @@ const listTasks = async (req, res) => {
 
     // Verificar si se encontraron tareas
     if (!tasks || tasks.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "No se encontraron tareas para la sede y año especificados.",
-        });
+      return res.status(404).json({
+        message: "No se encontraron tareas para la sede y año especificados.",
+      });
     }
 
     // Obtener información del usuario solicitante
@@ -200,7 +199,9 @@ const listTasksByCourse = async (req, res) => {
     // Validar el año en la tabla Year
     const yearRecord = await Year.findOne({ where: { year } });
     if (!yearRecord) {
-      return res.status(404).json({ message: `No se encontró un registro para el año ${year}.` });
+      return res
+        .status(404)
+        .json({ message: `No se encontró un registro para el año ${year}.` });
     }
 
     const year_id = yearRecord.year_id;
@@ -208,21 +209,32 @@ const listTasksByCourse = async (req, res) => {
     // Validar que el curso exista
     const course = await Course.findByPk(course_id);
     if (!course) {
-      return res.status(404).json({ message: `No se encontró el curso con ID ${course_id}.` });
+      return res
+        .status(404)
+        .json({ message: `No se encontró el curso con ID ${course_id}.` });
     }
 
     // Validar que la sede exista
     const sede = await Sede.findByPk(sede_id);
     if (!sede) {
-      return res.status(404).json({ message: `No se encontró la sede con ID ${sede_id}.` });
+      return res
+        .status(404)
+        .json({ message: `No se encontró la sede con ID ${sede_id}.` });
     }
 
     // Buscar todas las tareas asociadas al curso, sede y año
-    const tasks = await Task.findAll({ where: { course_id, sede_id, year_id } });
+    const tasks = await Task.findAll({
+      where: { course_id, sede_id, year_id },
+    });
 
     // Verificar si se encontraron tareas
     if (!tasks || tasks.length === 0) {
-      return res.status(404).json({ message: "No se encontraron tareas para el curso, sede y año especificados." });
+      return res
+        .status(404)
+        .json({
+          message:
+            "No se encontraron tareas para el curso, sede y año especificados.",
+        });
     }
 
     // Obtener información del usuario solicitante
@@ -244,7 +256,12 @@ const listTasksByCourse = async (req, res) => {
     res.status(200).json(tasks);
   } catch (error) {
     console.error("Error al obtener las tareas:", error);
-    res.status(500).json({ message: "Error al obtener las tareas", error: error.message || "Error desconocido" });
+    res
+      .status(500)
+      .json({
+        message: "Error al obtener las tareas",
+        error: error.message || "Error desconocido",
+      });
   }
 };
 
@@ -304,9 +321,46 @@ const updateTask = async (req, res) => {
   }
 };
 
+const listInfoTaksByUser = async (req, res) => {
+  const { user_id, task_id } = req.params;
+
+  try {
+    const userExist = await User.findByPk(user_id);
+    if (!userExist) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    const taskExist = await Task.findByPk(task_id);
+    if (!taskExist) {
+      return res.status(404).json({ message: "Tarea no encontrada" });
+    }
+
+    const task = await Task.findByPk(task_id);
+
+    const submissions = await Subbmissions.findAll({
+      where: { user_id, task_id },
+    });
+ // Si no hay entregas, retorna un arreglo vacío
+ const submission = submissions.map((submission) => {
+  return {
+    submission_id: submission.submission_id,
+    directory: `http://localhost:3000/public/${submission.directory}`,
+    submission_date: submission.submission_date,
+    task_id: submission.task_id,
+    user_id: submission.user_id,
+  };
+});
+
+    res.status(200).json({ task, submission });
+  } catch (error) {
+    res.status(500).json({ message: "Error al obtener la información", error });
+  }
+};
+
 module.exports = {
   createTask,
   listTasks,
   updateTask,
   listTasksByCourse,
+  listInfoTaksByUser
 };

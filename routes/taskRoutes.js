@@ -1,5 +1,11 @@
 const express = require("express");
-const { listTasks, updateTask, listTasksByCourse, createTask } = require("../controllers/taskController");
+const {
+  listTasks,
+  updateTask,
+  listTasksByCourse,
+  createTask,
+  listInfoTaksByUser,
+} = require("../controllers/taskController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
@@ -24,7 +30,7 @@ const admin = verifyRole([3]);
  *     security:
  *       - bearerAuth: []
  *     parameters:
-*       - in: path
+ *       - in: path
  *         name: sede_id
  *         schema:
  *           type: integer
@@ -50,7 +56,12 @@ const admin = verifyRole([3]);
  *       500:
  *         description: Error del servidor.
  */
-router.get("/tareas/:sede_id/:year", authMiddleware, obtenerUserIdDeToken, listTasks);
+router.get(
+  "/tareas/:sede_id/:year",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  listTasks
+);
 
 /**
  * @swagger
@@ -95,7 +106,12 @@ router.get("/tareas/:sede_id/:year", authMiddleware, obtenerUserIdDeToken, listT
  *       500:
  *         description: Error del servidor.
  */
-router.get("/tareas/curso/:sede_id/:course_id/:year", authMiddleware, obtenerUserIdDeToken, listTasksByCourse);
+router.get(
+  "/tareas/curso/:sede_id/:course_id/:year",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  listTasksByCourse
+);
 
 /**
  * @swagger
@@ -212,12 +228,49 @@ router.put(
  *       500:
  *         description: Error al crear la tarea.
  */
-router.post(
-  "/tareas",
-  authMiddleware,
-  obtenerUserIdDeToken,
-  admin,
-  createTask
-);
+router.post("/tareas", authMiddleware, obtenerUserIdDeToken, admin, createTask);
+
+/**
+ * @swagger
+ * /api/tareas/usuario/{user_id}/{task_id}:
+ *   get:
+ *     summary: Obtiene la información de una tarea y las entregas del usuario
+ *     tags: [Tareas]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del usuario
+ *       - in: path
+ *         name: task_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la tarea
+ *     responses:
+ *       200:
+ *         description: Retorna la tarea y las entregas del usuario.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 task:
+ *                   $ref: '#/components/schemas/Tarea'
+ *                 submissions:
+ *                   type: object
+ *                   description: Información de la entrega del usuario.
+ *       401:
+ *         description: No autorizado.
+ *       404:
+ *         description: Usuario o tarea no encontrados.
+ *       500:
+ *         description: Error al obtener la información.
+ */
+router.get("/tareas/usuario/:user_id/:task_id", authMiddleware, obtenerUserIdDeToken, listInfoTaksByUser);
 
 module.exports = router;
