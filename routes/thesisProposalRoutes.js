@@ -1,52 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const {
-  listProposalsByUser,
-  createProposal,
-  updateProposal,
-  deleteProposal,
-} = require("../controllers/thesisProposalController");
+const { aprobProposal } = require("../controllers/thesisProposalController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
-const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
 
-// Middleware para verificar el rol de administrador o permisos específicos
-// const= verifyRole([2, 3]);
+const admin = verifyRole([3]);
 
 /**
  * @swagger
- * /api/propuestas/{user_id}:
- *   get:
- *     summary: Lista todas las propuestas de un usuario
- *     tags: [Propuesta Tesis]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: user_id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID del usuario para listar propuestas
- *     responses:
- *       200:
- *         description: Una lista de propuestas
- *       500:
- *         description: Error del servidor
- */
-router.get(
-  "/propuestas/:user_id",
-  authMiddleware,
-  obtenerUserIdDeToken,
-  listProposalsByUser
-);
-
-/**
- * @swagger
- * /api/propuestas:
+ * /api/aprobar-propuesta:
  *   post:
- *     summary: Crea una nueva propuesta de tesis
- *     tags: [Propuesta Tesis]
+ *     tags:
+ *       - Aprobar tesis
+ *     summary: Aprueba una propuesta de tesis
+ *     description: Aprueba una propuesta específica para un estudiante mediante su ID y el ID de la entrega. Solo una propuesta de 1 a 3 puede ser aprobada.
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -58,100 +25,63 @@ router.get(
  *             properties:
  *               user_id:
  *                 type: integer
- *               title:
- *                 type: string
- *               proposal:
- *                 type: string
- *             required:
- *               - user_id
- *               - proposal
+ *                 description: ID del usuario (estudiante)
+ *                 example: 1
+ *               submission_id:
+ *                 type: integer
+ *                 description: ID de la entrega
+ *                 example: 2
+ *               approved_proposal:
+ *                 type: integer
+ *                 description: Número de la propuesta que se aprueba (1, 2 o 3)
+ *                 example: 1
  *     responses:
- *       201:
- *         description: Propuesta creada exitosamente
+ *       200:
+ *         description: Propuesta actualizada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Propuesta actualizada
  *       400:
- *         description: Error de validación o límite de propuestas excedido
- *       500:
- *         description: Error del servidor
- */
-router.post(
-  "/propuestas",
-  authMiddleware,
-  obtenerUserIdDeToken,
-  createProposal
-);
-
-/**
- * @swagger
- * /api/propuestas/{proposal_id}:
- *   put:
- *     summary: Actualiza una propuesta de tesis
- *     tags: [Propuesta Tesis]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: proposal_id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID de la propuesta a actualizar
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               title:
- *                 type: string
- *               proposal:
- *                 type: string
- *             example:  # Añadir un ejemplo correcto aquí
- *               title: "Propuesta de tesis actualizada"
- *               proposal: "Esta es la nueva propuesta de tesis actualizada"
- *     responses:
- *       200:
- *         description: Propuesta actualizada correctamente
+ *         description: Error de validación (usuario, entrega o número de propuesta inválido)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Número de propuesta inválido
  *       404:
- *         description: Propuesta no encontrada
+ *         description: Usuario o entrega no encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Usuario no encontrado
  *       500:
- *         description: Error del servidor
+ *         description: Error interno al procesar la solicitud
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Error al procesar la solicitud
+ *                 error:
+ *                   type: string
+ *                   example: Error interno del servidor
  */
-router.put(
-  "/propuestas/:proposal_id",
-  authMiddleware,
-  obtenerUserIdDeToken,
-  updateProposal
-);
 
-/**
- * @swagger
- * /api/propuestas/{proposal_id}:
- *   delete:
- *     summary: Elimina una propuesta de tesis
- *     tags: [Propuesta Tesis]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: proposal_id
- *         required: true
- *         schema:
- *           type: integer
- *         description: ID de la propuesta a eliminar
- *     responses:
- *       200:
- *         description: Propuesta eliminada correctamente
- *       404:
- *         description: Propuesta no encontrada
- *       500:
- *         description: Error del servidor
- */
-router.delete(
-  "/propuestas/:proposal_id",
-  authMiddleware,
-  obtenerUserIdDeToken,
-  deleteProposal
-);
+// Ruta para aprobar propuesta
+router.post("/aprobar-propuesta", authMiddleware,admin, aprobProposal);
 
 module.exports = router;

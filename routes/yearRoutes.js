@@ -28,7 +28,7 @@ const adminOrSuper = verifyRole([3]);
 /**
  * @swagger
  * tags:
- *   name: Years
+ *   name: Años
  *   description: Operaciones relacionadas con los años
  */
 
@@ -38,7 +38,7 @@ const adminOrSuper = verifyRole([3]);
  *   get:
  *     summary: Listar todos los años
  *     description: Devuelve una lista de todos los años registrados en la base de datos.
- *     tags: [Years]
+ *     tags: [Años]
  *     security:
  *       - bearerAuth: []
  *     responses:

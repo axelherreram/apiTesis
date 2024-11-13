@@ -42,9 +42,17 @@ const listAllLogs = async (req, res) => {
 
 
 const listLogsByUser = async (req, res) => {
-  const user_id = req.params.user_id;
+  const carnet = req.params.carnet;
 
   try {
+
+    const user = await User.findOne({ where: { carnet } });
+    if(!user){
+      return res.status(404).json({ message: 'No se encontró el usuario' });
+    }
+
+    const user_id = user.user_id;
+
     const logs = await AppLog.findAll({
       where: { user_id },
       order: [['date', 'DESC']] 

@@ -12,16 +12,16 @@ const admin = verifyRole([3]); // Solo Admin
 /**
  * @swagger
  * tags:
- *   name: Usuarios
- *   description: Gestión de usuarios y filtrado
+ *   name: Estudiantes
+ *   description: Gestión de estudiantes y filtrado
  */
 
 /**
  * @swagger
- * /api/sedes/{sede_id}/cursos/{course_id}/usuarios/{year}:
+ * /api/sedes/{sede_id}/cursos/{course_id}/estudiantes/{year}:
  *   get:
- *     summary: Listar todos los usuarios asignados a un curso en una sede específica y registrados en un año determinado
- *     tags: [Usuarios]
+ *     summary: Listar todos los estudiantes asignados a un curso en una sede específica y registrados en un año determinado
+ *     tags: [Estudiantes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -30,22 +30,22 @@ const admin = verifyRole([3]); // Solo Admin
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID de la sede para listar los usuarios
+ *         description: ID de la sede para listar los estudiantes
  *       - in: path
  *         name: course_id
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID del curso para listar los usuarios asignados
+ *         description: ID del curso para listar los estudiantes asignados
  *       - in: path
  *         name: year
  *         schema:
  *           type: integer
  *         required: true
- *         description: Año de registro para filtrar a los usuarios
+ *         description: Año de registro para filtrar a los estudiantes
  *     responses:
  *       200:
- *         description: Lista de usuarios asignados al curso obtenida exitosamente
+ *         description: Lista de estudiantes asignados al curso obtenida exitosamente
  *         content:
  *           application/json:
  *             schema:
@@ -70,16 +70,16 @@ const admin = verifyRole([3]); // Solo Admin
  *       401:
  *         description: No autorizado
  *       404:
- *         description: Curso, sede o usuarios no encontrados
+ *         description: Curso, sede o estudiantes no encontrados
  *       500:
  *         description: Error en el servidor
  */
 router.get(
-  "/sedes/:sede_id/cursos/:course_id/usuarios/:year",
+  "/sedes/:sede_id/cursos/:course_id/estudiantes/:year",
   authMiddleware,              // Verifica si el usuario está autenticado
   adminOrTerna,                // Solo Admin o Terna pueden acceder
   obtenerUserIdDeToken,        // Extrae el user_id del token JWT
-  userController.getUsersByCourse // Llama al controlador para listar usuarios por curso y sede
+  userController.getUsersByCourse // Llama al controlador para listar estudiantes por curso y sede
 );
 
 /**
@@ -87,7 +87,7 @@ router.get(
  * /api/usuarios/perfil:
  *   get:
  *     summary: Obtener perfil del usuario autenticado por token
- *     tags: [Usuarios]
+ *     tags: [Estudiantes]
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -130,10 +130,10 @@ router.get(
 
 /**
  * @swagger
- * /api/sedes/{sede_id}/usuarios/no-terna/{year}:
+ * /api/sedes/{sede_id}/estudiantes/no-terna/{year}:
  *   get:
  *     summary: Listar todos los estudiantes que no están asignados a ninguna terna en una sede específica y registrados en un año determinado
- *     tags: [Usuarios]
+ *     tags: [Estudiantes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -179,7 +179,7 @@ router.get(
  *         description: Error en el servidor
  */
 router.get(
-  "/sedes/:sede_id/usuarios/no-terna/:year",
+  "/sedes/:sede_id/estudiantes/no-terna/:year",
   authMiddleware,            
   admin,               
   obtenerUserIdDeToken,        
@@ -188,10 +188,10 @@ router.get(
 
 /**
  * @swagger
- * /api/sedes/{sede_id}/usuarios/data-graphics:
+ * /api/sedes/{sede_id}/estudiantes/data-graphics:
  *   get:
  *     summary: Obtener estadísticas de estudiantes para una sede específica
- *     tags: [Usuarios]
+ *     tags: [Estudiantes]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -225,7 +225,7 @@ router.get(
  *         description: Error en el servidor
  */
 router.get(
-  "/sedes/:sede_id/usuarios/data-graphics",
+  "/sedes/:sede_id/estudiantes/data-graphics",
   authMiddleware,          
   admin,                  
   userController.dataGraphics 

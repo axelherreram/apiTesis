@@ -11,7 +11,7 @@ const admin = verifyRole([3]);
 /**
  * @swagger
  * tags:
- *   - name: CourseSedeAssignment
+ *   - name: Asignación de curso a sede
  *     description: Operaciones de asignación de cursos a sedes
  * components:
  *   schemas:
@@ -45,7 +45,7 @@ const admin = verifyRole([3]);
  * /api/crearAsignacionSedeCurso:
  *   post:
  *     summary: Crear una asignación de curso a sede
- *     tags: [CourseSedeAssignment]
+ *     tags: [Asignación de curso a sede]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -72,7 +72,7 @@ const admin = verifyRole([3]);
  * /api/cursosPorSede/{sede_id}:
  *   get:
  *     summary: Obtener los cursos asignados a una sede
- *     tags: [CourseSedeAssignment]
+ *     tags: [Asignación de curso a sede]
  *     security:
  *       - bearerAuth: []
  *     parameters:

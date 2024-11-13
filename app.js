@@ -9,21 +9,16 @@ const userRoutes = require('./routes/userRoutes');
 const AppLogRoutes = require('./routes/appLogRoutes');
 const sedeRoutes = require('./routes/sedeRoutes');
 const TaskRoutes = require('./routes/taskRoutes');
-const ThesisProposalRoutes = require('./routes/thesisProposalRoutes');
 const rolRoutes = require('./routes/rolRoutes');
 const CourseRoutes = require('./routes/CourseRoutes');
-const studentAssignmentRoutes = require('./routes/studentAssignmentRoutes');
-const TernasRoutes = require('./routes/ternaRoutes');
 const StudentRoutes = require('./routes/studentRoutes');
 const typeTaskRoutes = require('./routes/typeTaskRoute');
 const CourseSedeAssignmentRoutes = require('./routes/courseSedeAssignmentRoutes');
 const YearRoutes = require('./routes/yearRoutes')
-const ternaAsignGroupRoutes = require('./routes/ternaAsignGroupRoutes');
-const GroupTernaRoutes = require('./routes/groupTernaRoutes');
+const ThesisProposalRoutes = require('./routes/thesisProposalRoutes');
 const professorRoutes = require('./routes/professorRoutes');
 const TimeLineRoutes = require('./routes/timeLineRoutes');
 const submisionRoute = require('./routes/submissionsRoute');
-const ternaAsignStudentRoutes = require('./routes/TernaAsignStudentRoutes');
 
 const path = require('path');
 const cors = require('cors');
@@ -50,21 +45,16 @@ app.use('/api', userRoutes);
 app.use('/api', AppLogRoutes);
 app.use('/api', sedeRoutes);
 app.use('/api', TaskRoutes);
-app.use('/api', ThesisProposalRoutes);
 app.use('/api', rolRoutes);
 app.use('/api', CourseRoutes);
-app.use('/api', studentAssignmentRoutes);
-app.use('/api', TernasRoutes);
 app.use('/api', StudentRoutes);
 app.use('/api', typeTaskRoutes);
 app.use('/api', CourseSedeAssignmentRoutes);
 app.use('/api', YearRoutes)
-app.use('/api', ternaAsignGroupRoutes);
-app.use('/api', GroupTernaRoutes);
+app.use('/api', ThesisProposalRoutes);
 app.use('/api', professorRoutes);
 app.use('/api', TimeLineRoutes);
 app.use('/api', submisionRoute);
-app.use('/api', ternaAsignStudentRoutes);
 
 
 
@@ -74,7 +64,7 @@ sequelize.sync({ alter: false, force: false })
     console.log('Base de datos sincronizada');
     await initializetables(); 
     app.listen(3000, () => {
-      console.log('Servidor ejecutándose en el puerto 3000');
+      console.log('Servidor ejecutándose en el puerto 3000', 'http://localhost:3000/api-docs');
     });
   })
   .catch(error => {

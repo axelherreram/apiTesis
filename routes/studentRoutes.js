@@ -11,7 +11,7 @@ const admin = verifyRole([3]);
 /**
  * @swagger
  * tags:
- *   name: UsuariosXexcel
+ *   name: Subir usuarios por Excel
  *   description: Operaciones para subir Usuarios por medio de un archivo Excel
  */
 
@@ -22,7 +22,7 @@ const admin = verifyRole([3]);
  *     summary: Cargar usuarios masivamente desde un archivo Excel
 *     security:
  *       - bearerAuth: []
- *     tags: [UsuariosXexcel]
+ *     tags: [Subir usuarios por Excel]
  *     consumes:
  *       - multipart/form-data
  *     requestBody:
