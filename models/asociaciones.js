@@ -4,13 +4,9 @@ const Course = require('./course');
 const StudentAssignment = require('./studentAssignment');
 const Sede = require('./sede');
 const CourseSedeAssignment = require('./courseSedeAssignment');
-const groupTerna = require('./groupTerna');
-const rolTerna = require('./rolTerna');
-const ternaAsignGroup = require('./ternaAsignGroup');
 const Roles = require('./roles');
 const TimelineEventos = require('./timelineEventos');
 const Task = require('./task');
-const TernaAsignStudent = require('./ternaAsignStudent'); // Importar TernaAsignStudent
 
 module.exports = function associateModels() {
   // Relación entre User y Sede
@@ -49,22 +45,8 @@ module.exports = function associateModels() {
   // Relación entre Task y CourseSedeAssignment
   Task.belongsTo(CourseSedeAssignment, { foreignKey: 'course_id' });
 
-  // Agregar relaciones de Terna
-  ternaAsignGroup.belongsTo(User, { foreignKey: 'user_id' });
-  User.hasMany(ternaAsignGroup, { foreignKey: 'user_id' });
-
-  ternaAsignGroup.belongsTo(groupTerna, { foreignKey: 'groupTerna_id' });
-  groupTerna.hasMany(ternaAsignGroup, { foreignKey: 'groupTerna_id' });
-
-  ternaAsignGroup.belongsTo(rolTerna, { foreignKey: 'rolTerna_id' });
-  rolTerna.hasMany(ternaAsignGroup, { foreignKey: 'rolTerna_id' });
 
   // Relación entre User y Roles
   User.belongsTo(Roles, { foreignKey: 'rol_id', as: 'role' });
 
-  // Relación entre TernaAsignStudent, User y groupTerna
-  TernaAsignStudent.belongsTo(User, { foreignKey: 'student_id' });
-  User.hasMany(TernaAsignStudent, { foreignKey: 'student_id' });
-  TernaAsignStudent.belongsTo(groupTerna, { foreignKey: 'groupTerna_id' });
-  groupTerna.hasMany(TernaAsignStudent, { foreignKey: 'groupTerna_id' });
 };

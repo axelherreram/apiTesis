@@ -57,7 +57,7 @@ const User = sequelize.define(
       type: DataTypes.STRING(200),
       allowNull: true,
     },
-    activoTerna: {
+    active: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: false,
