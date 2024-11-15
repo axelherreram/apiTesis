@@ -10,25 +10,15 @@ const authMiddleware = require("../middlewares/authMiddleware"); // JWT middlewa
  * @swagger
  * tags:
  *   name: Grupos de Comisión
- *   description: Operaciones para gestionar y listar grupos de comisión y sus catedraticos/profesores.
- *
- * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
- *
- * security:
- *   - bearerAuth: []
+ *   description: Operaciones para gestionar y listar grupos de comisión y sus catedráticos/profesores.
  */
 
 /**
  * @swagger
  * /api/group-comision/users:
  *   get:
- *     summary: Listar catedraticos/profesores. de una comisión en una sede específica
- *     description: Obtiene una lista de catedraticos/profesores. en un grupo de comisión específico dentro de una sede.
+ *     summary: Listar catedráticos/profesores de una comisión en una sede específica
+ *     description: Obtiene una lista de catedráticos/profesores en un grupo de comisión específico dentro de una sede.
  *     tags: [Grupos de Comisión]
  *     security:
  *       - bearerAuth: []  # Requiere autenticación JWT
@@ -47,7 +37,7 @@ const authMiddleware = require("../middlewares/authMiddleware"); // JWT middlewa
  *           type: integer
  *     responses:
  *       200:
- *         description: Lista de catedraticos/profesores. en el grupo de comisión y sede especificados
+ *         description: Lista de catedráticos/profesores en el grupo de comisión y sede especificados
  *         content:
  *           application/json:
  *             schema:
@@ -60,18 +50,11 @@ const authMiddleware = require("../middlewares/authMiddleware"); // JWT middlewa
  *                 usuarios:
  *                   type: array
  *                   items:
- *                     type: object
- *                     properties:
- *                       user_id:
- *                         type: integer
- *                       name:
- *                         type: string
- *                       email:
- *                         type: string
+ *                     $ref: '#/components/schemas/User'
  *       404:
  *         description: Grupo de comisión o sede no encontrado
  *       500:
- *         description: Error en el servidor al listar los catedraticos/profesores.
+ *         description: Error en el servidor al listar los catedráticos/profesores
  */
 router.get("/group-comision/users", authMiddleware, listUsersByGroupAndSede);
 
@@ -108,20 +91,7 @@ router.get("/group-comision/users", authMiddleware, listUsersByGroupAndSede);
  *                 groups:
  *                   type: array
  *                   items:
- *                     type: object
- *                     properties:
- *                       group_id:
- *                         type: integer
- *                       year_id:
- *                         type: integer
- *                       sede_id:
- *                         type: integer
- *                       createdAt:
- *                         type: string
- *                         format: date-time
- *                       updatedAt:
- *                         type: string
- *                         format: date-time
+ *                     $ref: '#/components/schemas/GroupComision'
  *       404:
  *         description: Año o sede no encontrados
  *       500:

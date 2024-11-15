@@ -17,16 +17,6 @@ const admin = verifyRole([3]); // Solo Admin
  * tags:
  *   name: Professors
  *   description: Operaciones relacionadas con los profesores
- *
- * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
- *
- * security:
- *   - bearerAuth: []
  */
 
 /**
@@ -59,16 +49,7 @@ const admin = verifyRole([3]); // Solo Admin
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   user_id:
- *                     type: integer
- *                   email:
- *                     type: string
- *                   userName:
- *                     type: string
- *                   profilePhoto:
- *                     type: string
+ *                 $ref: '#/components/schemas/User'
  *       400:
  *         description: El parámetro sede_id es obligatorio
  *       500:
@@ -106,16 +87,7 @@ router.get("/professors", authMiddleware, admin, listProfessors);
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   user_id:
- *                     type: integer
- *                   email:
- *                     type: string
- *                   userName:
- *                     type: string
- *                   profilePhoto:
- *                     type: string
+ *                 $ref: '#/components/schemas/User'
  *       400:
  *         description: El parámetro sede_id es obligatorio
  *       500:
@@ -159,12 +131,7 @@ router.get("/professors/activos", authMiddleware, admin, listActiveProfessors);
  *                 message:
  *                   type: string
  *                 data:
- *                   type: object
- *                   properties:
- *                     user_id:
- *                       type: integer
- *                     active:
- *                       type: boolean
+ *                   $ref: '#/components/schemas/User'
  *       404:
  *         description: Usuario no encontrado
  *       500:
@@ -186,28 +153,7 @@ router.patch("/professors/:user_id/status", authMiddleware, admin, updateProfess
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               email:
- *                 type: string
- *                 description: Correo del profesor.
- *                 example: professor@universidad.edu.gt
- *               name:
- *                 type: string
- *                 description: Nombre del profesor.
- *                 example: Juan Pérez
- *               carnet:
- *                 type: string
- *                 description: Carnet del profesor.
- *                 example: 123456
- *               sede_id:
- *                 type: integer
- *                 description: ID de la sede.
- *                 example: 1
- *               year:
- *                 type: integer
- *                 description: Año actual.
- *                 example: 2024
+ *             $ref: '#/components/schemas/User'
  *     responses:
  *       201:
  *         description: Profesor creado exitosamente.
@@ -221,24 +167,8 @@ router.patch("/professors/:user_id/status", authMiddleware, admin, updateProfess
  *                   example: Profesor creado exitosamente.
  *       400:
  *         description: El usuario con el correo ya está registrado.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: El usuario con el correo ya está registrado.
  *       500:
  *         description: Error en el servidor al crear el profesor.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Error en el servidor al crear el profesor.
  */
 router.post("/create/professor", authMiddleware, obtenerUserIdDeToken, admin, createProfessor);
 

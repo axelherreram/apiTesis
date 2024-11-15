@@ -9,63 +9,6 @@ const { upload, handleMulterErrors } = require("../middlewares/uploadMiddleware"
  * tags:
  *   name: Authentication
  *   description: Operaciones de autenticación de usuarios
- *
- * components:
- *   schemas:
- *     User:
- *       type: object
- *       required:
- *         - email
- *         - password
- *         - name
- *         - carnet
- *         - sede_id
- *         - rol_id
- *       properties:
- *         user_id:
- *           type: integer
- *           description: Auto-generated ID of the user
- *         email:
- *           type: string
- *           description: User's email
- *         password:
- *           type: string
- *           description: User's password
- *         name:
- *           type: string
- *           description: User's name
- *         carnet:
- *           type: string
- *           description: User's ID card number
- *         sede_id:
- *           type: integer
- *           description: ID of the user's location
- *         rol_id:
- *           type: integer
- *           description: ID of the user's role
- *         year:
- *           type: integer
- *           description: Year of user's registration
- *         profilePhoto:
- *           type: string
- *           description: User's profile photo
- *         activoTerna:
- *           type: boolean
- *           description: Active status in the terna
- *       example:
- *         email: example@gmail.com
- *         password: example123
- *         name: Juan Pérez
- *         carnet: 123456789
- *         sede_id: 1
- *         rol_id: 1
- *         year: 2021
- *
- * securitySchemes:
- *   bearerAuth:
- *     type: http
- *     scheme: bearer
- *     bearerFormat: JWT
  */
 
 /**

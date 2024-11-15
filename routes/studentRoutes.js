@@ -1,18 +1,17 @@
 const express = require("express");
 const router = express.Router();
-const {
-  bulkUploadUsers,
-} = require("../controllers/studentController");
+const { bulkUploadUsers } = require("../controllers/studentController");
 const upload = require("../middlewares/uploadExcel");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
-const admin = verifyRole([3]);
+
+const admin = verifyRole([3]); // Solo Admin
 
 /**
  * @swagger
  * tags:
  *   name: Subir usuarios por Excel
- *   description: Operaciones para subir Usuarios por medio de un archivo Excel
+ *   description: Operaciones para subir usuarios por medio de un archivo Excel
  */
 
 /**
@@ -20,36 +19,24 @@ const admin = verifyRole([3]);
  * /api/usuarios/cargaMasiva:
  *   post:
  *     summary: Cargar usuarios masivamente desde un archivo Excel
-*     security:
+ *     security:
  *       - bearerAuth: []
  *     tags: [Subir usuarios por Excel]
- *     consumes:
- *       - multipart/form-data
  *     requestBody:
+ *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
- *             type: object
- *             properties:
- *               archivo:
- *                 type: string
- *                 format: binary
- *                 description: Archivo Excel con los usuarios
- *                 required: true
- *               sede_id:
- *                 type: integer
- *                 description: ID de la sede a asignar a los usuarios
- *                 required: true
- *               rol_id:
- *                 type: integer
- *                 description: ID del rol a asignar a los usuarios
- *                 required: true
- *               course_id:
- *                 type: integer
- *                 description: ID del curso a asignar a los usuarios (opcional)
+ *             $ref: '#/components/schemas/BulkUpload'
  *     responses:
  *       201:
  *         description: Usuarios cargados exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
  *       400:
  *         description: Error en la carga del archivo
  *       500:

@@ -15,18 +15,7 @@ const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administra
  * tags:
  *   name: Comisiones
  *   description: Operaciones relacionadas con comisiones y grupos de comisión.
- * 
- * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
- *
- * security:
- *   - bearerAuth: []
  */
-
 
 /**
  * @swagger
@@ -42,25 +31,7 @@ const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administra
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               year:
- *                 type: integer
- *                 description: Año de creación
- *               sede_id:
- *                 type: integer
- *                 description: ID de la sede
- *               groupData:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     user_id:
- *                       type: integer
- *                       description: ID del usuario
- *                     rol_comision_id:
- *                       type: integer
- *                       description: ID del rol de la comisión
+ *             $ref: '#/components/schemas/Comisiones'
  *     responses:
  *       201:
  *         description: Grupo de comisión creado exitosamente
@@ -73,7 +44,7 @@ const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administra
  *                   type: string
  *                   example: Grupo de comisión creado exitosamente
  *                 group:
- *                   type: object
+ *                   $ref: '#/components/schemas/Comisiones'
  *       500:
  *         description: Error en el servidor
  */
@@ -132,17 +103,14 @@ router.delete("/comisiones/:group_id/usuario/:user_id", authMiddleware, admin, r
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               user_id:
- *                 type: integer
- *                 description: ID del usuario a agregar
- *               rol_comision_id:
- *                 type: integer
- *                 description: ID del rol de comisión del usuario
+ *             $ref: '#/components/schemas/Comisiones'
  *     responses:
  *       201:
  *         description: Usuario agregado exitosamente a la comisión
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comisiones'
  *       404:
  *         description: Grupo de comisión no encontrado
  *       500:

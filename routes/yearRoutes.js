@@ -9,24 +9,6 @@ const adminOrSuper = verifyRole([3]);
 
 /**
  * @swagger
- * components:
- *   schemas:
- *     Year:
- *       type: object
- *       properties:
- *         year_id:
- *           type: integer
- *           description: ID único del año
- *         year:
- *           type: integer
- *           description: El valor del año 
- *       example:
- *         year_id: 1
- *         year: 2024
- */
-
-/**
- * @swagger
  * tags:
  *   name: Años
  *   description: Operaciones relacionadas con los años

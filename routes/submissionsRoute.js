@@ -16,11 +16,17 @@ const student = verifyRole([1]);
 
 /**
  * @swagger
+ * tags:
+ *   name: Submisiones
+ *   description: Gestión de submisiones de tareas
+ */
+
+/**
+ * @swagger
  * /api/submit/task:
  *   post:
  *     summary: Sube un archivo PDF para la submisión de una tarea
- *     tags:
- *       - Submisiones
+ *     tags: [Submisiones]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -46,61 +52,29 @@ const student = verifyRole([1]);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Entrega realizada exitosamente"
- *                 submission:
- *                   type: object
- *                   properties:
- *                     submission_id:
- *                       type: integer
- *                       example: 1
- *                     directory:
- *                       type: string
- *                       example: "uploads/submissions/1234567890-nombrearchivo.pdf"
- *                     task_id:
- *                       type: integer
- *                       example: 1
- *                     user_id:
- *                       type: integer
- *                       example: 1
- *                     submission_date:
- *                       type: string
- *                       format: date-time
- *                       example: "2024-09-26T14:48:00.000Z"
+ *               $ref: '#/components/schemas/Submissions'
  *       400:
- *         description: Error en la solicitud (por ejemplo, archivo no subido o formato incorrecto)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "No se ha subido ningún archivo"
+ *         description: Error en la solicitud (archivo no subido o formato incorrecto)
  *       404:
  *         description: Tarea o Usuario no encontrado
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Tarea no encontrada"
  */
+router.post(
+  "/submit/task",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  student,
+  upload.single("file"),
+  createSubmission
+);
 
 /**
  * @swagger
  * /api/submit/task/{user_id}/{task_id}:
  *   get:
  *     summary: Obtiene las submisiones de una tarea para un usuario específico
- *     tags:
- *       - Submisiones
+ *     tags: [Submisiones]
  *     security:
- *      - bearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: user_id
@@ -122,43 +96,24 @@ const student = verifyRole([1]);
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   submission_id:
- *                     type: integer
- *                     example: 1
- *                   directory:
- *                     type: string
- *                     example: "uploads/submissions/1234567890-nombrearchivo.pdf"
- *                   task_id:
- *                     type: integer
- *                     example: 1
- *                   user_id:
- *                     type: integer
- *                     example: 1
- *                   submission_date:
- *                     type: string
- *                     format: date-time
- *                     example: "2024-09-26T14:48:00.000Z"
+ *                 $ref: '#/components/schemas/Submissions'
  *       500:
  *         description: Error al obtener las submisiones
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Error al obtener las entregas"
  */
+router.get(
+  "/submit/task/:user_id/:task_id",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  adminTernastudent,
+  listSubmissions
+);
 
 /**
  * @swagger
  * /api/submit/task/{submission_id}:
  *   delete:
  *     summary: Elimina una entrega y su archivo correspondiente
- *     tags:
- *       - Submisiones
+ *     tags: [Submisiones]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -170,44 +125,26 @@ const student = verifyRole([1]);
  *           type: integer
  *     responses:
  *       200:
- *         description: Entrega eliminada exitosamente junto con su archivo
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Entrega eliminada exitosamente junto con su archivo"
+ *         description: Entrega eliminada exitosamente
  *       404:
  *         description: Entrega no encontrada
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Entrega no encontrada"
  *       500:
  *         description: Error al eliminar la entrega
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Error al eliminar la entrega"
  */
+router.delete(
+  "/submit/task/:submission_id",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  student,
+  deleteSubmissions
+);
 
 /**
  * @swagger
  * /api/submit/task/{submission_id}:
  *   put:
  *     summary: Actualiza una entrega y reemplaza el archivo anterior
- *     tags:
- *       - Submisiones
+ *     tags: [Submisiones]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -234,74 +171,12 @@ const student = verifyRole([1]);
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Entrega actualizada exitosamente"
- *                 submission:
- *                   type: object
- *                   properties:
- *                     submission_id:
- *                       type: integer
- *                       example: 1
- *                     directory:
- *                       type: string
- *                       example: "uploads/submissions/1234567890-nombrearchivo.pdf"
- *                     task_id:
- *                       type: integer
- *                       example: 1
- *                     user_id:
- *                       type: integer
- *                       example: 1
- *                     submission_date:
- *                       type: string
- *                       format: date-time
- *                       example: "2024-09-26T14:48:00.000Z"
+ *               $ref: '#/components/schemas/Submissions'
  *       404:
  *         description: Entrega no encontrada
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Entrega no encontrada"
  *       500:
  *         description: Error al actualizar la entrega
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Error al actualizar la entrega"
  */
-
-router.post(
-  "/submit/task",
-  authMiddleware,           
-  obtenerUserIdDeToken,      
-  student,                  
-  upload.single("file"),    
-  createSubmission            
-);
-router.get(
-  "/submit/task/:user_id/:task_id",
-  authMiddleware,
-  obtenerUserIdDeToken,
-  adminTernastudent,
-  listSubmissions
-);
-router.delete(
-  "/submit/task/:submission_id",
-  authMiddleware,
-  obtenerUserIdDeToken,
-  student,
-  deleteSubmissions
-);
 router.put(
   "/submit/task/:submission_id",
   authMiddleware,

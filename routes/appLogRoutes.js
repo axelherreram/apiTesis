@@ -30,7 +30,7 @@ const admin = verifyRole([3]);
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID del usuario para el que se listarán las bitácoras
+ *         description: Carnet del usuario para el que se listarán las bitácoras
  *     responses:
  *       200:
  *         description: Lista de bitácoras

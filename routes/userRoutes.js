@@ -3,10 +3,10 @@ const userController = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+
 const router = express.Router();
 
-// Middleware para verificar que el usuario tenga rol de Admin o Terna
-const adminOrTerna = verifyRole([2, 3]); // Rol 2 para Terna, Rol 3 para Admin
+const adminOrTerna = verifyRole([2, 3]); // Roles permitidos: Terna (2), Admin (3)
 const admin = verifyRole([3]); // Solo Admin
 
 /**
@@ -51,22 +51,7 @@ const admin = verifyRole([3]); // Solo Admin
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   user_id:
- *                     type: integer
- *                   email:
- *                     type: string
- *                   userName:
- *                     type: string
- *                   carnet:
- *                     type: string
- *                   sede:
- *                     type: integer
- *                   registrationYear:
- *                     type: integer
- *                   roleName:
- *                     type: string
+ *                 $ref: '#/components/schemas/User'
  *       401:
  *         description: No autorizado
  *       404:
@@ -76,10 +61,10 @@ const admin = verifyRole([3]); // Solo Admin
  */
 router.get(
   "/sedes/:sede_id/cursos/:course_id/estudiantes/:year",
-  authMiddleware,              // Verifica si el usuario está autenticado
-  adminOrTerna,                // Solo Admin o Terna pueden acceder
-  obtenerUserIdDeToken,        // Extrae el user_id del token JWT
-  userController.getUsersByCourse // Llama al controlador para listar estudiantes por curso y sede
+  authMiddleware,
+  adminOrTerna,
+  obtenerUserIdDeToken,
+  userController.getUsersByCourse
 );
 
 /**
@@ -96,24 +81,7 @@ router.get(
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 user_id:
- *                   type: integer
- *                 email:
- *                   type: string
- *                 userName:
- *                   type: string
- *                 profilePhoto:
- *                   type: string
- *                 carnet:
- *                   type: string
- *                 sede:
- *                   type: integer
- *                 registrationYear:
- *                   type: integer
- *                 roleName:
- *                   type: string
+ *               $ref: '#/components/schemas/User'
  *       401:
  *         description: No autorizado
  *       404:
@@ -123,9 +91,9 @@ router.get(
  */
 router.get(
   "/usuarios/perfil",
-  authMiddleware,              
-  obtenerUserIdDeToken,   
-  userController.listuserbytoken 
+  authMiddleware,
+  obtenerUserIdDeToken,
+  userController.listuserbytoken
 );
 
 /**
@@ -157,20 +125,7 @@ router.get(
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   user_id:
- *                     type: integer
- *                   email:
- *                     type: string
- *                   userName:
- *                     type: string
- *                   carnet:
- *                     type: string
- *                   sede:
- *                     type: integer
- *                   profilePhoto:
- *                     type: string
+ *                 $ref: '#/components/schemas/User'
  *       401:
  *         description: No autorizado
  *       404:
@@ -180,10 +135,10 @@ router.get(
  */
 router.get(
   "/sedes/:sede_id/estudiantes/no-terna/:year",
-  authMiddleware,            
-  admin,               
-  obtenerUserIdDeToken,        
-  userController.listStudentNotTerna 
+  authMiddleware,
+  admin,
+  obtenerUserIdDeToken,
+  userController.listStudentNotTerna
 );
 
 /**
@@ -226,9 +181,9 @@ router.get(
  */
 router.get(
   "/sedes/:sede_id/estudiantes/data-graphics",
-  authMiddleware,          
-  admin,                  
-  userController.dataGraphics 
+  authMiddleware,
+  admin,
+  userController.dataGraphics
 );
 
 module.exports = router;

@@ -12,7 +12,14 @@ const admin = verifyRole([3]);
 
 /**
  * @swagger
- *  /api/timeline/{user_id}/{course_id}:
+ * tags:
+ *   name: Timeline
+ *   description: Operaciones relacionadas con eventos en la línea de tiempo
+ */
+
+/**
+ * @swagger
+ * /api/timeline/{user_id}/{course_id}:
  *   get:
  *     summary: Lista todos los eventos de la línea de tiempo de un usuario en un curso específico
  *     tags: [Timeline]
@@ -39,17 +46,9 @@ const admin = verifyRole([3]);
  *             schema:
  *               type: array
  *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                     description: ID del evento
- *                   descripcion:
- *                     type: string
- *                     description: Descripción del evento
- *                   fecha:
- *                     type: string
- *                     description: Fecha del evento
+ *                 $ref: '#/components/schemas/TimelineEventos'
+ *       404:
+ *         description: Usuario o curso no encontrado
  *       500:
  *         description: Error en el servidor
  */
@@ -68,23 +67,14 @@ router.get("/timeline/:user_id/:course_id", authMiddleware, listTimeline);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               user_id:
- *                 type: integer
- *                 description: ID del usuario que recibirá el comentario
- *               description:
- *                 type: string
- *                 description: Comentario sobre la entrega
- *               course_id:
- *                 type: integer
- *                 description: ID del curso
- *               task_id:
- *                 type: integer
- *                 description: ID de la tarea (entrega) asociada al comentario
+ *             $ref: '#/components/schemas/TimelineEventos'
  *     responses:
  *       201:
  *         description: Comentario creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/TimelineEventos'
  *       404:
  *         description: Usuario o curso no encontrado
  *       500:

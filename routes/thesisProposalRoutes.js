@@ -8,10 +8,16 @@ const admin = verifyRole([3]);
 
 /**
  * @swagger
+ * tags:
+ *   name: Aprobar tesis
+ *   description: Operaciones relacionadas con la aprobación de propuestas de tesis
+ */
+
+/**
+ * @swagger
  * /api/aprobar-propuesta:
  *   post:
- *     tags:
- *       - Aprobar tesis
+ *     tags: [Aprobar tesis]
  *     summary: Aprueba una propuesta de tesis
  *     description: Aprueba una propuesta específica para un estudiante mediante su ID y el ID de la entrega. Solo una propuesta de 1 a 3 puede ser aprobada.
  *     security:
@@ -21,20 +27,7 @@ const admin = verifyRole([3]);
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             properties:
- *               user_id:
- *                 type: integer
- *                 description: ID del usuario (estudiante)
- *                 example: 1
- *               submission_id:
- *                 type: integer
- *                 description: ID de la entrega
- *                 example: 2
- *               approved_proposal:
- *                 type: integer
- *                 description: Número de la propuesta que se aprueba (1, 2 o 3)
- *                 example: 1
+ *             $ref: '#/components/schemas/Submissions'
  *     responses:
  *       200:
  *         description: Propuesta actualizada exitosamente
@@ -82,6 +75,6 @@ const admin = verifyRole([3]);
  */
 
 // Ruta para aprobar propuesta
-router.post("/aprobar-propuesta", authMiddleware,admin, aprobProposal);
+router.post("/aprobar-propuesta", authMiddleware, admin, aprobProposal);
 
 module.exports = router;

@@ -13,31 +13,6 @@ const admin = verifyRole([3]);
  * tags:
  *   - name: Asignación de curso a sede
  *     description: Operaciones de asignación de cursos a sedes
- * components:
- *   schemas:
- *     CourseSedeAssignment:
- *       type: object
- *       properties:
- *         asigCourse_id:
- *           type: integer
- *           description: ID de la asignación de curso a sede
- *         course_id:
- *           type: integer
- *           description: ID del curso
- *           example: 1
- *         sede_id:
- *           type: integer
- *           description: ID de la sede
- *           example: 1
- *         courseActive:
- *           type: boolean
- *           description: Estado de activación del curso
- *       required:
- *         - course_id
- *         - sede_id
- *       example:  
- *         course_id: 1
- *         sede_id: 1
  */
 
 /**
@@ -66,6 +41,13 @@ const admin = verifyRole([3]);
  *       500:
  *         description: Error del servidor al crear la asignación
  */
+router.post(
+  "/crearAsignacionSedeCurso",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  SuperAdmin,
+  createSedeAssignment
+);
 
 /**
  * @swagger
@@ -96,15 +78,6 @@ const admin = verifyRole([3]);
  *       500:
  *         description: Error del servidor al recuperar los cursos
  */
-
-router.post(
-  "/crearAsignacionSedeCurso",
-  authMiddleware,
-  obtenerUserIdDeToken,
-  SuperAdmin,
-  createSedeAssignment
-);
-
 router.get(
   "/cursosPorSede/:sede_id",
   authMiddleware,

@@ -10,12 +10,12 @@ const adminOrTerna = verifyRole([3]);
  * @swagger
  * tags:
  *   name: Tipo de tarea
- *   description: Recuperar tipo de tarea
+ *   description: Operaciones para recuperar los tipos de tarea
  */
 
 /**
  * @swagger
- * /api/typetaks:
+ * /api/typetasks:
  *   get:
  *     summary: Obtener todos los tipos de tarea
  *     description: Obtiene todos los tipos de tarea de la base de datos
@@ -30,7 +30,7 @@ const adminOrTerna = verifyRole([3]);
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Role'
+ *                 $ref: '#/components/schemas/TypeTask'
  *       401:
  *         description: No autorizado
  *       403:
@@ -38,6 +38,6 @@ const adminOrTerna = verifyRole([3]);
  *       500:
  *         description: Error en el servidor
  */
-router.get('/typetaks', authMiddleware, adminOrTerna, listarTypeTask);
+router.get('/typetasks', authMiddleware, adminOrTerna, listarTypeTask);
 
 module.exports = router;

@@ -7,7 +7,6 @@ const Sede = require("../models/sede");
 const Task = require("../models/task");
 const TimelineEvents = require("../models/timelineEventos");
 const User = require("../models/user");
-const StudentAssignment = require("../models/studentAssignment");
 const CourseAssignment = require("../models/courseAssignment");
 const typeTask = require("../models/typeTask");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");

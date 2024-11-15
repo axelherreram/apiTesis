@@ -5,31 +5,14 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const obtenerUserIdDeToken = require('../middlewares/obtenerUserIdDeToken');
 
 const router = express.Router();
-const adminOrTerna = verifyRole([2,3]);
+const adminOrTerna = verifyRole([2, 3]);
 const superAdmin = verifyRole([4]);
-
 
 /**
  * @swagger
  * tags:
  *   name: Sede
  *   description: Gestión de sedes - operaciones para listar y crear sedes dentro del sistema.
- * 
- * components:
- *   schemas:
- *     Sede:
- *       type: object
- *       required:
- *         - nameSede
- *       properties:
- *         sede_id:
- *          type: integer
- *          description: Identificador único de la sede
- *         nameSede:
- *           type: string
- *           description: Nombre de la sede
- *       example:
- *         nameSede: "Sede Centro"
  */
 
 /**
@@ -51,7 +34,6 @@ const superAdmin = verifyRole([4]);
  *                 $ref: '#/components/schemas/Sede'
  *       500:
  *         description: Error interno del servidor al intentar recuperar las sedes.
- * 
  *   post:
  *     summary: Crea una nueva sede
  *     tags: [Sede]
@@ -66,13 +48,17 @@ const superAdmin = verifyRole([4]);
  *     responses:
  *       201:
  *         description: Sede creada exitosamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Sede'
  *       400:
  *         description: Datos de entrada inválidos. Se requiere el nombre de la sede.
  *       500:
  *         description: Error interno del servidor al intentar crear la sede.
  */
 
-router.get('/sedes',authMiddleware ,listSede);
+router.get('/sedes', authMiddleware, listSede);
 router.post('/sedes', authMiddleware, obtenerUserIdDeToken, superAdmin, createSede);
 
 module.exports = router;
