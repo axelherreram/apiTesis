@@ -19,6 +19,8 @@ const ThesisProposalRoutes = require('./routes/thesisProposalRoutes');
 const professorRoutes = require('./routes/professorRoutes');
 const TimeLineRoutes = require('./routes/timeLineRoutes');
 const submisionRoute = require('./routes/submissionsRoute');
+const GroupComisionRoutes = require('./routes/groupComisionRoutes');
+const comisionRoutes = require('./routes/comisionRoutes');
 
 const path = require('path');
 const cors = require('cors');
@@ -55,6 +57,8 @@ app.use('/api', ThesisProposalRoutes);
 app.use('/api', professorRoutes);
 app.use('/api', TimeLineRoutes);
 app.use('/api', submisionRoute);
+app.use('/api', GroupComisionRoutes);
+app.use('/api', comisionRoutes);
 
 
 
