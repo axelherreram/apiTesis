@@ -16,9 +16,15 @@ const registerUser = async (req, res) => {
     carnet,
     sede_id,
     rol_id,
-    year, 
-    course_id,
+    year,
   } = req.body;
+
+  // Validación de campos requeridos
+  if (!email || !password || !name || !carnet || !sede_id || !rol_id || !year) {
+    return res.status(400).json({
+      message: "Faltan campos requeridos. Por favor, proporcione todos los datos necesarios.",
+    });
+  }
 
   try {
     // Obtener el año actual
@@ -40,54 +46,34 @@ const registerUser = async (req, res) => {
     // Verificar si el usuario ya está registrado
     let user = await User.findOne({ where: { email } });
 
-    if (!user) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      // Crear el usuario con el year_id del año encontrado o creado
-      user = await User.create({
-        email,
-        password: hashedPassword,
-        name,
-        carnet,
-        sede_id,
-        rol_id,
-        year_id: yearRecord.year_id, // Asociar el year_id
-      });
-
-      if (!course_id) {
-        return res
-          .status(201)
-          .json({ message: "Usuario registrado exitosamente" });
-      }
-    }
-
-    // Verificar si ya existe una asignación del curso para el usuario
-    const existingAssignment = await CourseAssignment.findOne({
-      where: {
-        student_id: user.user_id,
-        course_id: course_id,
-      },
-    });
-
-    if (existingAssignment) {
+    if (user) {
       return res.status(400).json({
-        message: `El usuario ya está asignado al curso con ID ${course_id}`,
+        message: `Ya existe un usuario registrado con el correo electrónico ${email}.`,
       });
     }
 
-    // Crear la asignación del curso
-    await CourseAssignment.create({
-      student_id: user.user_id,
-      course_id: course_id,
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Crear el usuario con el year_id del año encontrado o creado
+    user = await User.create({
+      email,
+      password: hashedPassword,
+      name,
+      carnet,
+      sede_id,
+      rol_id,
+      year_id: yearRecord.year_id, // Asociar el year_id
     });
 
-    res
-      .status(201)
-      .json({ message: "Usuario registrado y curso asignado exitosamente" });
+    res.status(201).json({
+      message: "Usuario registrado exitosamente",
+    });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error en el servidor", error: err.message });
+    console.error("Error en el registro de usuario:", err);
+    res.status(500).json({
+      message: "Error en el servidor. Por favor, intente más tarde.",
+      error: err.message,
+    });
   }
 };
 
@@ -127,10 +113,6 @@ const loginUser = async (req, res) => {
       `El usuario inició sesión`,
       "Inicio de sesión"
     );
-
-    const profilePhotoUrl = user.profilePhoto
-      ? `http://localhost:3000/public/fotoPerfil/${user.profilePhoto}`
-      : null;
 
     res.status(200).json({
       message: "Inicio de sesión exitoso",

@@ -9,7 +9,9 @@ const { sendEmailTask } = require("./emailController");
 const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
 const Subbmissions = require("../models/submissions");
+require("dotenv").config();
 
+const BASE_URL = process.env.BASE_URL; 
 const createTask = async (req, res) => {
   const {
     course_id,
@@ -325,37 +327,51 @@ const listInfoTaksByUser = async (req, res) => {
   const { user_id, task_id } = req.params;
 
   try {
+    // Validar si el usuario existe
     const userExist = await User.findByPk(user_id);
     if (!userExist) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
+    // Validar si la tarea existe
     const taskExist = await Task.findByPk(task_id);
     if (!taskExist) {
       return res.status(404).json({ message: "Tarea no encontrada" });
     }
 
-    const task = await Task.findByPk(task_id);
+    // Obtener la información completa de la tarea
+    const task = await Task.findOne({
+      where: { task_id },
+      attributes: ["task_id", "title", "description", "taskStart", "endTask", "note"],
+    });
 
+    // Obtener todas las entregas realizadas por el usuario para esta tarea
     const submissions = await Subbmissions.findAll({
       where: { user_id, task_id },
+      attributes: ["submission_id", "directory", "submission_date", "task_id", "user_id"],
     });
- // Si no hay entregas, retorna un arreglo vacío
- const submission = submissions.map((submission) => {
-  return {
-    submission_id: submission.submission_id,
-    directory: `http://localhost:3000/public/${submission.directory}`,
-    submission_date: submission.submission_date,
-    task_id: submission.task_id,
-    user_id: submission.user_id,
-  };
-});
 
-    res.status(200).json({ task, submission });
+    // Mapear y transformar los datos de las entregas
+    const submission = submissions.map((submission) => ({
+      submission_id: submission.submission_id,
+      directory: `${BASE_URL}/public/${submission.directory}`, // Usar BASE_URL
+      submission_date: submission.submission_date,
+      task_id: submission.task_id,
+      user_id: submission.user_id,
+    }));
+
+    // Responder con la información de la tarea y las entregas del usuario
+    res.status(200).json({ task, submissions: submission });
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener la información", error });
+    console.error("Error al obtener la información de la tarea:", error);
+    res.status(500).json({
+      message: "Error al obtener la información de la tarea",
+      error: error.message || "Error desconocido",
+    });
   }
 };
+
+
 
 module.exports = {
   createTask,
