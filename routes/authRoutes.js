@@ -23,11 +23,45 @@ const { upload, handleMulterErrors } = require("../middlewares/uploadMiddleware"
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/User'
+ *           examples:
+ *             example-1:
+ *               summary: Ejemplo de solicitud para registrar un nuevo usuario
+ *               value:
+ *                 email: "usuario@example.com"
+ *                 password: "Contraseña123"
+ *                 name: "Juan Pérez"
+ *                 carnet: "12345678"
+ *                 sede_id: 1
+ *                 rol_id: 2
+ *                 year: 2024
  *     responses:
  *       201:
- *         description: User successfully created
+ *         description: Usuario creado exitosamente
+ *         content:
+ *           application/json:
+ *             examples:
+ *               example-1:
+ *                 summary: Respuesta exitosa
+ *                 value:
+ *                   message: "Usuario registrado exitosamente"
  *       400:
- *         description: Error in user creation
+ *         description: Error en la creación del usuario, datos inválidos o ya registrado
+ *         content:
+ *           application/json:
+ *             examples:
+ *               example-1:
+ *                 summary: Respuesta de error por datos inválidos
+ *                 value:
+ *                   message: "No se puede crear un año mayor al actual (2024)."
+ *       500:
+ *         description: Error en el servidor
+ *         content:
+ *           application/json:
+ *             examples:
+ *               example-1:
+ *                 summary: Respuesta de error del servidor
+ *                 value:
+ *                   message: "Error en el servidor"
  */
 router.post("/register", authController.registerUser);
 
