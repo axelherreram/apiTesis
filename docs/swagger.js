@@ -471,6 +471,38 @@ const swaggerOptions = {
             year: 2024,
           },
         },
+        EstudianteComision: {
+          type: "object",
+          properties: {
+            estudiante_comision_id: {
+              type: "integer",
+              description: "ID único de la comisión de estudiante",
+              example: 1,
+            },
+            group_id: {
+              type: "integer",
+              description: "ID del grupo de la comisión",
+              example: 2,
+            },
+            user_id: {
+              type: "integer",
+              description: "ID del usuario relacionado con la comisión",
+              example: 5,
+            },
+            year_id: {
+              type: "integer",
+              description: "ID del año académico de la comisión",
+              example: 2024,
+            },
+          },
+          required: ["group_id", "user_id", "year_id"],
+          example: {
+            estudiante_comision_id: 1,
+            group_id: 2,
+            user_id: 5,
+            year_id: 2024,
+          },
+        },
       },
     },
   },
