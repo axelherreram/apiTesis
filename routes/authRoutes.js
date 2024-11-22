@@ -27,8 +27,8 @@ const { upload, handleMulterErrors } = require("../middlewares/uploadMiddleware"
  *             example-1:
  *               summary: Ejemplo de solicitud para registrar un nuevo usuario
  *               value:
- *                 email: "usuario@example.com"
- *                 password: "Contraseña123"
+ *                 email: example@gmail.com
+ *                 password: example123
  *                 name: "Juan Pérez"
  *                 carnet: "12345678"
  *                 sede_id: 1
