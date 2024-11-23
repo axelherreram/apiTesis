@@ -8,6 +8,8 @@ const router = express.Router();
 
 const adminOrTerna = verifyRole([2, 3]); // Roles permitidos: Terna (2), Admin (3)
 const admin = verifyRole([3]); // Solo Admin
+const superAdmin = verifyRole([4]); // Solo Admin
+
 
 /**
  * @swagger
@@ -139,6 +141,155 @@ router.get(
   authMiddleware,
   admin,
   userController.dataGraphics
+);
+
+/**
+ * @swagger
+ * /api/admin/create:
+ *   post:
+ *     summary: Crear un nuevo administrador
+ *     tags: [Administradores]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Correo electrónico del administrador
+ *               name:
+ *                 type: string
+ *                 description: Nombre completo del administrador
+ *               carnet:
+ *                 type: string
+ *                 description: Carnet del administrador
+ *               sede_id:
+ *                 type: integer
+ *                 description: ID de la sede del administrador
+ *             required:
+ *               - email
+ *               - name
+ *               - carnet
+ *               - sede_id
+ *     responses:
+ *       201:
+ *         description: Administrador creado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 admin:
+ *                   $ref: '#/components/schemas/User'
+ *                 password:
+ *                   type: string
+ *                   description: Contraseña generada para el administrador
+ *       400:
+ *         description: Datos inválidos o correo ya registrado
+ *       500:
+ *         description: Error en el servidor
+ */
+router.post(
+  "/admin/create",
+  authMiddleware,
+  superAdmin,
+  userController.createAdmin
+);
+/**
+ * @swagger
+ * /api/admin/assign:
+ *   post:
+ *     summary: Asignar un administrador a una sede
+ *     tags: [Administradores]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 description: ID del usuario que será asignado como administrador
+ *               sede_id:
+ *                 type: integer
+ *                 description: ID de la sede donde será asignado el administrador
+ *             required:
+ *               - user_id
+ *               - sede_id
+ *     responses:
+ *       200:
+ *         description: Administrador asignado a la sede exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 admin:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Límite de administradores alcanzado o datos inválidos
+ *       404:
+ *         description: Usuario o sede no encontrados
+ *       500:
+ *         description: Error en el servidor
+ */
+router.post(
+  "/admin/assign",
+  authMiddleware,
+  superAdmin,
+  userController.assignAdminToSede
+);
+
+// Ruta: Eliminar un administrador
+/**
+ * @swagger
+ * /api/admin/remove:
+ *   put:
+ *     summary: Eliminar a un administrador de una sede
+ *     tags: [Administradores]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 description: ID del administrador a eliminar
+ *               sede_id:
+ *                 type: integer
+ *                 description: ID de la sede de la que se eliminará al administrador
+ *             required:
+ *               - user_id
+ *               - sede_id
+ *     responses:
+ *       200:
+ *         description: Administrador eliminado exitosamente
+ *       404:
+ *         description: Administrador no encontrado
+ *       500:
+ *         description: Error en el servidor
+ */
+router.put(
+  "/admin/remove",
+  authMiddleware,
+  superAdmin,
+  userController.removeAdmin
 );
 
 module.exports = router;
