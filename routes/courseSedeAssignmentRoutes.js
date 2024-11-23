@@ -6,7 +6,7 @@ const verifyRole = require("../middlewares/roleMiddleware");
 
 const router = express.Router();
 const SuperAdmin = verifyRole([4]);
-const admin = verifyRole([3]);
+const admin = verifyRole([3,4]);
 
 /**
  * @swagger
