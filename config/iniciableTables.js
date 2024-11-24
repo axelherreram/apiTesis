@@ -12,7 +12,7 @@ const typeTask = require("../models/typeTask");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const Year = require("../models/year");
 const rolComision = require("../models/rolComision");
-const Comisiones = require("../models/Comisiones");
+const Comisiones = require("../models/comisiones");
 const EstudianteComision = require("../models/estudianteComision");
 
 const initializeTables = async () => {

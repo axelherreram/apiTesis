@@ -82,7 +82,6 @@ const createSedeAssignment = async (req, res) => {
 
 const getCoursesBySede = async (req, res) => {
   const { sede_id } = req.params;
-
   try {
     // Obtener el año actual
     const currentYear = new Date().getFullYear();

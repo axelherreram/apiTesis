@@ -1,22 +1,23 @@
 const { sequelize } = require("../config/database");
 const { DataTypes } = require("sequelize");
-const Comisiones = require("./Comisiones");
 const User = require("./user");
 const Year = require("./year");
+const GroupComision = require("./groupComision");
+
 const EstudianteComision = sequelize.define(
-    "EstudianteComision",
+    "estudianteComision",
     {
         estudiante_comision_id: {
             type: DataTypes.INTEGER,
             primaryKey: true,
             autoIncrement: true,
         },
-        comision_id: {
+        group_id: {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: Comisiones,
-                key: "comision_id",
+                model: GroupComision,
+                key: "group_id",
             },
         },
         user_id: {

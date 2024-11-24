@@ -10,6 +10,7 @@ const Comisiones = require("./comisiones");
 const Year = require("./year");
 const rolComision = require("./rolComision");
 const GroupComision = require("./groupComision");
+const EstudianteComision = require("./estudianteComision");
 
 module.exports = function associateModels() {
   // Relación entre User y Sede
@@ -28,6 +29,13 @@ module.exports = function associateModels() {
   CourseSedeAssignment.belongsTo(Sede, { foreignKey: "sede_id" });
   Course.hasMany(CourseSedeAssignment, { foreignKey: "course_id" });
   Sede.hasMany(CourseSedeAssignment, { foreignKey: "sede_id" });
+
+  // Relación entre CourseSedeAssignment y CourseAssignment
+  CourseSedeAssignment.hasMany(CourseAssignment, { foreignKey: "asigCourse_id" });
+  CourseAssignment.belongsTo(CourseSedeAssignment, { foreignKey: "asigCourse_id" });
+
+  // Relación entre User y CourseSedeAssignment
+  User.hasMany(CourseSedeAssignment, { foreignKey: "sede_id" });
 
   // Relación entre TimelineEventos, Task, User y Course
   TimelineEventos.belongsTo(User, { foreignKey: "user_id" });
@@ -55,16 +63,12 @@ module.exports = function associateModels() {
   Comisiones.belongsTo(Year, { foreignKey: "year_id" });
   Year.hasMany(Comisiones, { foreignKey: "year_id" });
 
-  // Relación entre Comisiones y Sede
-  Comisiones.belongsTo(Sede, { foreignKey: "sede_id" });
-  Sede.hasMany(Comisiones, { foreignKey: "sede_id" });
-
   // Relación entre Comisiones y rolComision
-  Comisiones.belongsTo(rolComision, { foreignKey: "rol_comision_id", as: "rolComision" });
+  Comisiones.belongsTo(rolComision, { foreignKey: "rol_comision_id" });
   rolComision.hasMany(Comisiones, { foreignKey: "rol_comision_id" });
 
   // Relación entre GroupComision y Comisiones
-  GroupComision.hasMany(Comisiones, { foreignKey: "group_id" });
+  GroupComision.hasMany(Comisiones, { foreignKey: "group_id", as: "comisiones" });
   Comisiones.belongsTo(GroupComision, { foreignKey: "group_id" });
 
   // Relación entre GroupComision, Sede y Year
@@ -72,4 +76,16 @@ module.exports = function associateModels() {
   Sede.hasMany(GroupComision, { foreignKey: "sede_id" });
   GroupComision.belongsTo(Year, { foreignKey: "year_id" });
   Year.hasMany(GroupComision, { foreignKey: "year_id" });
+
+  // Relación entre Comisiones y EstudianteComision
+  Comisiones.hasMany(EstudianteComision, { foreignKey: "comision_id", as: "estudianteComisiones" });
+  EstudianteComision.belongsTo(Comisiones, { foreignKey: "comision_id", as: "comision" });
+
+  // Relación entre EstudianteComision y User
+  EstudianteComision.belongsTo(User, { foreignKey: "user_id", as: "student" });
+  User.hasMany(EstudianteComision, { foreignKey: "user_id", as: "studentAssignments" });
+
+  // Relación entre GroupComision y EstudianteComision
+  GroupComision.hasMany(EstudianteComision, { foreignKey: "group_id", as: "estudianteComisiones" });
+  EstudianteComision.belongsTo(GroupComision, { foreignKey: "group_id", as: "group" });
 };

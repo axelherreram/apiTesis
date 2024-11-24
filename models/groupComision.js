@@ -28,6 +28,10 @@ const GroupComision = sequelize.define(
         key: "sede_id",
       },
     },
+    activeGroup: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
   },
   {
     timestamps: true,

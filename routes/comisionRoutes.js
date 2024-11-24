@@ -4,6 +4,7 @@ const {
   createGroupComision,
   removeUserFromComision,
   addUserToComision,
+  getGroupsAndUsersBySedeAndYear, // Importar la nueva función
 } = require("../controllers/comisionController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
@@ -31,7 +32,25 @@ const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administra
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Comisiones'
+ *             type: object
+ *             properties:
+ *               year:
+ *                 type: integer
+ *                 example: 2024
+ *               sede_id:
+ *                 type: integer
+ *                 example: 1
+ *               groupData:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     user_id:
+ *                       type: integer
+ *                       example: 101
+ *                     rol_comision_id:
+ *                       type: integer
+ *                       example: 2
  *     responses:
  *       201:
  *         description: Grupo de comisión creado exitosamente
@@ -117,5 +136,76 @@ router.delete("/comisiones/:group_id/usuario/:user_id", authMiddleware, admin, r
  *         description: Error en el servidor
  */
 router.post("/comisiones/:group_id/usuario", authMiddleware, admin, addUserToComision);
+
+/**
+ * @swagger
+ * /api/comisiones/grupos/{sede_id}/{year}:
+ *   get:
+ *     summary: Obtener los grupos de comisión por sede y año, junto con los usuarios y roles
+ *     description: Obtiene todos los grupos de comisión por sede y año, junto con los usuarios y sus roles asociados.
+ *     tags: [Comisiones]
+ *     security:
+ *       - bearerAuth: []  
+ *     parameters:
+ *       - in: path
+ *         name: sede_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la sede
+ *       - in: path
+ *         name: year
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Año de los grupos de comisión
+ *     responses:
+ *       200:
+ *         description: Grupos de comisión obtenidos exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 groups:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       group_id:
+ *                         type: integer
+ *                         example: 1
+ *                       year_id:
+ *                         type: integer
+ *                         example: 2024
+ *                       sede_id:
+ *                         type: integer
+ *                         example: 1
+ *                       users:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             user_id:
+ *                               type: integer
+ *                               example: 123
+ *                             email:
+ *                               type: string
+ *                               example: usuario@dominio.com
+ *                             nombre:
+ *                               type: string
+ *                               example: Juan Pérez
+ *                             rol:
+ *                               type: string
+ *                               example: Profesor
+ *                             profilePhoto:
+ *                               type: string
+ *                               example: "http://localhost:3000/public/fotoPerfil/juan.jpg"
+ *       404:
+ *         description: No se encontraron grupos de comisión
+ *       500:
+ *         description: Error en el servidor
+ */
+router.get("/comisiones/grupos/:sede_id/:year", authMiddleware, admin, getGroupsAndUsersBySedeAndYear);
 
 module.exports = router;

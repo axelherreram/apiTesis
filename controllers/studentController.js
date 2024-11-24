@@ -21,6 +21,24 @@ const bulkUploadUsers = async (req, res) => {
     const sheet = workbook.Sheets[sheetName];
     const usersData = xlsx.utils.sheet_to_json(sheet);
 
+    // Validación de campos en el archivo Excel
+    if (!usersData.length) {
+      return res.status(400).json({ message: "El archivo está vacío" });
+    }
+
+    // Definir los campos necesarios
+    const requiredFields = ['email', 'nombre', 'carnet'];
+    
+    // Verificar si los campos requeridos están presentes en cada fila de datos
+    for (const user of usersData) {
+      const missingFields = requiredFields.filter(field => !user[field]);
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          message: `El archivo de Excel está incompleto. Faltan los siguientes campos: ${missingFields.join(", ")}`
+        });
+      }
+    }
+
     // Obtener el año actual
     const currentYear = new Date().getFullYear();
 
@@ -37,6 +55,7 @@ const bulkUploadUsers = async (req, res) => {
     const course_id = req.body.course_id;
 
     if (course_id) {
+      // Buscar la asignación de curso, sede y año
       const sedeCourseAssignment = await CourseSedeAssignment.findOne({
         where: {
           sede_id,
@@ -44,9 +63,10 @@ const bulkUploadUsers = async (req, res) => {
           year_id,
         },
       });
+
       if (!sedeCourseAssignment) {
         return res.status(404).json({
-          message: "No existe asiganación de curso para la sede seleccionada",
+          message: "No existe asignación de curso para la sede seleccionada",
         });
       }
     }
@@ -84,17 +104,36 @@ const bulkUploadUsers = async (req, res) => {
 
       // Si el course_id está presente, hacer la asignación
       if (course_id) {
+        // Buscar la asignación de curso, sede y año
+        const sedeCourseAssignment = await CourseSedeAssignment.findOne({
+          where: {
+            sede_id,
+            course_id,
+            year_id,
+          },
+        });
+
+        if (!sedeCourseAssignment) {
+          return res.status(404).json({
+            message: "No existe asignación de curso para la sede seleccionada",
+          });
+        }
+
+        const asigCourse_id = sedeCourseAssignment.asigCourse_id;  // Obtener el ID de la asignación de curso
+
+        // Verificar si ya existe la asignación del estudiante
         const existingAssignment = await CourseAssignment.findOne({
           where: {
             student_id: existingUser.user_id,
-            course_id: course_id,
+            asigCourse_id: asigCourse_id,  // Usar el ID de la asignación de curso
           },
         });
 
         if (!existingAssignment) {
+          // Crear la asignación para el estudiante con el asigCourse_id
           await CourseAssignment.create({
             student_id: existingUser.user_id,
-            course_id: course_id,
+            asigCourse_id,  // Asociar con la asignación de curso, sede y año
             year_id,
           });
         }
@@ -105,7 +144,6 @@ const bulkUploadUsers = async (req, res) => {
     fs.unlink(filePath, (err) => {
       if (err) {
         console.error(`Error al eliminar el archivo Excel: ${err.message}`);
-      } else {
       }
     });
 
