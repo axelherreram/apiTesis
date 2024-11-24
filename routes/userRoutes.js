@@ -292,4 +292,54 @@ router.put(
   userController.removeAdmin
 );
 
+/**
+ * @swagger
+ * /api/admins:
+ *   get:
+ *     summary: Listar todos los administradores registrados
+ *     tags: [Administradores]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Lista de administradores obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   user_id:
+ *                     type: integer
+ *                   email:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   carnet:
+ *                     type: string
+ *                   sede:
+ *                     type: object
+ *                     properties:
+ *                       sede_id:
+ *                         type: integer
+ *                       nombre:
+ *                         type: string
+ *                   profilePhoto:
+ *                     type: string
+ *                     nullable: true
+ *       401:
+ *         description: No autorizado
+ *       404:
+ *         description: No se encontraron administradores
+ *       500:
+ *         description: Error en el servidor
+ */
+router.get(
+  "/admins",
+  authMiddleware, // Middleware de autenticación
+  superAdmin, // Middleware de roles (opcional, si solo superadmin puede acceder)
+  userController.listAllAdmins // Método en el controlador
+);
+
 module.exports = router;

@@ -6,6 +6,7 @@ const Year = require("../models/year");
 const Roles = require("../models/roles");
 const bcrypt = require("bcrypt");
 const Sede = require("../models/sede");
+const { sendEmailPassword } = require("./emailController");
 
 // Datos de la dashboard principal
 const dataGraphics = async (req, res) => {
@@ -230,6 +231,13 @@ const createAdmin = async (req, res) => {
     const [yearRecord] = await Year.findOrCreate({
       where: { year: currentYear },
     });
+    // Enviar correo electrónico con la contraseña temporal
+    const templateVariables = {
+      nombre: name,
+      password: hashedPassword,
+    };
+
+     await sendEmailPassword('Registro exitoso', `Hola ${name}, tu contraseña temporal es: ${password}`, email, templateVariables); 
 
     // Crear el administrador
     const admin = await User.create({
@@ -276,12 +284,9 @@ const removeAdmin = async (req, res) => {
     // Verificar si el usuario existe y es un administrador
     const user = await User.findOne({ where: { user_id, rol_id: 3, sede_id } });
     if (!user) {
-      return res
-        .status(404)
-        .json({
-          message:
-            "El usuario no es un administrador de esta sede o no existe.",
-        });
+      return res.status(404).json({
+        message: "El usuario no es un administrador de esta sede o no existe.",
+      });
     }
 
     // Verificar si el usuario es el único administrador de la sede
@@ -314,14 +319,13 @@ const removeAdmin = async (req, res) => {
 
 const listAllAdmins = async (req, res) => {
   try {
-    // Obtener todos los administradores
     const admins = await User.findAll({
-      where: { rol_id: 3 }, // Filtrar por rol de administrador
+      where: { rol_id: 3 },
       include: [
         {
           model: Sede,
-          as: "sede",
-          attributes: ["sede_id", "nombre"], // Incluir detalles de la sede
+          as: "location", 
+          attributes: ["sede_id", "nameSede"], 
         },
       ],
       attributes: [
@@ -329,10 +333,8 @@ const listAllAdmins = async (req, res) => {
         "email",
         "name",
         "carnet",
-        "sede_id",
-        ,
         "profilePhoto",
-      ], // Atributos básicos
+      ],
     });
 
     // Verificar si hay administradores
@@ -348,12 +350,12 @@ const listAllAdmins = async (req, res) => {
       email: admin.email,
       name: admin.name,
       carnet: admin.carnet,
-      sede: admin.sede
+      sede: admin.location 
         ? {
-            sede_id: admin.sede.sede_id,
-            nombre: admin.sede.nombre,
+            sede_id: admin.location.sede_id, 
+            nombre: admin.location.nameSede,
           }
-        : null, // Manejar el caso de administradores sin sede asignada
+        : null, // Sede del administrador
       profilePhoto: admin.profilePhoto
         ? `${process.env.BASE_URL}/public/fotoPerfil/${admin.profilePhoto}`
         : null,
@@ -365,12 +367,10 @@ const listAllAdmins = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Ocurrió un error al listar los administradores.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Ocurrió un error al listar los administradores.",
+      error: error.message,
+    });
   }
 };
 
@@ -379,14 +379,18 @@ const assignAdminToSede = async (req, res) => {
 
   // Validar campos requeridos
   if (!user_id || !sede_id) {
-    return res.status(400).json({ message: "Los campos user_id y sede_id son obligatorios." });
+    return res
+      .status(400)
+      .json({ message: "Los campos user_id y sede_id son obligatorios." });
   }
 
   try {
     // Verificar si la sede existe
     const sede = await Sede.findByPk(sede_id);
     if (!sede) {
-      return res.status(404).json({ message: "La sede especificada no existe." });
+      return res
+        .status(404)
+        .json({ message: "La sede especificada no existe." });
     }
 
     // Verificar si el usuario existe y tiene el rol de administrador
@@ -394,7 +398,9 @@ const assignAdminToSede = async (req, res) => {
     if (!user) {
       return res
         .status(404)
-        .json({ message: "El usuario no existe o no tiene el rol de administrador." });
+        .json({
+          message: "El usuario no existe o no tiene el rol de administrador.",
+        });
     }
 
     // Validar que no haya más de 3 administradores en la sede
@@ -407,7 +413,8 @@ const assignAdminToSede = async (req, res) => {
 
     if (adminCount >= 3) {
       return res.status(400).json({
-        message: "Ya existen 3 administradores en esta sede. No se puede asignar más.",
+        message:
+          "Ya existen 3 administradores en esta sede. No se puede asignar más.",
       });
     }
 
@@ -419,10 +426,14 @@ const assignAdminToSede = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Ocurrió un error al asignar al administrador.", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Ocurrió un error al asignar al administrador.",
+        error: error.message,
+      });
   }
 };
-
 
 module.exports = {
   getUsersByCourse,
