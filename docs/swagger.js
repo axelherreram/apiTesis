@@ -336,58 +336,74 @@ const swaggerOptions = {
             task_id: {
               type: "integer",
               description: "ID único de la tarea",
-              example: 1,
+              example: 1
             },
-            course_id: {
+            asigCourse_id: {
               type: "integer",
-              description: "ID del curso asociado",
-              example: 1,
-            },
-            sede_id: {
-              type: "integer",
-              description: "ID de la sede asociada",
-              example: 1,
+              description: "ID de la asignación del curso y sede asociada",
+              example: 1
             },
             typeTask_id: {
               type: "integer",
               description: "ID del tipo de tarea",
-              example: 1,
+              example: 1
             },
             title: {
               type: "string",
               description: "Título de la tarea",
-              example: "CAPÍTULO 1",
+              example: "CAPÍTULO 1"
             },
             description: {
               type: "string",
               description: "Descripción de la tarea",
-              example: "REALIZAR EL CAPÍTULO 1 DEL PROYECTO DE GRADUACIÓN",
+              example: "REALIZAR EL CAPÍTULO 1 DEL PROYECTO DE GRADUACIÓN"
             },
             taskStart: {
               type: "string",
               format: "date-time",
               description: "Fecha y hora de inicio de la tarea",
-              example: "2024-09-03T00:00:00Z",
+              example: "2024-09-03T00:00:00Z"
             },
             endTask: {
               type: "string",
               format: "date-time",
               description: "Fecha y hora de finalización de la tarea",
-              example: "2024-09-10T00:00:00Z",
+              example: "2024-09-10T00:00:00Z"
+            },
+            startTime: {
+              type: "string",
+              format: "time",
+              description: "Hora de inicio de la tarea",
+              example: "08:00:00"
+            },
+            endTime: {
+              type: "string",
+              format: "time",
+              description: "Hora de finalización de la tarea",
+              example: "12:00:00"
             },
             note: {
               type: "string",
               description: "Nota de la tarea",
-              example: "35",
+              example: "35"
             },
+            year_id: {
+              type: "integer",
+              description: "ID del año académico asociado",
+              example: 2024
+            }
           },
           required: [
-            "course_id",
-            "sede_id",
+            "asigCourse_id",
             "typeTask_id",
             "title",
             "description",
-          ],
+            "taskStart",
+            "endTask",
+            "startTime",
+            "endTime",
+            "year_id"
+          ]
         },
         TimelineEventos: {
           type: "object",

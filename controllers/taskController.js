@@ -8,10 +8,13 @@ const Year = require("../models/year");
 const { sendEmailTask } = require("./emailController");
 const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
+const TypeTask = require("../models/typeTask");
+
 const Subbmissions = require("../models/submissions");
 require("dotenv").config();
 
-const BASE_URL = process.env.BASE_URL; 
+const BASE_URL = process.env.BASE_URL;
+
 const createTask = async (req, res) => {
   const {
     course_id,
@@ -21,6 +24,8 @@ const createTask = async (req, res) => {
     description,
     taskStart,
     endTask,
+    startTime,
+    endTime,
     note,
   } = req.body;
   const user_id = req.user_id;
@@ -29,7 +34,7 @@ const createTask = async (req, res) => {
     // Obtener el año actual
     const currentYear = new Date().getFullYear();
 
-    // Buscar el año actual en la tabla Year, si no existe, crearlo
+    // Buscar o crear el año actual en la tabla Year
     const [yearRecord] = await Year.findOrCreate({
       where: { year: currentYear },
       defaults: { year: currentYear },
@@ -48,23 +53,12 @@ const createTask = async (req, res) => {
       });
     }
 
-    // Validar que el curso exista
-    const course = await Course.findByPk(course_id);
-    if (!course) {
-      return res.status(404).json({ message: "Curso no encontrado" });
-    }
-
-    // const asigCourse_id = courseSedeAssignment.asigCourse_id;
+    const asigCourse_id = courseSedeAssignment.asigCourse_id;
 
     // Validar si ya existe una tarea de tipo "Propuesta de tesis"
-    if (typeTask_id === 1 && course_id === 2) {
-      return res.status(400).json({
-        message: "¡No es posible crear la tarea para este curso!",
-      });
-    }
     if (typeTask_id === 1) {
       const tareaExistente = await Task.findOne({
-        where: { course_id, sede_id, typeTask_id: 1, year_id },
+        where: { asigCourse_id, typeTask_id: 1, year_id },
       });
 
       if (tareaExistente) {
@@ -73,19 +67,22 @@ const createTask = async (req, res) => {
         });
       }
     }
+
     // Crear la nueva tarea
     const newTask = await Task.create({
-      course_id: course_id,
-      sede_id,
+      asigCourse_id,
       typeTask_id,
       title,
       description,
       taskStart,
       endTask,
+      startTime,
+      endTime,
       note,
       year_id,
     });
 
+    // Registrar actividad del usuario
     const user = await User.findByPk(user_id);
     await logActivity(
       user_id,
@@ -95,12 +92,13 @@ const createTask = async (req, res) => {
       "Creación de tarea"
     );
 
+    // Obtener usuarios relacionados al curso y enviar notificaciones
     const userEmails = await User.findAll({
       where: { rol_id: 1, sede_id, year_id },
       include: [
         {
           model: CourseAssignment,
-          where: { course_id, year_id },
+          where: { course_id },
         },
       ],
       attributes: ["user_id", "name", "email"],
@@ -117,7 +115,7 @@ const createTask = async (req, res) => {
       await addTimeline(
         userEmail.user_id,
         "Tarea creada",
-        `Se ha creado una nueva tarea en el curso ${course.courseName} con el título: ${title}`,
+        `Se ha creado una nueva tarea en el curso ${courseSedeAssignment.course_id} con el título: ${title}`,
         courseSedeAssignment.course_id,
         newTask.task_id
       );
@@ -157,8 +155,26 @@ const listTasks = async (req, res) => {
 
     const year_id = yearRecord.year_id;
 
+    // Buscar las asignaciones de curso para la sede y el año
+    const courseSedeAssignments = await CourseSedeAssignment.findAll({
+      where: { sede_id, year_id, courseActive: true },
+      attributes: ["asigCourse_id"],
+    });
+
+    // Verificar si existen asignaciones
+    if (!courseSedeAssignments || courseSedeAssignments.length === 0) {
+      return res.status(404).json({
+        message:
+          "No se encontraron asignaciones de cursos para la sede y año especificados.",
+      });
+    }
+
+    const asigCourseIds = courseSedeAssignments.map(
+      (assignment) => assignment.asigCourse_id
+    );
+
     // Buscar las tareas asociadas a la sede y al año
-    const tasks = await Task.findAll({ where: { sede_id, year_id } });
+    const tasks = await Task.findAll({ where: { asigCourse_id: asigCourseIds, year_id } });
 
     // Verificar si se encontraron tareas
     if (!tasks || tasks.length === 0) {
@@ -224,19 +240,30 @@ const listTasksByCourse = async (req, res) => {
         .json({ message: `No se encontró la sede con ID ${sede_id}.` });
     }
 
-    // Buscar todas las tareas asociadas al curso, sede y año
-    const tasks = await Task.findAll({
+    // Buscar la asignación de curso y sede para el año especificado
+    const courseSedeAssignment = await CourseSedeAssignment.findOne({
       where: { course_id, sede_id, year_id },
+    });
+
+    if (!courseSedeAssignment) {
+      return res.status(404).json({
+        message: "No se encontró una asignación válida de curso, sede y año.",
+      });
+    }
+
+    const asigCourse_id = courseSedeAssignment.asigCourse_id;
+
+    // Buscar todas las tareas asociadas a la asignación de curso, sede y año
+    const tasks = await Task.findAll({
+      where: { asigCourse_id, year_id },
     });
 
     // Verificar si se encontraron tareas
     if (!tasks || tasks.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message:
-            "No se encontraron tareas para el curso, sede y año especificados.",
-        });
+      return res.status(404).json({
+        message:
+          "No se encontraron tareas para el curso, sede y año especificados.",
+      });
     }
 
     // Obtener información del usuario solicitante
@@ -258,52 +285,45 @@ const listTasksByCourse = async (req, res) => {
     res.status(200).json(tasks);
   } catch (error) {
     console.error("Error al obtener las tareas:", error);
-    res
-      .status(500)
-      .json({
-        message: "Error al obtener las tareas",
-        error: error.message || "Error desconocido",
-      });
+    res.status(500).json({
+      message: "Error al obtener las tareas",
+      error: error.message || "Error desconocido",
+    });
   }
 };
 
+
 const updateTask = async (req, res) => {
   const { task_id } = req.params;
-  const { title, description, taskStart, endTask } = req.body;
+  const { title, description, taskStart, endTask, startTime, endTime } = req.body;
   const user_id = req.user_id;
 
   try {
     // Validar que la tarea exista
     const task = await Task.findByPk(task_id);
-
     if (!task) {
       return res.status(404).json({ message: "Tarea no encontrada" });
     }
 
     // Validar la asignación de curso y sede
     const courseSedeAssignment = await CourseSedeAssignment.findOne({
-      where: { course_id: task.course_id, sede_id: task.sede_id },
+      where: { course_id: task.asigCourse_id, },
     });
-
-    if (!courseSedeAssignment) {
-      return res.status(404).json({
-        message: "No se encontró una asignación válida de curso y sede.",
-      });
-    }
 
     // Validar si el curso está inactivo
     if (!courseSedeAssignment.courseActive) {
       return res.status(400).json({
-        message:
-          "No se puede actualizar la tarea ya que el curso está inactivo.",
+        message: "No se puede actualizar la tarea ya que el curso está inactivo.",
       });
     }
 
-    // Actualizar la tarea
+    // Actualizar la tarea con los nuevos campos
     task.title = title ?? task.title;
     task.description = description ?? task.description;
     task.taskStart = taskStart ?? task.taskStart;
     task.endTask = endTask ?? task.endTask;
+    task.startTime = startTime ?? task.startTime;
+    task.endTime = endTime ?? task.endTime;
 
     const user = await User.findByPk(user_id);
 
@@ -319,9 +339,14 @@ const updateTask = async (req, res) => {
 
     res.status(200).json({ message: "Tarea actualizada exitosamente" });
   } catch (error) {
-    res.status(500).json({ message: "Error al actualizar la tarea", error });
+    console.error("Error al actualizar la tarea:", error);
+    res.status(500).json({ 
+      message: "Error al actualizar la tarea", 
+      error: error.message || "Error desconocido" 
+    });
   }
 };
+
 
 const listInfoTaksByUser = async (req, res) => {
   const { user_id, task_id } = req.params;
@@ -333,26 +358,54 @@ const listInfoTaksByUser = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Validar si la tarea existe
-    const taskExist = await Task.findByPk(task_id);
-    if (!taskExist) {
+    // Obtener la información de la tarea
+    const task = await Task.findOne({
+      where: { task_id },
+      attributes: [
+        "task_id",
+        "title",
+        "description",
+        "taskStart",
+        "endTask",
+        "note",
+        "asigCourse_id",
+      ]
+    });
+
+    if (!task) {
       return res.status(404).json({ message: "Tarea no encontrada" });
     }
 
-    // Obtener la información completa de la tarea
-    const task = await Task.findOne({
-      where: { task_id },
-      attributes: ["task_id", "title", "description", "taskStart", "endTask", "note"],
-    });
+    // Validar si la asignación de curso existe
+    const asigCourse_id = task.asigCourse_id;
+    const asigCourseExist = await CourseSedeAssignment.findByPk(asigCourse_id);
+    if (!asigCourseExist) {
+      return res.status(404).json({
+        message: "No se encontró una asignación válida para el curso asociado a la tarea.",
+      });
+    }
+
+
+    if (!asigCourseExist.courseActive) {
+      return res.status(400).json({
+        message: "La tarea pertenece a un curso inactivo.",
+      });
+    }
 
     // Obtener todas las entregas realizadas por el usuario para esta tarea
     const submissions = await Subbmissions.findAll({
       where: { user_id, task_id },
-      attributes: ["submission_id", "directory", "submission_date", "task_id", "user_id"],
+      attributes: [
+        "submission_id",
+        "directory",
+        "submission_date",
+        "task_id",
+        "user_id",
+      ],
     });
 
     // Mapear y transformar los datos de las entregas
-    const submission = submissions.map((submission) => ({
+    const formattedSubmissions = submissions.map((submission) => ({
       submission_id: submission.submission_id,
       directory: `${BASE_URL}/public/${submission.directory}`, // Usar BASE_URL
       submission_date: submission.submission_date,
@@ -361,7 +414,7 @@ const listInfoTaksByUser = async (req, res) => {
     }));
 
     // Responder con la información de la tarea y las entregas del usuario
-    res.status(200).json({ task, submissions: submission });
+    res.status(200).json({ task, submissions: formattedSubmissions });
   } catch (error) {
     console.error("Error al obtener la información de la tarea:", error);
     res.status(500).json({
@@ -372,11 +425,10 @@ const listInfoTaksByUser = async (req, res) => {
 };
 
 
-
 module.exports = {
   createTask,
   listTasks,
   updateTask,
   listTasksByCourse,
-  listInfoTaksByUser
+  listInfoTaksByUser,
 };

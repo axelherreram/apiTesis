@@ -1,9 +1,9 @@
 const { DataTypes } = require("sequelize");
-const Sedes = require("./sede");
+// const Sedes = require("./sede");
 const typeTask = require("./typeTask");
 const { sequelize } = require("../config/database");
-const Course = require("./course");
 const Year = require("./year");
+const CourseSedeAssignment = require("./courseSedeAssignment");
 
 const Task = sequelize.define(
   "Task",
@@ -13,22 +13,22 @@ const Task = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
-    course_id: {
+    asigCourse_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: Course,
-        key: "course_id",
+        model: CourseSedeAssignment,
+        key: "asigCourse_id",
       },
     },
-    sede_id: {
+    /*     sede_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
         model: Sedes,
         key: "sede_id",
       },
-    },
+    }, */
     typeTask_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -47,15 +47,25 @@ const Task = sequelize.define(
     },
     taskStart: {
       type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: false,
     },
     endTask: {
       type: DataTypes.DATE,
-      allowNull: true,
+      allowNull: false,
+    },
+    startTime: {
+      // Campo para la hora de inicio
+      type: DataTypes.TIME,
+      allowNull: false,
+    },
+    endTime: {
+      // Campo para la hora de fin
+      type: DataTypes.TIME,
+      allowNull: false,
     },
     note: {
       type: DataTypes.STRING(255),
-      allowNull: true,
+      allowNull: false,
     },
     year_id: {
       type: DataTypes.INTEGER,

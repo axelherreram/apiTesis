@@ -131,7 +131,30 @@ router.get(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Task'
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 example: Nueva tarea de desarrollo
+ *               description:
+ *                 type: string
+ *                 example: Descripción actualizada de la tarea
+ *               taskStart:
+ *                 type: string
+ *                 format: date-time
+ *                 example: 2024-11-27T09:00:00Z
+ *               endTask:
+ *                 type: string
+ *                 format: date-time
+ *                 example: 2024-11-28T17:00:00Z
+ *               startTime:
+ *                 type: string
+ *                 format: time
+ *                 example: 09:00:00
+ *               endTime:
+ *                 type: string
+ *                 format: time
+ *                 example: 17:00:00
  *     responses:
  *       200:
  *         description: Tarea actualizada exitosamente
@@ -142,14 +165,14 @@ router.get(
  *       500:
  *         description: Error del servidor
  */
+
 router.put(
   "/tareas/:task_id",
   authMiddleware,
   obtenerUserIdDeToken,
-  adminOrTerna,
+  admin,
   updateTask
 );
-
 /**
  * @swagger
  * /api/tareas:
@@ -164,13 +187,48 @@ router.put(
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/Task'
+ *           example:
+ *             course_id: 1
+ *             sede_id: 1
+ *             typeTask_id: 1
+ *             title: "CAPÍTULO 3"
+ *             description: "Completar el capítulo 3 del proyecto de investigación"
+ *             taskStart: "2024-09-15T08:00:00Z"
+ *             endTask: "2024-09-20T12:00:00Z"
+ *             startTime: "08:00:00"
+ *             endTime: "12:00:00"
+ *             note: "40"
  *     responses:
  *       201:
  *         description: Tarea creada exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Tarea creada exitosamente"
  *       400:
  *         description: Datos inválidos
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "¡La tarea de propuesta de tesis ya existe!"
+ *       404:
+ *         description: No se encontró algún registro necesario
+ *         content:
+ *           application/json:
+ *             examples:
+ *               courseSedeNotFound:
+ *                 value:
+ *                   message: "No se encontró una asignación válida de curso, sede y año"
+ *               yearNotFound:
+ *                 value:
+ *                   message: "No se encontró un registro para el año especificado"
  *       500:
  *         description: Error del servidor
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Error al crear la tarea"
+ *               error: "Detalle del error"
  */
 router.post("/tareas", authMiddleware, obtenerUserIdDeToken, admin, createTask);
 
