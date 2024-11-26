@@ -234,7 +234,7 @@ const createAdmin = async (req, res) => {
     // Enviar correo electrónico con la contraseña temporal
     const templateVariables = {
       nombre: name,
-      password: hashedPassword,
+      password: password,
     };
 
      await sendEmailPassword('Registro exitoso', `Hola ${name}, tu contraseña temporal es: ${password}`, email, templateVariables); 
