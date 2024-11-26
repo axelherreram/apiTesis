@@ -21,7 +21,7 @@ const listAllLogs = async (req, res) => {
 
       return {
         user_id: log.user_id,
-        username: user ? user.username : 'Usuario desconocido',
+        username: user ? user.name : 'Usuario desconocido',
         role: Role ? Role.name : 'Rol desconocido',
         action: log.action,
         description: log.details,
