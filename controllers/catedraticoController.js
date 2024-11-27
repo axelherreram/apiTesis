@@ -1,16 +1,14 @@
 const xlsx = require("xlsx");
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
-const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
-const { sendEmailPassword } = require("./emailController");
-const CourseSedeAssignment = require("../models/courseSedeAssignment");
+const { sendEmailCatedratico } = require("./emailController");
 
-const bulkUploadUsers = async (req, res) => {
+const bulkUploadCatedratico = async (req, res) => {
   const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
-  const { sede_id, course_id } = req.body; // Extraer los valores de sede_id y course_id del cuerpo de la solicitud
+  const { sede_id } = req.body; // Extraer el valor de sede_id del cuerpo de la solicitud
 
   try {
     if (!req.file) {
@@ -20,11 +18,6 @@ const bulkUploadUsers = async (req, res) => {
     // Validar que el sede_id en la solicitud coincida con el sede_id del token
     if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
       return res.status(403).json({ message: "No tienes acceso a esta sede" });
-    }
-
-    // Validar que course_id esté presente
-    if (!course_id) {
-      return res.status(400).json({ message: "El campo course_id es obligatorio" });
     }
 
     const filename = path.basename(req.file.originalname);
@@ -42,13 +35,15 @@ const bulkUploadUsers = async (req, res) => {
 
     // Definir los campos necesarios
     const requiredFields = ["email", "nombre", "carnet"];
-    
+
     // Verificar si los campos requeridos están presentes en cada fila de datos
     for (const user of usersData) {
-      const missingFields = requiredFields.filter(field => !user[field]);
+      const missingFields = requiredFields.filter((field) => !user[field]);
       if (missingFields.length > 0) {
         return res.status(400).json({
-          message: `El archivo de Excel está incompleto. Faltan los siguientes campos: ${missingFields.join(", ")}`,
+          message: `El archivo de Excel está incompleto. Faltan los siguientes campos: ${missingFields.join(
+            ", "
+          )}`,
         });
       }
     }
@@ -63,23 +58,6 @@ const bulkUploadUsers = async (req, res) => {
     });
 
     const year_id = yearRecord.year_id;
-
-    // Buscar la asignación de curso, sede y año
-    const sedeCourseAssignment = await CourseSedeAssignment.findOne({
-      where: {
-        sede_id,
-        course_id,
-        year_id,
-      },
-    });
-
-    if (!sedeCourseAssignment) {
-      return res.status(404).json({
-        message: "No existe asignación de curso para la sede seleccionada",
-      });
-    }
-
-    const asigCourse_id = sedeCourseAssignment.asigCourse_id; // Obtener el ID de la asignación de curso
 
     for (const user of usersData) {
       const { email, nombre, carnet } = user;
@@ -98,39 +76,15 @@ const bulkUploadUsers = async (req, res) => {
           password: hashedPassword,
           name: nombre,
           carnet,
-          rol_id: 1, // Rol de estudiante
+          rol_id: 2, // Rol de administrador
           sede_id,
           year_id,
         });
 
-/*         // Enviar correo electrónico con la contraseña temporal
-         const templateVariables = {
+        // Enviar correo con las credenciales al profesor
+        await sendEmailCatedratico("Bienvenido a TesM", email, {
           nombre: nombre,
           password: randomPassword,
-        }; 
- 
-        await sendEmailPassword(
-          "Registro exitoso",
-          `Hola ${nombre}, tu contraseña temporal es: ${randomPassword}`,
-          email,
-          templateVariables
-        );  */
-      }
-
-      // Verificar si ya existe la asignación del estudiante
-      const existingAssignment = await CourseAssignment.findOne({
-        where: {
-          student_id: existingUser.user_id,
-          asigCourse_id, // Usar el ID de la asignación de curso
-        },
-      });
-
-      if (!existingAssignment) {
-        // Crear la asignación para el estudiante con el asigCourse_id
-        await CourseAssignment.create({
-          student_id: existingUser.user_id,
-          asigCourse_id, // Asociar con la asignación de curso, sede y año
-          year_id,
         });
       }
     }
@@ -162,5 +116,5 @@ const bulkUploadUsers = async (req, res) => {
 };
 
 module.exports = {
-  bulkUploadUsers,
+  bulkUploadCatedratico,
 };
