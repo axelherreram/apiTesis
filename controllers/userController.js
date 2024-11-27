@@ -7,7 +7,7 @@ const Roles = require("../models/roles");
 const bcrypt = require("bcrypt");
 const Sede = require("../models/sede");
 const { sendEmailPassword } = require("./emailController");
-
+const CourseSedeAssignment = require("../models/courseSedeAssignment");
 // Datos de la dashboard principal
 const dataGraphics = async (req, res) => {
   const { sede_id } = req.params;
@@ -43,32 +43,37 @@ const getUsersByCourse = async (req, res) => {
     if (!yearRecord) {
       return res.status(404).json({ message: "El año especificado no existe" });
     }
-    const year_id = yearRecord.dataValues.year_id;
+    const year_id = yearRecord.year_id;
 
-    // Contar usuarios asignados al curso
-    const userCount = await User.count({
-      where: { rol_id: 1, sede_id, year_id },
-      include: [{ model: CourseAssignment, where: { course_id } }],
+    // Obtener el asigCourse_id con base en course_id y year_id
+    const courseSedeAssignment = await CourseSedeAssignment.findOne({
+      where: { course_id, year_id, sede_id },
     });
 
-    // Obtener usuarios
-    const users = await User.findAll({
-      where: { rol_id: 1, sede_id, year_id },
+    if (!courseSedeAssignment) {
+      return res.status(404).json({
+        message:
+          "No se encontró una asignación para el curso, año y sede especificados",
+      });
+    }
+    const asigCourse_id = courseSedeAssignment.asigCourse_id;
+
+    // Obtener usuarios asignados al curso
+    const users = await CourseAssignment.findAll({
+      where: { asigCourse_id },
       include: [
         {
-          model: CourseAssignment,
-          where: { course_id, year_id },
-          attributes: ["course_id"],
+          model: User,
+          attributes: [
+            "user_id",
+            "email",
+            "name",
+            "carnet",
+            "sede_id",
+            "rol_id",
+            "profilePhoto",
+          ],
         },
-      ],
-      attributes: [
-        "user_id",
-        "email",
-        "name",
-        "carnet",
-        "sede_id",
-        "rol_id",
-        "profilePhoto",
       ],
     });
 
@@ -78,6 +83,20 @@ const getUsersByCourse = async (req, res) => {
           "No se encontraron usuarios asignados a este curso para el año y sede especificados",
       });
     }
+
+    // Formatear usuarios para la respuesta
+    const formattedUsers = users.map((assignment) => {
+      const user = assignment.User;
+      return {
+        user_id: user.user_id,
+        email: user.email,
+        userName: user.name,
+        profilePhoto: user.profilePhoto
+          ? `${process.env.BASE_URL}/public/fotoPerfil/${user.profilePhoto}`
+          : null,
+        carnet: user.carnet,
+      };
+    });
 
     // Obtener información del curso
     const course = await Course.findByPk(course_id);
@@ -95,17 +114,6 @@ const getUsersByCourse = async (req, res) => {
         .json({ message: "No se encontró el usuario solicitante" });
     }
 
-    // Formatear usuarios para la respuesta
-    const formattedUsers = users.map((user) => ({
-      user_id: user.user_id,
-      email: user.email,
-      userName: user.name,
-      profilePhoto: user.profilePhoto
-        ? `${process.env.BASE_URL}/public/fotoPerfil/${user.profilePhoto}`
-        : null,
-      carnet: user.carnet,
-    }));
-
     // Registrar actividad
     await logActivity(
       user_id,
@@ -116,16 +124,18 @@ const getUsersByCourse = async (req, res) => {
     );
 
     res.status(200).json({
-      countUsers: userCount,
+      countUsers: users.length,
       users: formattedUsers,
     });
   } catch (error) {
+    console.error("Error al obtener usuarios asignados:", error);
     res.status(500).json({
       message: "Error al obtener los usuarios asignados al curso",
       error: error.message,
     });
   }
 };
+
 
 // Obtener usuario por token
 const listuserbytoken = async (req, res) => {
