@@ -6,7 +6,18 @@ const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
+const {sendEmailPasswordRecovery} = require("./emailController");
 
+// Función para generar una contraseña aleatoria
+const generateRandomPassword = (length = 10) => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let password = '';
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * characters.length);
+    password += characters[randomIndex];
+  }
+  return password;
+};
 
 const registerUser = async (req, res) => {
   const {
@@ -76,7 +87,6 @@ const registerUser = async (req, res) => {
     });
   }
 };
-
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -231,9 +241,63 @@ const updateProfilePhoto = async (req, res) => {
   }
 };
 
+// Función para solicitar la recuperación de la contraseña
+const requestPasswordRecovery = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({
+      message: "Por favor, proporcione un correo electrónico",
+    });
+  }
+
+  try {
+    // Buscar el usuario por el correo electrónico
+    const user = await User.findOne({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "No se encontró un usuario con ese correo electrónico",
+      });
+    }
+
+    // Generar una nueva contraseña aleatoria
+    const newPassword = generateRandomPassword();
+
+    // Encriptar la nueva contraseña
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Actualizar la contraseña del usuario
+    await User.update({ password: hashedPassword}, { where: { user_id: user.user_id } });
+
+    // Enviar correo con la nueva contraseña
+    const templateVariables = {
+      nombre: user.name, // Nombre del usuario
+      newPassword: newPassword, // Nueva contraseña generada
+    };
+
+    await sendEmailPasswordRecovery(
+      "Recuperación de contraseña",
+      `Tu nueva contraseña es: ${newPassword}`,
+      email,
+      templateVariables
+    );
+
+    res.status(200).json({
+      message: "Tu nueva contraseña ha sido enviada a tu correo electrónico.",
+    });
+  } catch (error) {
+    console.error("Error al solicitar la recuperación de la contraseña:", error);
+    res.status(500).json({
+      message: "Error en el servidor. Por favor, intenta nuevamente más tarde.",
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   updatePassword,
   updateProfilePhoto,
+  requestPasswordRecovery,
 };

@@ -164,4 +164,32 @@ router.put(
   handleMulterErrors
 );
 
+/**
+ * @swagger
+ * /auth/requestPasswordRecovery:
+ *   post:
+ *     summary: Solicita la recuperación de la contraseña y envía una nueva contraseña aleatoria al correo del usuario
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Correo electrónico del usuario
+ *             example:
+ *               email: example@gmail.com
+ *     responses:
+ *       200:
+ *         description: Nueva contraseña enviada al correo electrónico
+ *       400:
+ *         description: Correo electrónico no proporcionado o usuario no encontrado
+ *       500:
+ *         description: Error en el servidor al recuperar la contraseña
+ */
+router.post("/requestPasswordRecovery", authController.requestPasswordRecovery);
+
 module.exports = router;

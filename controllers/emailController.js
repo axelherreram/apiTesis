@@ -89,8 +89,31 @@ const sendCommentEmail = async (subject, text, to, templateVariables) => {
 };
 
 
+// Función para enviar correo con la nueva contraseña
+const sendEmailPasswordRecovery = async (subject, text, to, templateVariables) => {
+  try {
+    const templatePath = path.join(__dirname, "../templates/passwordRecoveryTemplate.html");
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER, // Correo definido en las variables de entorno
+      to: to, // Dirección de correo del destinatario
+      subject: subject, // Asunto del correo
+      text: text, // Contenido en texto plano
+      html: htmlContent, // Contenido en formato HTML
+    };
+
+    // Enviar el correo
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Correo enviado a ${to}: ${info.response}`);
+  } catch (error) {
+    console.error(`Error al enviar correo: ${error.message}`);
+  }
+};
+
 module.exports = {
     sendEmailPassword,
     sendEmailTask,
-    sendCommentEmail
+    sendCommentEmail,
+    sendEmailPasswordRecovery
 };
