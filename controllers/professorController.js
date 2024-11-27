@@ -5,6 +5,7 @@ const { logActivity } = require("../sql/appLog");
 const { sequelize } = require("../config/database");
 const bcrypt = require("bcrypt");
 require('dotenv').config(); // Asegúrate de cargar las variables de entorno
+const { sendEmailCatedratico } = require("../controllers/emailController");
 
 // Actualizar el estado active de un usuario
 const updateProfessorStatus = async (req, res) => {
@@ -228,6 +229,12 @@ const createProfessor = async (req, res) => {
       `Creación de profesor: ${user.name}`
     );
 
+    // Enviar correo con las credenciales al profesor
+    await sendEmailCatedratico("Bienvenido a TesM", email, {
+      nombre: name,
+      password: randomPassword,
+    });
+
     res.status(201).json({ message: "Profesor creado exitosamente" });
   } catch (error) {
     console.error("Error al crear el profesor:", error);
@@ -237,6 +244,7 @@ const createProfessor = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   updateProfessorStatus,
