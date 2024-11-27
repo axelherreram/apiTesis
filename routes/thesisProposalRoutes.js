@@ -3,6 +3,7 @@ const router = express.Router();
 const { aprobProposal } = require("../controllers/thesisProposalController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const admin = verifyRole([3]);
 
@@ -27,7 +28,20 @@ const admin = verifyRole([3]);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Submissions'
+ *             type: object
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 description: ID del estudiante que presenta la propuesta
+ *                 example: 101
+ *               submission_id:
+ *                 type: integer
+ *                 description: ID de la entrega de la propuesta
+ *                 example: 202
+ *               approved_proposal:
+ *                 type: integer
+ *                 description: Estado de la aprobación de la propuesta. 
+ *                 example: 1
  *     responses:
  *       200:
  *         description: Propuesta actualizada exitosamente
@@ -75,6 +89,12 @@ const admin = verifyRole([3]);
  */
 
 // Ruta para aprobar propuesta
-router.post("/aprobar-propuesta", authMiddleware, admin, aprobProposal);
+router.post(
+  "/aprobar-propuesta",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  aprobProposal
+);
 
 module.exports = router;

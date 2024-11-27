@@ -11,8 +11,16 @@ const CourseSedeAssignment = require("../models/courseSedeAssignment");
 // Datos de la dashboard principal
 const dataGraphics = async (req, res) => {
   const { sede_id } = req.params;
+  const { sede_id: tokenSedeId } = req;
 
   try {
+    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res
+        .status(403)
+        .json({ message: "No tienes acceso a los grupos de esta sede" });
+    }
+
     const totalStudents = await User.count({ where: { rol_id: 1 } });
     const totalStudentsSede = await User.count({
       where: { rol_id: 1, sede_id },
@@ -36,9 +44,17 @@ const dataGraphics = async (req, res) => {
 const getUsersByCourse = async (req, res) => {
   const { sede_id, course_id, year } = req.params;
   const user_id = req.user_id;
-
+  const { sede_id: tokenSedeId } = req;
   try {
     // Verificar si el año existe
+
+    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res
+        .status(403)
+        .json({ message: "No tienes acceso a los grupos de esta sede" });
+    }
+
     const yearRecord = await Year.findOne({ where: { year } });
     if (!yearRecord) {
       return res.status(404).json({ message: "El año especificado no existe" });
@@ -135,7 +151,6 @@ const getUsersByCourse = async (req, res) => {
     });
   }
 };
-
 
 // Obtener usuario por token
 const listuserbytoken = async (req, res) => {
@@ -247,7 +262,12 @@ const createAdmin = async (req, res) => {
       password: password,
     };
 
-     await sendEmailPassword('Registro exitoso', `Hola ${name}, tu contraseña temporal es: ${password}`, email, templateVariables); 
+    await sendEmailPassword(
+      "Registro exitoso",
+      `Hola ${name}, tu contraseña temporal es: ${password}`,
+      email,
+      templateVariables
+    );
 
     // Crear el administrador
     const admin = await User.create({
@@ -334,17 +354,11 @@ const listAllAdmins = async (req, res) => {
       include: [
         {
           model: Sede,
-          as: "location", 
-          attributes: ["sede_id", "nameSede"], 
+          as: "location",
+          attributes: ["sede_id", "nameSede"],
         },
       ],
-      attributes: [
-        "user_id",
-        "email",
-        "name",
-        "carnet",
-        "profilePhoto",
-      ],
+      attributes: ["user_id", "email", "name", "carnet", "profilePhoto"],
     });
 
     // Verificar si hay administradores
@@ -360,9 +374,9 @@ const listAllAdmins = async (req, res) => {
       email: admin.email,
       name: admin.name,
       carnet: admin.carnet,
-      sede: admin.location 
+      sede: admin.location
         ? {
-            sede_id: admin.location.sede_id, 
+            sede_id: admin.location.sede_id,
             nombre: admin.location.nameSede,
           }
         : null, // Sede del administrador
@@ -406,11 +420,9 @@ const assignAdminToSede = async (req, res) => {
     // Verificar si el usuario existe y tiene el rol de administrador
     const user = await User.findOne({ where: { user_id, rol_id: 3 } });
     if (!user) {
-      return res
-        .status(404)
-        .json({
-          message: "El usuario no existe o no tiene el rol de administrador.",
-        });
+      return res.status(404).json({
+        message: "El usuario no existe o no tiene el rol de administrador.",
+      });
     }
 
     // Validar que no haya más de 3 administradores en la sede
@@ -436,12 +448,10 @@ const assignAdminToSede = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res
-      .status(500)
-      .json({
-        message: "Ocurrió un error al asignar al administrador.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Ocurrió un error al asignar al administrador.",
+      error: error.message,
+    });
   }
 };
 

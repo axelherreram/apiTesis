@@ -29,8 +29,14 @@ const createTask = async (req, res) => {
     note,
   } = req.body;
   const user_id = req.user_id;
+  const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
 
   try {
+    // Validar que el sede_id en la solicitud coincida con el sede_id del token
+    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res.status(403).json({ message: "No tienes acceso a esta sede" });
+    }
+
     // Obtener el año actual
     const currentYear = new Date().getFullYear();
 
@@ -137,6 +143,7 @@ const createTask = async (req, res) => {
     });
   }
 };
+
 
 const listTasks = async (req, res) => {
   const { sede_id, year } = req.params;
@@ -297,19 +304,22 @@ const updateTask = async (req, res) => {
   const { task_id } = req.params;
   const { title, description, taskStart, endTask, startTime, endTime } = req.body;
   const user_id = req.user_id;
-
+  const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
   try {
     // Validar que la tarea exista
     const task = await Task.findByPk(task_id);
     if (!task) {
       return res.status(404).json({ message: "Tarea no encontrada" });
     }
-
     // Validar la asignación de curso y sede
     const courseSedeAssignment = await CourseSedeAssignment.findOne({
       where: { course_id: task.asigCourse_id, },
     });
 
+    // Validar que el sede_id de la tarea coincida con el del token
+    if (parseInt(courseSedeAssignment.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res.status(403).json({ message: "No tienes acceso a esta tarea" });
+    }
     // Validar si el curso está inactivo
     if (!courseSedeAssignment.courseActive) {
       return res.status(400).json({
@@ -325,8 +335,8 @@ const updateTask = async (req, res) => {
     task.startTime = startTime ?? task.startTime;
     task.endTime = endTime ?? task.endTime;
 
+    // Registrar la actividad del usuario
     const user = await User.findByPk(user_id);
-
     await logActivity(
       user_id,
       user.sede_id,

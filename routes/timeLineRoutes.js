@@ -6,6 +6,7 @@ const express = require("express");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
 const admin = verifyRole([3]);
@@ -67,7 +68,29 @@ router.get("/timeline/:user_id/:course_id", authMiddleware, listTimeline);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/TimelineEventos'
+ *             type: object
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 description: ID del usuario que está realizando el comentario
+ *                 example: 101
+ *               description:
+ *                 type: string
+ *                 description: Descripción del comentario
+ *                 example: "Este es un comentario sobre la entrega"
+ *               course_id:
+ *                 type: integer
+ *                 description: ID del curso al que pertenece la entrega
+ *                 example: 202
+ *               task_id:
+ *                 type: integer
+ *                 description: ID de la entrega o tarea sobre la cual se hace el comentario
+ *                 example: 303
+ *             required:
+ *               - user_id
+ *               - description
+ *               - course_id
+ *               - task_id
  *     responses:
  *       201:
  *         description: Comentario creado exitosamente
@@ -85,6 +108,7 @@ router.post(
   authMiddleware,
   admin,
   obtenerUserIdDeToken,
+  extractSedeIdMiddleware,
   createTimeline
 );
 

@@ -1,7 +1,11 @@
-const express = require('express');
-const { listAllLogs, listLogsByUser } = require('../controllers/appLogController');
-const verifyRole = require('../middlewares/roleMiddleware');
-const authMiddleware = require('../middlewares/authMiddleware');
+const express = require("express");
+const {
+  listAllLogs,
+  listLogsByUser,
+} = require("../controllers/appLogController");
+const verifyRole = require("../middlewares/roleMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
 
@@ -45,7 +49,7 @@ const admin = verifyRole([3]);
  *       500:
  *         description: Error en el servidor
  */
-router.get('/bitacoraxuser/:carnet', authMiddleware, admin, listLogsByUser);
+router.get("/bitacoraxuser/:carnet", authMiddleware, admin, listLogsByUser);
 
 /**
  * @swagger
@@ -77,6 +81,12 @@ router.get('/bitacoraxuser/:carnet', authMiddleware, admin, listLogsByUser);
  *       500:
  *         description: Error en el servidor
  */
-router.get('/bitacora/:sede_id', authMiddleware, admin, listAllLogs);
+router.get(
+  "/bitacora/:sede_id",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  listAllLogs
+);
 
 module.exports = router;

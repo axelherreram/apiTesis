@@ -8,6 +8,7 @@ const {
 } = require("../controllers/comisionController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
 
@@ -67,7 +68,7 @@ const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administra
  *       500:
  *         description: Error en el servidor
  */
-router.post("/comisiones/grupo", authMiddleware, admin, createGroupComision);
+router.post("/comisiones/grupo", authMiddleware, admin, extractSedeIdMiddleware, createGroupComision);
 
 /**
  * @swagger
@@ -99,7 +100,7 @@ router.post("/comisiones/grupo", authMiddleware, admin, createGroupComision);
  *       500:
  *         description: Error en el servidor
  */
-router.delete("/comisiones/:group_id/usuario/:user_id", authMiddleware, admin, removeUserFromComision);
+router.delete("/comisiones/:group_id/usuario/:user_id", authMiddleware, admin, extractSedeIdMiddleware, removeUserFromComision);
 
 /**
  * @swagger
@@ -122,20 +123,61 @@ router.delete("/comisiones/:group_id/usuario/:user_id", authMiddleware, admin, r
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Comisiones'
+ *             type: object
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 description: ID del usuario que se va a agregar
+ *                 example: 15
+ *               rol_comision_id:
+ *                 type: integer
+ *                 description: ID del rol asignado al usuario dentro de la comisión
+ *                 example: 3
  *     responses:
  *       201:
  *         description: Usuario agregado exitosamente a la comisión
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Comisiones'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Usuario agregado a la comisión exitosamente
+ *                 comision:
+ *                   type: object
+ *                   properties:
+ *                     group_id:
+ *                       type: integer
+ *                       example: 1
+ *                     year_id:
+ *                       type: integer
+ *                       example: 2024
+ *                     sede_id:
+ *                       type: integer
+ *                       example: 2
+ *                     user_id:
+ *                       type: integer
+ *                       example: 15
+ *                     rol_comision_id:
+ *                       type: integer
+ *                       example: 3
  *       404:
  *         description: Grupo de comisión no encontrado
+ *       400:
+ *         description: Usuario o rol de comisión no válido o límite de usuarios excedido
+ *       403:
+ *         description: No tienes acceso para esta sede
  *       500:
  *         description: Error en el servidor
  */
-router.post("/comisiones/:group_id/usuario", authMiddleware, admin, addUserToComision);
+router.post(
+  "/comisiones/:group_id/usuario",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  addUserToComision
+);
 
 /**
  * @swagger
@@ -206,6 +248,6 @@ router.post("/comisiones/:group_id/usuario", authMiddleware, admin, addUserToCom
  *       500:
  *         description: Error en el servidor
  */
-router.get("/comisiones/grupos/:sede_id/:year", authMiddleware, admin, getGroupsAndUsersBySedeAndYear);
+router.get("/comisiones/grupos/:sede_id/:year", authMiddleware, admin, extractSedeIdMiddleware, getGroupsAndUsersBySedeAndYear);
 
 module.exports = router;

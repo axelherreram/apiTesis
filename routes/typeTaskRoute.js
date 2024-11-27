@@ -4,7 +4,7 @@ const verifyRole = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
-const adminOrTerna = verifyRole([3]);
+const admin = verifyRole([3]);
 
 /**
  * @swagger
@@ -38,6 +38,6 @@ const adminOrTerna = verifyRole([3]);
  *       500:
  *         description: Error en el servidor
  */
-router.get('/typetasks', authMiddleware, adminOrTerna, listarTypeTask);
+router.get('/typetasks', authMiddleware, admin, listarTypeTask);
 
 module.exports = router;

@@ -9,9 +9,9 @@ const {
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
-const adminOrTerna = verifyRole([2, 3]);
 const admin = verifyRole([3]);
 
 /**
@@ -165,14 +165,15 @@ router.get(
  *       500:
  *         description: Error del servidor
  */
-
 router.put(
   "/tareas/:task_id",
   authMiddleware,
   obtenerUserIdDeToken,
   admin,
+  extractSedeIdMiddleware,
   updateTask
 );
+
 /**
  * @swagger
  * /api/tareas:
@@ -230,7 +231,14 @@ router.put(
  *               message: "Error al crear la tarea"
  *               error: "Detalle del error"
  */
-router.post("/tareas", authMiddleware, obtenerUserIdDeToken, admin, createTask);
+router.post(
+  "/tareas",
+  authMiddleware,
+  obtenerUserIdDeToken,
+  admin,
+  extractSedeIdMiddleware,
+  createTask
+);
 
 /**
  * @swagger

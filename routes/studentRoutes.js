@@ -4,6 +4,7 @@ const { bulkUploadUsers } = require("../controllers/studentController");
 const upload = require("../middlewares/uploadExcel");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const admin = verifyRole([3]); // Solo Admin
 
@@ -46,6 +47,7 @@ router.post(
   "/usuarios/cargaMasiva",
   authMiddleware,
   admin,
+  extractSedeIdMiddleware,
   upload.single("archivo"),
   bulkUploadUsers
 );

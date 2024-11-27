@@ -6,14 +6,22 @@ const GroupComision = require("../models/groupComision");
 
 const getStudentsComisionByYear = async (req, res) => {
   const { year, sede_id } = req.params;
-
+  const { sede_id: tokenSedeId } = req; 
   try {
+
     // Verificar si el año existe en la base de datos
     const yearData = await Year.findOne({ where: { year } });
     if (!yearData) {
       return res.status(404).json({ message: "Año no encontrado" });
     }
     const year_id = yearData.year_id;
+
+    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res
+        .status(403)
+        .json({ message: "No tienes acceso a los grupos de esta sede" }); 
+    }
 
     // Buscar los grupos de comisión asociados al año y sede
     const groups = await GroupComision.findAll({

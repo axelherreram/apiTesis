@@ -3,6 +3,8 @@ const { getStudentsComisionByYear } = require("../controllers/studentComisionCon
 const verifyRole = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
+
 
 const admin = verifyRole([3]);
 
@@ -12,7 +14,7 @@ const admin = verifyRole([3]);
  *   - name: EstudianteComision
  *     description: Operaciones relacionadas con los estudiantes en las comisiones
  * 
- * /comisiones/students/{year}/{sede_id}:
+ * /api/comisiones/students/{year}/{sede_id}:
  *   get:
  *     summary: Obtener estudiantes por año y sede
  *     description: Devuelve una lista de estudiantes que pertenecen a una comisión para un año y sede específicos.
@@ -60,6 +62,6 @@ const admin = verifyRole([3]);
  *       scheme: bearer
  *       bearerFormat: JWT
  */
-router.get("/comisiones/students/:year/:sede_id", authMiddleware, admin, getStudentsComisionByYear);
+router.get("/comisiones/students/:year/:sede_id", authMiddleware, admin, extractSedeIdMiddleware, getStudentsComisionByYear);
 
 module.exports = router;

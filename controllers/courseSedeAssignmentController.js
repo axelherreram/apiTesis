@@ -82,7 +82,16 @@ const createSedeAssignment = async (req, res) => {
 
 const getCoursesBySede = async (req, res) => {
   const { sede_id } = req.params;
+  const { sede_id: tokenSedeId } = req; // Sede extraída del token
+
   try {
+    // Verificar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res
+        .status(403)
+        .json({ message: "No tienes acceso a los cursos de esta sede" });
+    }
+
     // Obtener el año actual
     const currentYear = new Date().getFullYear();
 
@@ -126,8 +135,10 @@ const getCoursesBySede = async (req, res) => {
         data: [],
       });
     }
+
     // Mapear los resultados para devolver solo los datos del curso
     const courses = assignments.map((assignment) => assignment.Course);
+
     // Responder con los cursos asignados
     res.status(200).json({
       message: `Cursos asignados a la sede ${sede.nameSede} para el año ${currentYear} recuperados exitosamente.`,

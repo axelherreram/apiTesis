@@ -10,12 +10,18 @@ require('dotenv').config(); // Asegúrate de cargar las variables de entorno
 const updateProfessorStatus = async (req, res) => {
   const { active } = req.body;
   const { user_id } = req.params;
+  const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
     const user = await User.findOne({ where: { user_id } });
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    // Verificar que el sede_id del token coincida con el del usuario
+    if (user.sede_id !== parseInt(tokenSedeId, 10)) {
+      return res.status(403).json({ message: "No tienes acceso a este usuario en esta sede" });
     }
 
     await User.update({ active }, { where: { user_id } });
@@ -42,8 +48,18 @@ const updateProfessorStatus = async (req, res) => {
 
 // Listar todos los profesores
 const listProfessors = async (req, res) => {
+  const { sede_id, year } = req.query;
+  const { sede_id: tokenSedeId } = req; // Sede extraída del token
+
   try {
-    const { sede_id, year } = req.query;
+    if (!sede_id) {
+      return res.status(400).json({ message: "El parámetro sede_id es obligatorio" });
+    }
+
+    // Verificar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res.status(403).json({ message: "No tienes acceso a esta sede" });
+    }
 
     const yearData = await Year.findOne({ where: { year } });
 
@@ -52,10 +68,6 @@ const listProfessors = async (req, res) => {
     }
 
     const year_id = yearData.year_id;
-
-    if (!sede_id) {
-      return res.status(400).json({ message: "El parámetro sede_id es obligatorio" });
-    }
 
     const users = await User.findAll({
       where: {
@@ -84,8 +96,18 @@ const listProfessors = async (req, res) => {
 
 // Listar profesores activos no asignados a comisión
 const listActiveProfessors = async (req, res) => {
+  const { sede_id, year } = req.query;
+  const { sede_id: tokenSedeId } = req; // Sede extraída del token
+
   try {
-    const { sede_id, year } = req.query;
+    if (!sede_id) {
+      return res.status(400).json({ message: "El parámetro sede_id es obligatorio" });
+    }
+
+    // Verificar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res.status(403).json({ message: "No tienes acceso a esta sede" });
+    }
 
     // Verificar si el año existe
     const yearData = await Year.findOne({ where: { year } });
@@ -93,10 +115,6 @@ const listActiveProfessors = async (req, res) => {
       return res.status(404).json({ message: "Año no encontrado" });
     }
     const year_id = yearData.year_id;
-
-    if (!sede_id) {
-      return res.status(400).json({ message: "El parámetro sede_id es obligatorio" });
-    }
 
     // Buscar los usuarios que tienen active: true, sede_id correspondiente y que no están en la tabla comisiones
     const users = await User.findAll({
@@ -140,6 +158,7 @@ const listActiveProfessors = async (req, res) => {
 const createProfessor = async (req, res) => {
   const { email, name, carnet, sede_id, year } = req.body;
   const user_id = req.user_id;
+  const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
     const currentYear = new Date().getFullYear();
@@ -167,6 +186,11 @@ const createProfessor = async (req, res) => {
 
     // Obtener el usuario del token
     const userToken = await User.findByPk(user_id);
+
+    // Verificar si el usuario tiene acceso a la sede indicada
+    if (userToken.sede_id !== parseInt(tokenSedeId, 10)) {
+      return res.status(403).json({ message: "No tienes acceso a esta sede" });
+    }
 
     // Verificar si el usuario con el email ya existe
     const userExist = await User.findOne({ where: { email } });

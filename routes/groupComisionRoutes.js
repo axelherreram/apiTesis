@@ -5,7 +5,10 @@ const {
   listGroupBySedeAndYear,
 } = require("../controllers/groupComisionController");
 const authMiddleware = require("../middlewares/authMiddleware"); // JWT middleware para seguridad
+const verifyRole = require("../middlewares/roleMiddleware");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
+const admin = verifyRole([3]);
 /**
  * @swagger
  * tags:
@@ -56,7 +59,7 @@ const authMiddleware = require("../middlewares/authMiddleware"); // JWT middlewa
  *       500:
  *         description: Error en el servidor al listar los catedráticos/profesores
  */
-router.get("/group-comision/users", authMiddleware, listUsersByGroupAndSede);
+router.get("/group-comision/users", authMiddleware, admin, extractSedeIdMiddleware, listUsersByGroupAndSede);
 
 /**
  * @swagger
@@ -97,6 +100,6 @@ router.get("/group-comision/users", authMiddleware, listUsersByGroupAndSede);
  *       500:
  *         description: Error en el servidor al listar los grupos
  */
-router.get("/group-comision", authMiddleware, listGroupBySedeAndYear);
+router.get("/group-comision", authMiddleware, admin, extractSedeIdMiddleware, listGroupBySedeAndYear);
 
 module.exports = router;

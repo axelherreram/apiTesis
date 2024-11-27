@@ -3,6 +3,7 @@ const { createSedeAssignment, getCoursesBySede } = require("../controllers/cours
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
 const verifyRole = require("../middlewares/roleMiddleware");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
 const SuperAdmin = verifyRole([4]);
@@ -83,6 +84,7 @@ router.get(
   authMiddleware,
   obtenerUserIdDeToken,
   admin,
+  extractSedeIdMiddleware,
   getCoursesBySede
 );
 

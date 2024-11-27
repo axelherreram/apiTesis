@@ -3,32 +3,44 @@ const Roles = require('../models/roles');
 const User = require('../models/user');
 
 const listAllLogs = async (req, res) => {
-  const { sede_id } = req.params;
+  const { sede_id: requestSedeId } = req.params; // Sede desde el parámetro de la solicitud
+  const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
+    // Validar si la sede del token coincide con la sede de la solicitud
+    if (parseInt(requestSedeId, 10) !== parseInt(tokenSedeId, 10)) {
+      return res
+        .status(403)
+        .json({ message: 'No tienes acceso a los registros de esta sede' });
+    }
+
+    // Obtener los registros de bitácora para la sede
     const logs = await AppLog.findAll({
-      where: { sede_id },
+      where: { sede_id: requestSedeId },
       order: [['date', 'DESC']],
     });
 
     if (!logs || logs.length === 0) {
-      return res.status(404).json({ message: 'No se encontraron entradas de bitácora' });
+      return res
+        .status(404)
+        .json({ message: 'No se encontraron entradas de bitácora' });
     }
 
-    const formattedLogs = await Promise.all(logs.map(async (log) => {
-      const user = await User.findOne({ where: { user_id: log.user_id } });
-      const Role = await Roles.findOne({ where: { rol_id: user.rol_id } });
+    const formattedLogs = await Promise.all(
+      logs.map(async (log) => {
+        const user = await User.findOne({ where: { user_id: log.user_id } });
+        const Role = await Roles.findOne({ where: { rol_id: user.rol_id } });
 
-      return {
-        user_id: log.user_id,
-        username: user ? user.name : 'Usuario desconocido',
-        role: Role ? Role.name : 'Rol desconocido',
-        action: log.action,
-        description: log.details,
-        date: log.date,
-        
-      };
-    }));
+        return {
+          user_id: log.user_id,
+          username: user ? user.name : 'Usuario desconocido',
+          role: Role ? Role.name : 'Rol desconocido',
+          action: log.action,
+          description: log.details,
+          date: log.date,
+        };
+      })
+    );
 
     res.json({
       message: 'Lista completa de bitácoras',

@@ -3,6 +3,7 @@ const userController = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
 
@@ -65,6 +66,7 @@ router.get(
   "/sedes/:sede_id/cursos/:course_id/estudiantes/:year",
   authMiddleware,
   adminOrTerna,
+  extractSedeIdMiddleware,
   obtenerUserIdDeToken,
   userController.getUsersByCourse
 );
@@ -140,6 +142,7 @@ router.get(
   "/sedes/:sede_id/estudiantes/data-graphics",
   authMiddleware,
   admin,
+  extractSedeIdMiddleware,
   userController.dataGraphics
 );
 

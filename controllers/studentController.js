@@ -9,10 +9,19 @@ const { sendEmailPassword } = require("./emailController");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 
 const bulkUploadUsers = async (req, res) => {
+  const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
+  const { sede_id, rol_id, course_id } = req.body; // Extraer los valores de sede_id, rol_id y course_id del cuerpo de la solicitud
+
   try {
     if (!req.file) {
       return res.status(400).json({ message: "Se requiere un archivo Excel" });
     }
+
+    // Validar que el sede_id en la solicitud coincida con el sede_id del token
+    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res.status(403).json({ message: "No tienes acceso a esta sede" });
+    }
+
     const filename = path.basename(req.file.originalname);
     const filePath = path.join(__dirname, "../public/uploads/excels", filename);
 
@@ -49,10 +58,6 @@ const bulkUploadUsers = async (req, res) => {
     });
 
     const year_id = yearRecord.year_id;
-
-    const sede_id = req.body.sede_id;
-    const rol_id = req.body.rol_id;
-    const course_id = req.body.course_id;
 
     if (course_id) {
       // Buscar la asignación de curso, sede y año

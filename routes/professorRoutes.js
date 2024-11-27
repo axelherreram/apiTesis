@@ -9,6 +9,7 @@ const {
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
 const verifyRole = require("../middlewares/roleMiddleware");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const admin = verifyRole([3]); // Solo Admin
 
@@ -55,7 +56,7 @@ const admin = verifyRole([3]); // Solo Admin
  *       500:
  *         description: Error al obtener usuarios
  */
-router.get("/professors", authMiddleware, admin, listProfessors);
+router.get("/professors", authMiddleware, admin, extractSedeIdMiddleware, listProfessors);
 
 /**
  * @swagger
@@ -93,7 +94,7 @@ router.get("/professors", authMiddleware, admin, listProfessors);
  *       500:
  *         description: Error al obtener usuarios
  */
-router.get("/professors/activos", authMiddleware, admin, listActiveProfessors);
+router.get("/professors/activos", authMiddleware, admin, extractSedeIdMiddleware, listActiveProfessors);
 
 /**
  * @swagger
@@ -137,7 +138,7 @@ router.get("/professors/activos", authMiddleware, admin, listActiveProfessors);
  *       500:
  *         description: Error en el servidor al actualizar el campo active
  */
-router.patch("/professors/:user_id/status", authMiddleware, admin, updateProfessorStatus);
+router.patch("/professors/:user_id/status", authMiddleware, admin, extractSedeIdMiddleware, updateProfessorStatus);
 
 /**
  * @swagger
@@ -153,7 +154,28 @@ router.patch("/professors/:user_id/status", authMiddleware, admin, updateProfess
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/User'
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 description: Correo electrónico del profesor.
+ *                 example: profesor@miumg.edu.gt
+ *               name:
+ *                 type: string
+ *                 description: Nombre completo del profesor.
+ *                 example: Juan Pérez
+ *               carnet:
+ *                 type: string
+ *                 description: Número de carnet del profesor.
+ *                 example: 123456
+ *               sede_id:
+ *                 type: integer
+ *                 description: ID de la sede en la que trabaja el profesor.
+ *                 example: 1
+ *               year:
+ *                 type: integer
+ *                 description: Año en que el profesor será asignado.
+ *                 example: 2024
  *     responses:
  *       201:
  *         description: Profesor creado exitosamente.
@@ -170,6 +192,7 @@ router.patch("/professors/:user_id/status", authMiddleware, admin, updateProfess
  *       500:
  *         description: Error en el servidor al crear el profesor.
  */
-router.post("/create/professor", authMiddleware, obtenerUserIdDeToken, admin, createProfessor);
+
+router.post("/create/professor", authMiddleware, obtenerUserIdDeToken, admin, extractSedeIdMiddleware, createProfessor);
 
 module.exports = router;

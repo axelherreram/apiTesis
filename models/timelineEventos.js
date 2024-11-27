@@ -3,7 +3,7 @@ const User = require("./user");
 const { sequelize } = require('../config/database'); 
 const Course = require("./course");
 const Task = require("./task");
-
+const Submissions = require("./submissions");
 
 const TimelineEventos = sequelize.define("TimelineEventos", {
   evento_id: {

@@ -4,11 +4,9 @@ const { logActivity } = require("../sql/appLog");
 
 const aprobProposal = async (req, res) => {
   try {
-    const {
-      user_id,
-      submission_id,
-      approved_proposal,
-    } = req.body;
+    const { user_id, submission_id, approved_proposal } = req.body;
+
+    const { sede_id: tokenSedeId } = req;
 
     // validar que el estudiante exista
     const user = await User.findByPk(user_id);
@@ -17,7 +15,12 @@ const aprobProposal = async (req, res) => {
         message: "Usuario no encontrado",
       });
     }
-    
+    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+    if (parseInt(user.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res
+        .status(403)
+        .json({ message: "No tienes acceso a los grupos de esta sede" }); 
+    }
     // validar que la entrega exista
     const submission = await Submissions.findByPk(submission_id);
     if (!submission) {
@@ -39,7 +42,7 @@ const aprobProposal = async (req, res) => {
 
     // Actualizar la propuesta
     await Submissions.update(
-      {  approved_proposal },
+      { approved_proposal },
       {
         where: {
           user_id,
