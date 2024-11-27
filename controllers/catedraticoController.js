@@ -81,11 +81,11 @@ const bulkUploadCatedratico = async (req, res) => {
           year_id,
         });
 
-        // Enviar correo con las credenciales al profesor
+/*         // Enviar correo con las credenciales al profesor
         await sendEmailCatedratico("Bienvenido a TesM", email, {
           nombre: nombre,
           password: randomPassword,
-        });
+        }); */
       }
     }
 
