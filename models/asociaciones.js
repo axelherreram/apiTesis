@@ -22,9 +22,9 @@ module.exports = function associateModels() {
   User.hasMany(CourseAssignment, { foreignKey: "student_id" });
   CourseAssignment.belongsTo(User, { foreignKey: "student_id" });
 
-  // Relación entre CourseAssignment y Course
+/*   // Relación entre CourseAssignment y Course
   CourseAssignment.belongsTo(Course, { foreignKey: "course_id" });
-
+ */
   // Relación entre CourseSedeAssignment, Course y Sede
   CourseSedeAssignment.belongsTo(Course, { foreignKey: "course_id" });
   CourseSedeAssignment.belongsTo(Sede, { foreignKey: "sede_id" });

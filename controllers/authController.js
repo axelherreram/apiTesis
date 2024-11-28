@@ -6,12 +6,13 @@ const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
-const {sendEmailPasswordRecovery} = require("./emailController");
+const { sendEmailPasswordRecovery } = require("./emailController");
 
 // Función para generar una contraseña aleatoria
 const generateRandomPassword = (length = 10) => {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
-  let password = '';
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
+  let password = "";
   for (let i = 0; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * characters.length);
     password += characters[randomIndex];
@@ -20,20 +21,13 @@ const generateRandomPassword = (length = 10) => {
 };
 
 const registerUser = async (req, res) => {
-  const {
-    email,
-    password,
-    name,
-    carnet,
-    sede_id,
-    rol_id,
-    year,
-  } = req.body;
+  const { email, password, name, carnet, sede_id, rol_id, year } = req.body;
 
   // Validación de campos requeridos
   if (!email || !password || !name || !carnet || !sede_id || !rol_id || !year) {
     return res.status(400).json({
-      message: "Faltan campos requeridos. Por favor, proporcione todos los datos necesarios.",
+      message:
+        "Faltan campos requeridos. Por favor, proporcione todos los datos necesarios.",
     });
   }
 
@@ -98,6 +92,12 @@ const loginUser = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
+    if (user.status == false) {
+      return res
+        .status(401)
+        .json({ message: "Acceso denegado. El usuario está deshabilitado." });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -158,15 +158,23 @@ const updatePassword = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
 
     if (!isPasswordValid) {
-      return res.status(400).json({ message: "La contraseña actual es incorrecta" });
+      return res
+        .status(400)
+        .json({ message: "La contraseña actual es incorrecta" });
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-    await User.update({ password: hashedNewPassword, passwordUpdate: true }, { where: { user_id } });
+    await User.update(
+      { password: hashedNewPassword, passwordUpdate: true },
+      { where: { user_id } }
+    );
 
     const updatedUser = await User.findOne({ where: { user_id } });
 
@@ -180,7 +188,9 @@ const updatePassword = async (req, res) => {
 
     res.json({ message: "Contraseña actualizada exitosamente" });
   } catch (err) {
-    res.status(500).json({ message: "Error en el servidor", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error en el servidor", error: err.message });
   }
 };
 
@@ -237,7 +247,9 @@ const updateProfilePhoto = async (req, res) => {
 
     res.json({ message: "Foto de perfil actualizada exitosamente" });
   } catch (err) {
-    res.status(500).json({ message: "Error en el servidor", error: err.message });
+    res
+      .status(500)
+      .json({ message: "Error en el servidor", error: err.message });
   }
 };
 
@@ -268,7 +280,10 @@ const requestPasswordRecovery = async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Actualizar la contraseña del usuario
-    await User.update({ password: hashedPassword}, { where: { user_id: user.user_id } });
+    await User.update(
+      { password: hashedPassword },
+      { where: { user_id: user.user_id } }
+    );
 
     // Enviar correo con la nueva contraseña
     const templateVariables = {
@@ -287,7 +302,10 @@ const requestPasswordRecovery = async (req, res) => {
       message: "Tu nueva contraseña ha sido enviada a tu correo electrónico.",
     });
   } catch (error) {
-    console.error("Error al solicitar la recuperación de la contraseña:", error);
+    console.error(
+      "Error al solicitar la recuperación de la contraseña:",
+      error
+    );
     res.status(500).json({
       message: "Error en el servidor. Por favor, intenta nuevamente más tarde.",
     });

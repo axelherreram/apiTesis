@@ -1,19 +1,9 @@
-const Submissions = require("../models/submissions");
-const AppLog = require("../models/appLog");
 const Course = require("../models/course");
-const Qualification = require("../models/qualification");
 const Roles = require("../models/roles");
 const Sede = require("../models/sede");
-const Task = require("../models/task");
-const TimelineEvents = require("../models/timelineEventos");
-const User = require("../models/user");
-const CourseAssignment = require("../models/courseAssignment");
 const typeTask = require("../models/typeTask");
-const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const Year = require("../models/year");
 const rolComision = require("../models/rolComision");
-const Comisiones = require("../models/comisiones");
-const EstudianteComision = require("../models/estudianteComision");
 
 const initializeTables = async () => {
   try {

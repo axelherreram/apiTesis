@@ -5,6 +5,7 @@ const {
   listProfessors,
   listActiveProfessors,
   createProfessor,
+  deactivateUser
 } = require("../controllers/professorController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
@@ -98,7 +99,7 @@ router.get("/professors/activos", authMiddleware, admin, extractSedeIdMiddleware
 
 /**
  * @swagger
- * /api/professors/{user_id}/status:
+ * /api/professors/{user_id}/active:
  *   patch:
  *     summary: Actualizar el estado active de un usuario
  *     description: Permite actualizar el campo active de un usuario específico.
@@ -138,7 +139,7 @@ router.get("/professors/activos", authMiddleware, admin, extractSedeIdMiddleware
  *       500:
  *         description: Error en el servidor al actualizar el campo active
  */
-router.patch("/professors/:user_id/status", authMiddleware, admin, extractSedeIdMiddleware, updateProfessorStatus);
+router.patch("/professors/:user_id/active", authMiddleware, admin, extractSedeIdMiddleware, updateProfessorStatus);
 
 /**
  * @swagger
@@ -192,7 +193,61 @@ router.patch("/professors/:user_id/status", authMiddleware, admin, extractSedeId
  *       500:
  *         description: Error en el servidor al crear el profesor.
  */
-
 router.post("/create/professor", authMiddleware, obtenerUserIdDeToken, admin, extractSedeIdMiddleware, createProfessor);
+
+
+/**
+ * @swagger
+ * /api/usuarios/{user_id}/status:
+ *   put:
+ *     summary: Activar o desactivar un usuario
+ *     tags: [Professors]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del usuario cuyo estado se cambiará
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               status:
+ *                 type: boolean
+ *                 description: Estado del usuario (true para activar, false para desactivar)
+ *             required:
+ *               - status
+ *     responses:
+ *       200:
+ *         description: Estado del usuario actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 status:
+ *                   type: boolean
+ *       400:
+ *         description: Datos inválidos o usuario no encontrado
+ *       401:
+ *         description: No autorizado
+ *       500:
+ *         description: Error en el servidor
+ */
+router.put(
+  "/usuarios/:user_id/status",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  deactivateUser
+);
 
 module.exports = router;

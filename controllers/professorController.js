@@ -245,10 +245,43 @@ const createProfessor = async (req, res) => {
   }
 };
 
+// Desactiva un usuario para que no pueda iniciar sesión
+const deactivateUser = async (req, res) => {
+  const { user_id } = req.params; 
+  const { status } = req.body;     // Estado del usuario (true/false) desde el cuerpo de la solicitud
+  const { sede_id: tokenSedeId } = req; // ID de sede extraído del token (si aplica)
+
+  try {
+    const user = await User.findByPk(user_id);
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    if (parseInt(user.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res.status(403).json({ message: "No tienes acceso a este usuario en esta sede" });
+    }
+
+    if (typeof status !== 'boolean') {
+      return res.status(400).json({ message: "El campo 'status' debe ser un valor booleano (true/false)" });
+    }
+
+    user.status = status;
+    await user.save();
+
+    res.status(200).json({
+      message: status ? "Usuario activado exitosamente" : "Usuario desactivado exitosamente",
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 
 module.exports = {
   updateProfessorStatus,
   listProfessors,
   listActiveProfessors,
   createProfessor,
+  deactivateUser
 };
