@@ -85,7 +85,7 @@ module.exports = function associateModels() {
   GroupComision.belongsTo(Year, { foreignKey: "year_id" });
   Year.hasMany(GroupComision, { foreignKey: "year_id" });
 
-  // Relación entre Comisiones y EstudianteComision
+ /*  // Relación entre Comisiones y EstudianteComision
   Comisiones.hasMany(EstudianteComision, {
     foreignKey: "comision_id",
     as: "estudianteComisiones",
@@ -94,7 +94,7 @@ module.exports = function associateModels() {
     foreignKey: "comision_id",
     as: "comision",
   });
-
+ */
   // Relación entre EstudianteComision y User
   EstudianteComision.belongsTo(User, { foreignKey: "user_id", as: "student" });
   User.hasMany(EstudianteComision, {

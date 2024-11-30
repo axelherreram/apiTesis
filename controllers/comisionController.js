@@ -14,25 +14,24 @@ const createGroupComision = async (req, res) => {
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
-    // Validar si la sede del token coincide con la sede de la solicitud
+    // 1. Validar si la sede del token coincide con la sede de la solicitud
     if (parseInt(requestSedeId, 10) !== parseInt(tokenSedeId, 10)) {
       return res
         .status(403)
-        .json({ message: 'No tienes acceso para esta sede' });
+        .json({ message: "No tienes acceso para esta sede" });
     }
 
-    // Verificar año y sede
+    // 2. Verificar si el año existe
     const yearData = await Year.findOne({ where: { year } });
     if (!yearData) {
       return res.status(404).json({ message: "Año no encontrado" });
     }
     const year_id = yearData.year_id;
 
-    // Validar que no exista más de una comisión por año y sede
+    // 3. Validar que no exista más de una comisión por año y sede
     const existingGroup = await GroupComision.findOne({
       where: { year_id, sede_id: requestSedeId },
     });
-
     if (existingGroup) {
       return res.status(400).json({
         message:
@@ -40,22 +39,46 @@ const createGroupComision = async (req, res) => {
       });
     }
 
-    // Crear el grupo de comisión
+    // 4. Verificar la existencia de la asignación del curso (antes de crear el grupo)
+    const courseSede = await CourseSedeAssignment.findOne({
+      where: { year_id, sede_id: requestSedeId, course_id: 2 },
+    });
+    if (!courseSede) {
+      return res.status(404).json({
+        message: "No se encontró la asignación para el curso: Proyecto de Graduación II",
+      });
+    }
+
+    // 5. Validar estudiantes asignados
+    const estudiantes = await CourseAssignment.findAll({
+      where: { asigCourse_id: courseSede.asigCourse_id },
+      include: [
+        {
+          model: User,
+          attributes: ["user_id"],
+        },
+      ],
+    });
+    if (!estudiantes || estudiantes.length === 0) {
+      return res.status(404).json({
+        message: "No se encontraron estudiantes asignados al curso: Proyecto de Graduación II",
+      });
+    }
+
+    // 6. Crear el grupo de comisión
     const group = await GroupComision.create({ year_id, sede_id: requestSedeId });
 
-    // Verificar el número de usuarios ya asignados a la comisión
+    // 7. Validar que no haya más de 6 usuarios en el grupo
     const existingComisionCount = await Comisiones.count({
       where: { group_id: group.group_id },
     });
-
-    // Validar que no haya más de 6 usuarios
     if (existingComisionCount + groupData.length > 6) {
       return res.status(400).json({
         message: "No se pueden agregar más de 6 usuarios a la comisión",
       });
     }
 
-    // Asignar usuarios al grupo de comisión y obtener el comision_id
+    // 8. Asignar usuarios al grupo de comisión
     let group_id = null;
     for (const member of groupData) {
       const { user_id, rol_comision_id } = member;
@@ -74,48 +97,23 @@ const createGroupComision = async (req, res) => {
       }
     }
 
-    // Si no se encontró comision_id, abortamos
+    // 9. Validar que se haya asignado correctamente el grupo
     if (!group_id) {
       return res.status(500).json({ message: "Error al crear la comisión" });
     }
 
-    // Obtener el asigCourse_id de CourseSedeAssignment
-    const courseSede = await CourseSedeAssignment.findOne({
-      where: { year_id, sede_id: requestSedeId, course_id: 2 },
-    });
+    // 11. Formatear y registrar los estudiantes en la tabla EstudianteComision
+    const estudiantesFormat = estudiantes.map((estudiante) => ({
+      User: estudiante.User,
+    }));
 
-    if (!courseSede) {
-      return res.status(404).json({
-        message: "No se encontró la asignación para el curso con course_id: 2",
-      });
-    }
-
-    // Obtener los estudiantes asociados a ese asigCourse_id
-    const estudiantes = await CourseAssignment.findAll({
-      where: { asigCourse_id: courseSede.asigCourse_id },
-      include: [
-        {
-          model: User,
-          attributes: ["user_id"],
-        },
-      ],
-    });
-
-    // Formatear los estudiantes para devolver solo la información que se necesita
-    const estudiantesFormat = estudiantes.map((estudiante) => {
-      return {
-        User: estudiante.User, // Obtener solo la información del usuario
-      };
-    });
-
-    // Registrar los estudiantes en la tabla EstudianteComision
     for (let estudiante of estudiantesFormat) {
       const estudianteData = estudiante.User;
 
       await EstudianteComision.create({
         group_id, // Usamos el comision_id generado
         user_id: estudianteData.user_id, // ID del usuario (estudiante)
-        year_id: year_id, // Año de registro
+        year_id, // Año de registro
       });
     }
 
@@ -130,6 +128,7 @@ const createGroupComision = async (req, res) => {
     });
   }
 };
+
 
 
 // Eliminar usuario de una comisión

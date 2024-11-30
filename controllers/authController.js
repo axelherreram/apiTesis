@@ -2,13 +2,11 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { logActivity } = require("../sql/appLog");
-const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
 const { sendEmailPasswordRecovery } = require("./emailController");
 
-// Función para generar una contraseña aleatoria
 const generateRandomPassword = (length = 10) => {
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
@@ -92,7 +90,7 @@ const loginUser = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    if (user.status == false) {
+    if (user.active == false) {
       return res
         .status(401)
         .json({ message: "Acceso denegado. El usuario está deshabilitado." });
@@ -253,7 +251,6 @@ const updateProfilePhoto = async (req, res) => {
   }
 };
 
-// Función para solicitar la recuperación de la contraseña
 const requestPasswordRecovery = async (req, res) => {
   const { email } = req.body;
 

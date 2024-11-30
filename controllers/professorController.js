@@ -4,29 +4,34 @@ const Year = require("../models/year");
 const { logActivity } = require("../sql/appLog");
 const { sequelize } = require("../config/database");
 const bcrypt = require("bcrypt");
-require('dotenv').config(); // Asegúrate de cargar las variables de entorno
+require("dotenv").config(); // Asegúrate de cargar las variables de entorno
 const { sendEmailCatedratico } = require("../controllers/emailController");
 
 // Actualizar el estado active de un usuario
 const updateProfessorStatus = async (req, res) => {
-  const { active } = req.body;
+  const { active } = req.body; // Se acepta solo el campo 'active'
   const { user_id } = req.params;
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
-    const user = await User.findOne({ where: { user_id } });
+    // Buscar al usuario por su ID
+    const user = await User.findByPk(user_id);
 
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Verificar que el sede_id del token coincida con el del usuario
-    if (user.sede_id !== parseInt(tokenSedeId, 10)) {
+    // Validar que el usuario pertenezca a la misma sede que el token
+    if (parseInt(user.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
       return res.status(403).json({ message: "No tienes acceso a este usuario en esta sede" });
     }
-
+    if (user.rol_id !== 2) {
+      return res.status(403).json({ message: "No puedes desactivar este usuario" });
+    }
+    // Actualizar el campo 'active'
     await User.update({ active }, { where: { user_id } });
 
+    // Registrar actividad
     await logActivity(
       user_id,
       user.sede_id,
@@ -35,9 +40,11 @@ const updateProfessorStatus = async (req, res) => {
       "Actualización de campo active"
     );
 
+    // Responder según el valor de 'active'
     res.status(200).json({
-      message: "Campo active actualizado exitosamente",
-      data: { user_id, active },
+      message: active
+        ? "Usuario activado exitosamente"
+        : "Usuario desactivado exitosamente",
     });
   } catch (error) {
     res.status(500).json({
@@ -49,12 +56,14 @@ const updateProfessorStatus = async (req, res) => {
 
 // Listar todos los profesores
 const listProfessors = async (req, res) => {
-  const { sede_id, year } = req.query;
+  const { sede_id } = req.query;
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
     if (!sede_id) {
-      return res.status(400).json({ message: "El parámetro sede_id es obligatorio" });
+      return res
+        .status(400)
+        .json({ message: "El parámetro sede_id es obligatorio" });
     }
 
     // Verificar que el `sede_id` del token coincida con el `sede_id` de la solicitud
@@ -62,19 +71,10 @@ const listProfessors = async (req, res) => {
       return res.status(403).json({ message: "No tienes acceso a esta sede" });
     }
 
-    const yearData = await Year.findOne({ where: { year } });
-
-    if (!yearData) {
-      return res.status(404).json({ message: "Año no encontrado" });
-    }
-
-    const year_id = yearData.year_id;
-
     const users = await User.findAll({
       where: {
         rol_id: 2,
         sede_id: sede_id,
-        year_id: year_id,
       },
       attributes: ["user_id", "email", "name", "profilePhoto", "active"],
     });
@@ -91,7 +91,9 @@ const listProfessors = async (req, res) => {
 
     res.status(200).json(formattedUsers);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener usuarios", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener usuarios", error: error.message });
   }
 };
 
@@ -102,7 +104,9 @@ const listActiveProfessors = async (req, res) => {
 
   try {
     if (!sede_id) {
-      return res.status(400).json({ message: "El parámetro sede_id es obligatorio" });
+      return res
+        .status(400)
+        .json({ message: "El parámetro sede_id es obligatorio" });
     }
 
     // Verificar que el `sede_id` del token coincida con el `sede_id` de la solicitud
@@ -120,12 +124,14 @@ const listActiveProfessors = async (req, res) => {
     // Buscar los usuarios que tienen active: true, sede_id correspondiente y que no están en la tabla comisiones
     const users = await User.findAll({
       where: {
-        rol_id: 2,  // Filtrar por rol de Profesor
+        rol_id: 2, // Filtrar por rol de Profesor
         active: true,
         sede_id: sede_id,
         year_id: year_id,
         user_id: {
-          [Op.notIn]: sequelize.literal(`(SELECT user_id FROM comisiones WHERE year_id = ${year_id})`),
+          [Op.notIn]: sequelize.literal(
+            `(SELECT user_id FROM comisiones WHERE year_id = ${year_id})`
+          ),
         },
       },
       attributes: ["user_id", "email", "name", "profilePhoto", "active"],
@@ -151,7 +157,9 @@ const listActiveProfessors = async (req, res) => {
 
     res.status(200).json(formattedUsers);
   } catch (error) {
-    res.status(500).json({ message: "Error al obtener usuarios", error: error.message });
+    res
+      .status(500)
+      .json({ message: "Error al obtener usuarios", error: error.message });
   }
 };
 
@@ -230,10 +238,11 @@ const createProfessor = async (req, res) => {
     );
 
     // Enviar correo con las credenciales al profesor
-    await sendEmailCatedratico("Bienvenido a TesM", email, {
+    /*     await sendEmailCatedratico("Bienvenido a TesM", email, {
       nombre: name,
       password: randomPassword,
-    });
+    }); */
+    console.log("email: ", email, "  password: ", randomPassword);
 
     res.status(201).json({ message: "Profesor creado exitosamente" });
   } catch (error) {
@@ -245,43 +254,10 @@ const createProfessor = async (req, res) => {
   }
 };
 
-// Desactiva un usuario para que no pueda iniciar sesión
-const deactivateUser = async (req, res) => {
-  const { user_id } = req.params; 
-  const { status } = req.body;     // Estado del usuario (true/false) desde el cuerpo de la solicitud
-  const { sede_id: tokenSedeId } = req; // ID de sede extraído del token (si aplica)
-
-  try {
-    const user = await User.findByPk(user_id);
-
-    if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
-
-    if (parseInt(user.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
-      return res.status(403).json({ message: "No tienes acceso a este usuario en esta sede" });
-    }
-
-    if (typeof status !== 'boolean') {
-      return res.status(400).json({ message: "El campo 'status' debe ser un valor booleano (true/false)" });
-    }
-
-    user.status = status;
-    await user.save();
-
-    res.status(200).json({
-      message: status ? "Usuario activado exitosamente" : "Usuario desactivado exitosamente",
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
 
 module.exports = {
   updateProfessorStatus,
   listProfessors,
   listActiveProfessors,
   createProfessor,
-  deactivateUser
 };

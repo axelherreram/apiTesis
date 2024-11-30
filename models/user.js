@@ -60,18 +60,13 @@ const User = sequelize.define(
     active: {
       type: DataTypes.BOOLEAN,
       allowNull: true,
-      defaultValue: false,
+      defaultValue: true,
     },
     passwordUpdate:{
       type: DataTypes.BOOLEAN,
       allowNull: true,
       defaultValue: false,
     },
-    status: {
-      type: DataTypes.BOOLEAN,
-      allowNull: true,
-      defaultValue: true,
-    }
   },
   {
     timestamps: false,
