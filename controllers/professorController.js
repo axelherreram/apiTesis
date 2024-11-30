@@ -23,10 +23,14 @@ const updateProfessorStatus = async (req, res) => {
 
     // Validar que el usuario pertenezca a la misma sede que el token
     if (parseInt(user.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
-      return res.status(403).json({ message: "No tienes acceso a este usuario en esta sede" });
+      return res
+        .status(403)
+        .json({ message: "No tienes acceso a este usuario en esta sede" });
     }
     if (user.rol_id !== 2) {
-      return res.status(403).json({ message: "No puedes desactivar este usuario" });
+      return res
+        .status(403)
+        .json({ message: "No puedes desactivar este usuario" });
     }
     // Actualizar el campo 'active'
     await User.update({ active }, { where: { user_id } });
@@ -182,7 +186,6 @@ const createProfessor = async (req, res) => {
         message: "Todos los campos son obligatorios",
       });
     }
-    
 
     const currentYear = new Date().getFullYear();
 
@@ -252,10 +255,10 @@ const createProfessor = async (req, res) => {
     );
 
     // Enviar correo con las credenciales al profesor
-    /*     await sendEmailCatedratico("Bienvenido a TesM", email, {
+    await sendEmailCatedratico("Bienvenido a TesM", email, {
       nombre: name,
       password: randomPassword,
-    }); */
+    });
     console.log("email: ", email, "  password: ", randomPassword);
 
     res.status(201).json({ message: "Profesor creado exitosamente" });
@@ -267,7 +270,6 @@ const createProfessor = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   updateProfessorStatus,
