@@ -170,6 +170,13 @@ const createProfessor = async (req, res) => {
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
+    if (!email || !name || !carnet || !sede_id || !year) {
+      return res.status(400).json({
+        message: "Todos los campos son obligatorios",
+      });
+    }
+    
+
     const currentYear = new Date().getFullYear();
 
     // Verificar si el año proporcionado es mayor al año actual
