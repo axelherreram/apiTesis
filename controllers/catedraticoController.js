@@ -76,9 +76,10 @@ const bulkUploadCatedratico = async (req, res) => {
           password: hashedPassword,
           name: nombre,
           carnet,
-          rol_id: 2, // Rol de administrador
+          rol_id: 2, // Rol de catédratico
           sede_id,
           year_id,
+          active: false,
         });
 
 /*         // Enviar correo con las credenciales al profesor

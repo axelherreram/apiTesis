@@ -237,6 +237,7 @@ const createProfessor = async (req, res) => {
       sede_id,
       rol_id: 2, // Rol de profesor
       year_id: yearRecord.year_id,
+      active: false,
     });
 
     // Registrar la actividad en los logs
