@@ -60,7 +60,7 @@ const updateProfessorStatus = async (req, res) => {
 
 // Listar todos los profesores
 const listProfessors = async (req, res) => {
-  const { sede_id, year } = req.query;
+  const { sede_id } = req.query;
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
@@ -69,12 +69,6 @@ const listProfessors = async (req, res) => {
         .status(400)
         .json({ message: "El parámetro sede_id es obligatorio" });
     }
-
-    const yearData = await Year.findOne({ where: { year } }); // Verificar si el año existe
-    if (!yearData) {
-      return res.status(404).json({ message: "Año no encontrado" });
-    }
-    const year_id = yearData.year_id;
 
     // Verificar que el `sede_id` del token coincida con el `sede_id` de la solicitud
     if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
@@ -85,7 +79,6 @@ const listProfessors = async (req, res) => {
       where: {
         rol_id: 2,
         sede_id: sede_id,
-        year_id: year_id,
       },
       attributes: ["user_id", "email", "name", "profilePhoto", "active"],
     });

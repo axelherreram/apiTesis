@@ -36,12 +36,6 @@ const admin = verifyRole([3]); // Solo Admin
  *         description: ID de la sede para filtrar los profesores
  *         schema:
  *           type: integer
- *       - in: query
- *         name: year
- *         required: true
- *         description: Año para la solicitud
- *         schema:
- *           type: integer
  *     responses:
  *       200:
  *         description: Lista de profesores
