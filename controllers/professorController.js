@@ -80,13 +80,14 @@ const listProfessors = async (req, res) => {
         rol_id: 2,
         sede_id: sede_id,
       },
-      attributes: ["user_id", "email", "name", "profilePhoto", "active"],
+      attributes: ["user_id", "email", "name", "carnet","profilePhoto", "active"],
     });
 
     const formattedUsers = users.map((user) => ({
       user_id: user.user_id,
       email: user.email,
       userName: user.name,
+      professorCode: user.carnet,
       profilePhoto: user.profilePhoto
         ? `${process.env.BASE_URL}/public/fotoPerfil/${user.profilePhoto}`
         : null,
