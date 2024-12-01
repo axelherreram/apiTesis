@@ -1,5 +1,4 @@
 const { DataTypes } = require("sequelize");
-// const Sedes = require("./sede");
 const typeTask = require("./typeTask");
 const { sequelize } = require("../config/database");
 const Year = require("./year");
@@ -21,14 +20,6 @@ const Task = sequelize.define(
         key: "asigCourse_id",
       },
     },
-    /*     sede_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: Sedes,
-        key: "sede_id",
-      },
-    }, */
     typeTask_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -54,17 +45,11 @@ const Task = sequelize.define(
       allowNull: false,
     },
     startTime: {
-      // Campo para la hora de inicio
       type: DataTypes.TIME,
       allowNull: false,
     },
     endTime: {
-      // Campo para la hora de fin
       type: DataTypes.TIME,
-      allowNull: false,
-    },
-    note: {
-      type: DataTypes.STRING(255),
       allowNull: false,
     },
     year_id: {

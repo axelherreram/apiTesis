@@ -26,10 +26,9 @@ const createTask = async (req, res) => {
     endTask,
     startTime,
     endTime,
-    note,
   } = req.body;
   const user_id = req.user_id;
-  const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
+  const { sede_id: tokenSedeId } = req; 
 
   try {
     // Validar que el sede_id en la solicitud coincida con el sede_id del token
@@ -84,7 +83,6 @@ const createTask = async (req, res) => {
       endTask,
       startTime,
       endTime,
-      note,
       year_id,
     });
 
@@ -104,7 +102,7 @@ const createTask = async (req, res) => {
       include: [
         {
           model: CourseAssignment,
-          where: { course_id },
+          where: { asigCourse_id },
         },
       ],
       attributes: ["user_id", "name", "email"],
@@ -377,7 +375,6 @@ const listInfoTaksByUser = async (req, res) => {
         "description",
         "taskStart",
         "endTask",
-        "note",
         "asigCourse_id",
       ]
     });

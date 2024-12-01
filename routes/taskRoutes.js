@@ -187,7 +187,49 @@ router.put(
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/Task'
+ *             type: object
+ *             required:
+ *               - course_id
+ *               - sede_id
+ *               - typeTask_id
+ *               - title
+ *               - description
+ *               - taskStart
+ *               - endTask
+ *               - startTime
+ *               - endTime
+ *             properties:
+ *               course_id:
+ *                 type: integer
+ *                 description: ID del curso relacionado a la tarea
+ *               sede_id:
+ *                 type: integer
+ *                 description: ID de la sede relacionada a la tarea
+ *               typeTask_id:
+ *                 type: integer
+ *                 description: Tipo de tarea (1 para propuesta de tesis, etc.)
+ *               title:
+ *                 type: string
+ *                 description: Título de la tarea
+ *               description:
+ *                 type: string
+ *                 description: Descripción detallada de la tarea
+ *               taskStart:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha y hora de inicio de la tarea
+ *               endTask:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Fecha y hora de finalización de la tarea
+ *               startTime:
+ *                 type: string
+ *                 format: time
+ *                 description: Hora de inicio de la tarea
+ *               endTime:
+ *                 type: string
+ *                 format: time
+ *                 description: Hora de finalización de la tarea
  *           example:
  *             course_id: 1
  *             sede_id: 1
@@ -198,7 +240,6 @@ router.put(
  *             endTask: "2024-09-20T12:00:00Z"
  *             startTime: "08:00:00"
  *             endTime: "12:00:00"
- *             note: "40"
  *     responses:
  *       201:
  *         description: Tarea creada exitosamente
@@ -212,6 +253,12 @@ router.put(
  *           application/json:
  *             example:
  *               message: "¡La tarea de propuesta de tesis ya existe!"
+ *       403:
+ *         description: Acceso denegado
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "No tienes acceso a esta sede"
  *       404:
  *         description: No se encontró algún registro necesario
  *         content:
