@@ -18,7 +18,7 @@ const createSedeAssignment = async (req, res) => {
 
     const year_id = yearRecord.year_id;
 
-    const currentMonth = new Date().getMonth() + 1; // getMonth()
+    const currentMonth = new Date().getMonth() + 1; // Mes actual (1-12)
 
     const course = await Course.findByPk(course_id);
     if (!course) {
@@ -28,16 +28,17 @@ const createSedeAssignment = async (req, res) => {
     }
 
     const course_name = course.courseName;
-
+/* 
+    // Validar periodo de asignación basado en los meses
     if (
-      (course_id === 1 && currentMonth > 6) ||
-      (course_id === 2 && currentMonth <= 6)
+      (course_id === 1 && !(currentMonth >= 2 && currentMonth <= 6)) || // PG1 (febrero a junio)
+      (course_id === 2 && !(currentMonth >= 7 && currentMonth <= 11))   // PG2 (julio a noviembre)
     ) {
       return res.status(400).json({
-        message: `El curso ${course_name} fuera del perido de asignación.`,
+        message: `El curso ${course_name} está fuera del periodo de asignación permitido.`,
       });
     }
-
+ */
     // Verificar si la asignación ya existe en el año actual
     const existingAssignment = await CourseSedeAssignment.findOne({
       where: {
@@ -53,6 +54,7 @@ const createSedeAssignment = async (req, res) => {
         message: `No se encontró una sede con el ID ${sede_id}.`,
       });
     }
+
     const sedeName = sede.nameSede;
     if (existingAssignment) {
       return res.status(400).json({
@@ -79,6 +81,7 @@ const createSedeAssignment = async (req, res) => {
     });
   }
 };
+
 
 const getCoursesBySede = async (req, res) => {
   const { sede_id } = req.params;
