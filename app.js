@@ -22,6 +22,7 @@ const submisionRoute = require('./routes/submissionsRoute');
 const GroupComisionRoutes = require('./routes/groupComisionRoutes');
 const comisionRoutes = require('./routes/comisionRoutes');
 const StudianteComision = require('./routes/studentComisionRoutes');
+const SearchRoutes = require('./routes/searchRoutes');
 
 const path = require('path');
 const cors = require('cors');
@@ -61,6 +62,8 @@ app.use('/api', submisionRoute);
 app.use('/api', GroupComisionRoutes);
 app.use('/api', comisionRoutes);
 app.use('/api', StudianteComision);
+app.use('/api', SearchRoutes);
+
 
 
 sequelize.sync({ alter: false, force: false })
