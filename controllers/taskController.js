@@ -11,6 +11,7 @@ const Sede = require("../models/sede");
 const TypeTask = require("../models/typeTask");
 
 const Subbmissions = require("../models/submissions");
+const { parse } = require("dotenv");
 require("dotenv").config();
 
 const BASE_URL = process.env.BASE_URL;
@@ -28,7 +29,7 @@ const createTask = async (req, res) => {
     endTime,
   } = req.body;
   const user_id = req.user_id;
-  const { sede_id: tokenSedeId } = req; 
+  const { sede_id: tokenSedeId } = req;
 
   try {
     // Validar que el sede_id en la solicitud coincida con el sede_id del token
@@ -142,7 +143,6 @@ const createTask = async (req, res) => {
   }
 };
 
-
 const listTasks = async (req, res) => {
   const { sede_id, year } = req.params;
   const user_id = req.user_id;
@@ -179,7 +179,9 @@ const listTasks = async (req, res) => {
     );
 
     // Buscar las tareas asociadas a la sede y al año
-    const tasks = await Task.findAll({ where: { asigCourse_id: asigCourseIds, year_id } });
+    const tasks = await Task.findAll({
+      where: { asigCourse_id: asigCourseIds, year_id },
+    });
 
     // Verificar si se encontraron tareas
     if (!tasks || tasks.length === 0) {
@@ -212,6 +214,49 @@ const listTasks = async (req, res) => {
       error: error.message || "Error desconocido", // Captura el mensaje de error
     });
   }
+};
+
+const listTask = async (req, res) => {
+  const { task_id } = req.params;
+  const { sede_id: tokenSedeId } = req;
+
+  try {
+    // Buscar la tarea incluyendo la información de CourseSedeAssignment
+    const task = await Task.findByPk(task_id, {
+      include: [
+        {
+          model: CourseSedeAssignment,
+          attributes: ["sede_id"], // Solo traer la información necesaria
+        },
+      ],
+    });
+
+    // Validar si la tarea existe
+    if (!task) {
+      return res.status(404).json({ message: "Tarea no encontrada" });
+    }
+
+    // Validar si la sede coincide con la sede del token
+    const courseSedeAssignment = task.CourseSedeAssignment; // Sequelize incluye la relación automáticamente
+    if (!courseSedeAssignment || courseSedeAssignment.sede_id !== tokenSedeId) {
+      return res.status(403).json({ message: "No tienes acceso a esta tarea" });
+    }
+
+    res.status(200).json({
+      message: "Tarea encontrada exitosamente.",
+      data: task,
+    });
+  } catch (error) {
+    console.error("Error al obtener la tarea:", error);
+    res.status(500).json({
+      message: "Error al obtener la tarea.",
+      error: error.message || error,
+    });
+  }
+};
+
+module.exports = {
+  listTask,
 };
 
 const listTasksByCourse = async (req, res) => {
@@ -297,10 +342,10 @@ const listTasksByCourse = async (req, res) => {
   }
 };
 
-
 const updateTask = async (req, res) => {
   const { task_id } = req.params;
-  const { title, description, taskStart, endTask, startTime, endTime } = req.body;
+  const { title, description, taskStart, endTask, startTime, endTime } =
+    req.body;
   const user_id = req.user_id;
   const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
   try {
@@ -311,17 +356,20 @@ const updateTask = async (req, res) => {
     }
     // Validar la asignación de curso y sede
     const courseSedeAssignment = await CourseSedeAssignment.findOne({
-      where: { course_id: task.asigCourse_id, },
+      where: { course_id: task.asigCourse_id },
     });
 
     // Validar que el sede_id de la tarea coincida con el del token
-    if (parseInt(courseSedeAssignment.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+    if (
+      parseInt(courseSedeAssignment.sede_id, 10) !== parseInt(tokenSedeId, 10)
+    ) {
       return res.status(403).json({ message: "No tienes acceso a esta tarea" });
     }
     // Validar si el curso está inactivo
     if (!courseSedeAssignment.courseActive) {
       return res.status(400).json({
-        message: "No se puede actualizar la tarea ya que el curso está inactivo.",
+        message:
+          "No se puede actualizar la tarea ya que el curso está inactivo.",
       });
     }
 
@@ -348,13 +396,12 @@ const updateTask = async (req, res) => {
     res.status(200).json({ message: "Tarea actualizada exitosamente" });
   } catch (error) {
     console.error("Error al actualizar la tarea:", error);
-    res.status(500).json({ 
-      message: "Error al actualizar la tarea", 
-      error: error.message || "Error desconocido" 
+    res.status(500).json({
+      message: "Error al actualizar la tarea",
+      error: error.message || "Error desconocido",
     });
   }
 };
-
 
 const listInfoTaksByUser = async (req, res) => {
   const { user_id, task_id } = req.params;
@@ -376,7 +423,7 @@ const listInfoTaksByUser = async (req, res) => {
         "taskStart",
         "endTask",
         "asigCourse_id",
-      ]
+      ],
     });
 
     if (!task) {
@@ -388,10 +435,10 @@ const listInfoTaksByUser = async (req, res) => {
     const asigCourseExist = await CourseSedeAssignment.findByPk(asigCourse_id);
     if (!asigCourseExist) {
       return res.status(404).json({
-        message: "No se encontró una asignación válida para el curso asociado a la tarea.",
+        message:
+          "No se encontró una asignación válida para el curso asociado a la tarea.",
       });
     }
-
 
     if (!asigCourseExist.courseActive) {
       return res.status(400).json({
@@ -431,10 +478,10 @@ const listInfoTaksByUser = async (req, res) => {
   }
 };
 
-
 module.exports = {
   createTask,
   listTasks,
+  listTask,
   updateTask,
   listTasksByCourse,
   listInfoTaksByUser,

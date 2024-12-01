@@ -1,6 +1,7 @@
 const express = require("express");
 const {
   listTasks,
+  listTask,
   updateTask,
   listTasksByCourse,
   createTask,
@@ -61,6 +62,76 @@ router.get(
   authMiddleware,
   obtenerUserIdDeToken,
   listTasks
+);
+
+/**
+ * @swagger
+ * /api/tasks/{task_id}:
+ *   get:
+ *     summary: Obtener los detalles de una tarea por ID
+ *     tags: [Task]
+ *     security:
+ *       - bearerAuth: []  # Requiere autenticación
+ *     parameters:
+ *       - in: path
+ *         name: task_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID único de la tarea
+ *     responses:
+ *       200:
+ *         description: Tarea encontrada exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     task_id:
+ *                       type: integer
+ *                     title:
+ *                       type: string
+ *                     description:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                     updatedAt:
+ *                       type: string
+ *                       format: date-time
+ *       400:
+ *         description: ID de tarea inválido o no proporcionado
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "El ID de la tarea es inválido o no fue proporcionado."
+ *       404:
+ *         description: Tarea no encontrada
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Tarea no encontrada. Verifique el ID proporcionado."
+ *       500:
+ *         description: Error en el servidor
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Ocurrió un error al intentar obtener la tarea."
+ *               error: "Detalles del error."
+ */
+router.get(
+  "/tasks/:task_id",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  listTask
 );
 
 /**
