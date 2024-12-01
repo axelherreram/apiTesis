@@ -10,7 +10,7 @@ const router = express.Router();
 const adminOrTerna = verifyRole([2, 3]); // Roles permitidos: Terna (2), Admin (3)
 const admin = verifyRole([3]); // Solo Admin
 const superAdmin = verifyRole([4]); // Solo Admin
-
+const adminOrSuperAdmin = verifyRole([3, 4]); // Solo Admin
 
 /**
  * @swagger
@@ -343,6 +343,53 @@ router.get(
   authMiddleware, // Middleware de autenticación
   superAdmin, // Middleware de roles (opcional, si solo superadmin puede acceder)
   userController.listAllAdmins // Método en el controlador
+);
+
+// Ruta para buscar estudiantes por carnet
+/**
+ * @swagger
+ * /api/users/search:
+ *   get:
+ *     summary: Buscar estudiantes por carnet
+ *     tags: [Estudiantes]
+ *     security:
+ *       - bearerAuth: []  
+ *     parameters:
+ *       - in: query
+ *         name: carnet
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Parte o todo el carnet del estudiante para buscar
+ *     responses:
+ *       200:
+ *         description: Lista de estudiantes que coinciden con la búsqueda
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Faltan parámetros obligatorios
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "El parámetro 'carnet' es obligatorio."
+ *       500:
+ *         description: Error en el servidor
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Error al buscar estudiantes."
+ *               error: "Detalle del error"
+ */
+router.get(
+  "/users/search",
+  authMiddleware, 
+  adminOrSuperAdmin,
+  extractSedeIdMiddleware,
+  userController.searchStudentByCarnet
 );
 
 module.exports = router;

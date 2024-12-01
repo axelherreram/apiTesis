@@ -27,6 +27,7 @@ const User = sequelize.define(
     carnet: {
       type: DataTypes.STRING(15),
       allowNull: true,
+      unique: true,
     },
     sede_id: {
       type: DataTypes.INTEGER,

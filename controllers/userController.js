@@ -1,6 +1,7 @@
 const User = require("../models/user");
 const { logActivity } = require("../sql/appLog");
 const CourseAssignment = require("../models/courseAssignment");
+const { Op } = require("sequelize");
 const Course = require("../models/course");
 const Year = require("../models/year");
 const Roles = require("../models/roles");
@@ -152,6 +153,68 @@ const getUsersByCourse = async (req, res) => {
   }
 };
 
+// Buscar estudiantes por carnet
+const searchStudentByCarnet = async (req, res) => {
+  const { carnet } = req.query;
+  const { sede_id: tokenSedeId } = req;
+
+  if (!carnet) {
+    return res.status(400).json({
+      message: "El parámetro 'carnet' es obligatorio.",
+    });
+  }
+
+  try {
+    // Realizar la búsqueda de estudiantes, ahora incluyendo el sede_id en la consulta
+    const students = await User.findAll({
+      where: {
+        carnet: {
+          [Op.like]: `${carnet}%`, // Búsqueda por patrón en el carnet
+        },
+        rol_id: 1, // Filtrar solo estudiantes
+        sede_id: tokenSedeId // Filtrar por la sede del usuario
+      },
+      attributes: ["user_id", "name", "carnet", "email", "profilePhoto", "sede_id"], // Incluyendo sede_id
+    });
+
+    // Verificar si se encontraron estudiantes
+    if (students.length === 0) {
+      return res.status(404).json({
+        message: "No se encontraron estudiantes con ese carnet en esta sede.",
+      });
+    }
+
+
+
+
+    // Formatear usuarios para la respuesta
+    const formattedUsers = students.map((student) => {
+      return {
+        user_id: student.user_id,
+        email: student.email,
+        userName: student.name,
+        profilePhoto: student.profilePhoto
+          ? `${process.env.BASE_URL}/public/fotoPerfil/${student.profilePhoto}`
+          : null,
+        carnet: student.carnet,
+        sede: student.sede_id
+      };
+    });
+
+    res.status(200).json({
+      formattedUsers,
+    });
+  } catch (error) {
+    console.error("Error al buscar estudiantes:", error);
+    res.status(500).json({
+      message: "Error al buscar estudiantes.",
+      error: error.message || error,
+    });
+  }
+};
+
+
+
 // Obtener usuario por token
 const listuserbytoken = async (req, res) => {
   const user_id = req.user_id;
@@ -188,6 +251,7 @@ const listuserbytoken = async (req, res) => {
   }
 };
 
+// Generar contraseña aleatoria
 const generateRandomPassword = () => {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
@@ -198,6 +262,7 @@ const generateRandomPassword = () => {
   return password;
 };
 
+// Crear administrador
 const createAdmin = async (req, res) => {
   const { email, name, carnet, sede_id } = req.body;
 
@@ -347,6 +412,7 @@ const removeAdmin = async (req, res) => {
   }
 };
 
+// Listar todos los administradores
 const listAllAdmins = async (req, res) => {
   try {
     const admins = await User.findAll({
@@ -398,6 +464,7 @@ const listAllAdmins = async (req, res) => {
   }
 };
 
+// Asignar administrador a una sede
 const assignAdminToSede = async (req, res) => {
   const { user_id, sede_id } = req.body;
 
@@ -463,4 +530,5 @@ module.exports = {
   removeAdmin,
   listAllAdmins,
   assignAdminToSede,
+  searchStudentByCarnet,
 };
