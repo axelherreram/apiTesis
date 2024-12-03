@@ -255,9 +255,6 @@ const listTask = async (req, res) => {
   }
 };
 
-module.exports = {
-  listTask,
-};
 
 const listTasksByCourse = async (req, res) => {
   const { sede_id, course_id, year } = req.params;
