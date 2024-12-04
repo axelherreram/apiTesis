@@ -7,129 +7,129 @@ const { logActivity } = require("../sql/appLog");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const CourseAssignment = require("../models/courseAssignment");
 const EstudianteComision = require("../models/estudianteComision");
+const { sequelize } = require("../config/database");
 
-// Crear un grupo de comisión
+// creacion de grupo de comision
 const createGroupComision = async (req, res) => {
-  const { year, sede_id: requestSedeId, groupData } = req.body; // Sede desde el cuerpo de la solicitud
-  const { sede_id: tokenSedeId } = req; // Sede extraída del token
+  const { year, sede_id: requestSedeId, groupData } = req.body;
+  const { sede_id: tokenSedeId } = req;
+
+  const transaction = await sequelize.transaction(); // Inicia una transacción
 
   try {
-    // 1. Validar si la sede del token coincide con la sede de la solicitud
+    // 1. Validar coincidencia de sede
     if (parseInt(requestSedeId, 10) !== parseInt(tokenSedeId, 10)) {
       return res
         .status(403)
         .json({ message: "No tienes acceso para esta sede" });
     }
 
-    // 2. Verificar si el año existe
+    // 2. Validar existencia del año
     const yearData = await Year.findOne({ where: { year } });
     if (!yearData) {
       return res.status(404).json({ message: "Año no encontrado" });
     }
     const year_id = yearData.year_id;
-
-    // 3. Validar que no exista más de una comisión por año y sede
+    // 3. Validar tamaño mínimo del grupo
+    if (groupData.length < 3) {
+      return res.status(400).json({
+        message: "El grupo de comisión debe tener al menos 3 usuarios",
+      });
+    }
+    // 3. Verificar que no exista otro grupo para el mismo año y sede
     const existingGroup = await GroupComision.findOne({
       where: { year_id, sede_id: requestSedeId },
     });
     if (existingGroup) {
-      return res.status(400).json({
-        message:
-          "Ya existe un grupo de comisión para el año y sede especificados",
-      });
+      return res
+        .status(400)
+        .json({ message: "Ya existe un grupo para este año y sede" });
     }
 
-    // 4. Verificar la existencia de la asignación del curso (antes de crear el grupo)
+    // 4. Validar asignación del curso
     const courseSede = await CourseSedeAssignment.findOne({
       where: { year_id, sede_id: requestSedeId, course_id: 2 },
     });
     if (!courseSede) {
-      return res.status(404).json({
-        message: "No se encontró la asignación para el curso: Proyecto de Graduación II",
-      });
+      return res
+        .status(404)
+        .json({ message: "Curso no asignado: Proyecto de Graduación II" });
     }
 
-    // 5. Validar estudiantes asignados
+    // 5. Validar estudiantes asignados al curso
     const estudiantes = await CourseAssignment.findAll({
       where: { asigCourse_id: courseSede.asigCourse_id },
-      include: [
-        {
-          model: User,
-          attributes: ["user_id"],
-        },
-      ],
+      include: [{ model: User, attributes: ["user_id"] }],
     });
     if (!estudiantes || estudiantes.length === 0) {
-      return res.status(404).json({
-        message: "No se encontraron estudiantes asignados al curso: Proyecto de Graduación II",
-      });
+      return res
+        .status(404)
+        .json({ message: "No hay estudiantes asignados al curso" });
     }
 
-    // 6. Crear el grupo de comisión
-    const group = await GroupComision.create({ year_id, sede_id: requestSedeId });
+    // 6. Crear grupo de comisión
+    const group = await GroupComision.create(
+      { year_id, sede_id: requestSedeId },
+      { transaction }
+    );
 
-    // 7. Validar que no haya más de 6 usuarios en el grupo
-    const existingComisionCount = await Comisiones.count({
-      where: { group_id: group.group_id },
-    });
-    if (existingComisionCount + groupData.length > 6) {
-      return res.status(400).json({
-        message: "No se pueden agregar más de 6 usuarios a la comisión",
-      });
+    // 7. Validar roles únicos en groupData antes de asignar
+    const existingRoles = new Set();
+    for (const member of groupData) {
+      const { rol_comision_id } = member;
+
+      if (existingRoles.has(rol_comision_id)) {
+        throw new Error(
+          `El rol ${rol_comision_id} ya está asignado en el grupo.`
+        );
+      }
+      existingRoles.add(rol_comision_id);
+
+      const rol = await rolComision.findByPk(rol_comision_id);
+      if (!rol) {
+        throw new Error(`El rol ${rol_comision_id} no existe.`);
+      }
     }
 
-    // 8. Asignar usuarios al grupo de comisión
-    let group_id = null;
+    // 8. Asignar usuarios al grupo
     for (const member of groupData) {
       const { user_id, rol_comision_id } = member;
 
       const user = await User.findByPk(user_id);
-      const rol = await rolComision.findByPk(rol_comision_id);
-
-      if (user && rol) {
-        const comision = await Comisiones.create({
-          group_id: group.group_id,
-          year_id,
-          user_id,
-          rol_comision_id,
-        });
-        group_id = comision.group_id; // Guardar el comision_id generado
+      if (!user) {
+        throw new Error(`El usuario ${user_id} no existe.`);
       }
+
+      await Comisiones.create(
+        { group_id: group.group_id, year_id, user_id, rol_comision_id },
+        { transaction }
+      );
     }
 
-    // 9. Validar que se haya asignado correctamente el grupo
-    if (!group_id) {
-      return res.status(500).json({ message: "Error al crear la comisión" });
+    // 9. Asignar estudiantes al grupo
+    for (const estudiante of estudiantes) {
+      await EstudianteComision.create(
+        {
+          group_id: group.group_id,
+          user_id: estudiante.User.user_id,
+          year_id,
+        },
+        { transaction }
+      );
     }
 
-    // 11. Formatear y registrar los estudiantes en la tabla EstudianteComision
-    const estudiantesFormat = estudiantes.map((estudiante) => ({
-      User: estudiante.User,
-    }));
+    // Confirmar la transacción
+    await transaction.commit();
 
-    for (let estudiante of estudiantesFormat) {
-      const estudianteData = estudiante.User;
-
-      await EstudianteComision.create({
-        group_id, // Usamos el comision_id generado
-        user_id: estudianteData.user_id, // ID del usuario (estudiante)
-        year_id, // Año de registro
-      });
-    }
-
-    // Respuesta exitosa
-    res.status(201).json({
-      message: "Grupo de comisión creado exitosamente",
-    });
+    res.status(201).json({ message: "Grupo de comisión creado exitosamente" });
   } catch (error) {
-    res.status(500).json({
-      message: "Error en el servidor al crear el grupo de comisión",
-      error: error.message,
-    });
+    // Revertir cambios si hay un error
+    await transaction.rollback();
+    res
+      .status(500)
+      .json({ message: "Error al crear el grupo", error: error.message });
   }
 };
-
-
 
 // Eliminar usuario de una comisión
 const removeUserFromComision = async (req, res) => {
@@ -140,7 +140,9 @@ const removeUserFromComision = async (req, res) => {
     // Verificar si el grupo pertenece a la sede del token
     const group = await GroupComision.findOne({ where: { group_id } });
     if (!group) {
-      return res.status(404).json({ message: "Grupo de comisión no encontrado" });
+      return res
+        .status(404)
+        .json({ message: "Grupo de comisión no encontrado" });
     }
 
     if (parseInt(group.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
@@ -157,6 +159,18 @@ const removeUserFromComision = async (req, res) => {
         .json({ message: "Usuario no encontrado en esta comisión" });
     }
 
+    // Verificar el número actual de usuarios en la comisión
+    const existingComisionCount = await Comisiones.count({
+      where: { group_id },
+    });
+
+    // Validar que el grupo no quede con menos de 3 usuarios
+    if (existingComisionCount <= 2) {
+      return res.status(400).json({
+        message: "No se puede eliminar al usuario, el grupo debe tener al menos 2 usuarios",
+      });
+    }
+
     // Eliminar al usuario de la comisión
     await comision.destroy();
     res
@@ -169,6 +183,7 @@ const removeUserFromComision = async (req, res) => {
     });
   }
 };
+
 
 // Agregar usuario a una comisión existente
 const addUserToComision = async (req, res) => {
@@ -218,10 +233,21 @@ const addUserToComision = async (req, res) => {
       where: { group_id: groupExists.group_id },
     });
 
-    // Validar que no haya más de 6 usuarios en la comisión
-    if (existingComisionCount >= 6) {
+    // Validar que no haya más de 5 usuarios en la comisión
+    if (existingComisionCount >= 5) {
       return res.status(400).json({
-        message: "No se pueden agregar más de 6 usuarios a la comisión",
+        message: "No se pueden agregar más de 5 usuarios a la comisión",
+      });
+    }
+
+    // Verificar que el rol no se repita en la comisión
+    const existingRoleInComision = await Comisiones.findOne({
+      where: { group_id, rol_comision_id },
+    });
+
+    if (existingRoleInComision) {
+      return res.status(400).json({
+        message: "El rol de comisión ya está asignado a esta comisión",
       });
     }
 
@@ -236,7 +262,6 @@ const addUserToComision = async (req, res) => {
 
     res.status(201).json({
       message: "Usuario agregado a la comisión exitosamente",
-      comision,
     });
   } catch (error) {
     res.status(500).json({
@@ -264,7 +289,7 @@ const getGroupsAndUsersBySedeAndYear = async (req, res) => {
     if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
       return res
         .status(403)
-        .json({ message: "No tienes acceso a los grupos de esta sede" }); 
+        .json({ message: "No tienes acceso a los grupos de esta sede" });
     }
 
     // Buscar los grupos de comisión para el año y la sede
@@ -332,7 +357,6 @@ const getGroupsAndUsersBySedeAndYear = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   createGroupComision,

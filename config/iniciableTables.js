@@ -8,26 +8,20 @@ const rolComision = require("../models/rolComision");
 const initializeTables = async () => {
   try {
     const now = new Date();
-    const oneMonthLater = new Date(
-      now.getFullYear(),
-      now.getMonth() + 1,
-      now.getDate()
-    );
     
     await Year.findOrCreate({ where: { year: now.getFullYear() } });
 
     await rolComision.findOrCreate({ where: { rolComisionName: "Presidente" } });
     await rolComision.findOrCreate({ where: { rolComisionName: "Secretario" } });
-    await rolComision.findOrCreate({ where: { rolComisionName: "Vocal" } });
-    await rolComision.findOrCreate({ where: { rolComisionName: "Suplente" } });
-    
+    await rolComision.findOrCreate({ where: { rolComisionName: "Vocal 1" } });
+    await rolComision.findOrCreate({ where: { rolComisionName: "Vocal 2" } });
+    await rolComision.findOrCreate({ where: { rolComisionName: "Vocal 3" } });
 
     await Roles.findOrCreate({ where: { name: "Estudiante" } });
     await Roles.findOrCreate({ where: { name: "Catedrático" } });
     await Roles.findOrCreate({ where: { name: "Administrador" } });
     await Roles.findOrCreate({ where: { name: "SuperAdmin" } });
     await Roles.findOrCreate({ where: { name: "Decano" } });
-
 
     await Sede.findOrCreate({ where: { nameSede: "Guastatoya" } });
     await Sede.findOrCreate({ where: { nameSede: "Sanarate" } });
