@@ -1,115 +1,125 @@
 const {
-  listTimeline,
-  createTimeline,
+  getTimelineByUserId,
+  getTimelineByUserAndTask,
 } = require("../controllers/timelineController");
 const express = require("express");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
-const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
-const admin = verifyRole([3]);
+const adminOrDecano = verifyRole([3]);
 
+// Swagger: Obtener todos los eventos de un usuario
 /**
  * @swagger
- * tags:
- *   name: Timeline
- *   description: Operaciones relacionadas con eventos en la línea de tiempo
- */
-
-/**
- * @swagger
- * /api/timeline/{user_id}/{course_id}:
+ * /api/timeline/user/{user_id}:
  *   get:
- *     summary: Lista todos los eventos de la línea de tiempo de un usuario en un curso específico
- *     tags: [Timeline]
+ *     summary: Obtener la línea de tiempo de eventos de un usuario
+ *     description: Obtiene todos los eventos de la línea de tiempo para un usuario específico basado en su user_id
+ *     tags:
+ *       - timeline
+ *     parameters:
+ *       - name: user_id
+ *         in: path
+ *         description: ID del usuario para obtener sus eventos
+ *         required: true
+ *         schema:
+ *           type: integer
  *     security:
  *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: user_id
- *         schema:
- *           type: integer
- *         required: true
- *         description: ID del usuario
- *       - in: path
- *         name: course_id
- *         schema:
- *           type: integer
- *         required: true
- *         description: ID del curso
  *     responses:
  *       200:
- *         description: Una lista de eventos de la línea de tiempo
+ *         description: Lista de eventos obtenidos
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/TimelineEventos'
+ *                 type: object
+ *                 properties:
+ *                   evento_id:
+ *                     type: integer
+ *                   user_id:
+ *                     type: integer
+ *                   typeEvent:
+ *                     type: string
+ *                   descripcion:
+ *                     type: string
+ *                   task_id:
+ *                     type: integer
+ *                   date:
+ *                     type: string
+ *                     format: date-time
  *       404:
- *         description: Usuario o curso no encontrado
+ *         description: Usuario no encontrado o sin eventos
  *       500:
  *         description: Error en el servidor
  */
-router.get("/timeline/:user_id/:course_id", authMiddleware, listTimeline);
+router.get(
+  "/timeline/user/:user_id",
+  authMiddleware,
+  adminOrDecano,
+  getTimelineByUserId
+);
 
+// Swagger: Obtener todos los eventos de un usuario para una tarea específica
 /**
  * @swagger
- * /api/create/comentario:
- *   post:
- *     summary: Crear un nuevo comentario en la línea de tiempo
- *     tags: [Timeline]
+ * /api/timeline/user/{user_id}/task/{task_id}:
+ *   get:
+ *     summary: Obtener eventos de un usuario para una tarea específica
+ *     description: Obtiene todos los eventos de un usuario para una tarea específica, basada en user_id y task_id
+ *     tags:
+ *       - timeline
+ *     parameters:
+ *       - name: user_id
+ *         in: path
+ *         description: ID del usuario para obtener sus eventos
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - name: task_id
+ *         in: path
+ *         description: ID de la tarea para obtener eventos específicos
+ *         required: true
+ *         schema:
+ *           type: integer
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               user_id:
- *                 type: integer
- *                 description: ID del usuario que está realizando el comentario
- *                 example: 101
- *               description:
- *                 type: string
- *                 description: Descripción del comentario
- *                 example: "Este es un comentario sobre la entrega"
- *               course_id:
- *                 type: integer
- *                 description: ID del curso al que pertenece la entrega
- *                 example: 202
- *               task_id:
- *                 type: integer
- *                 description: ID de la entrega o tarea sobre la cual se hace el comentario
- *                 example: 303
- *             required:
- *               - user_id
- *               - description
- *               - course_id
- *               - task_id
  *     responses:
- *       201:
- *         description: Comentario creado exitosamente
+ *       200:
+ *         description: Lista de eventos obtenidos para la tarea y usuario
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/TimelineEventos'
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   evento_id:
+ *                     type: integer
+ *                   user_id:
+ *                     type: integer
+ *                   typeEvent:
+ *                     type: string
+ *                   descripcion:
+ *                     type: string
+ *                   task_id:
+ *                     type: integer
+ *                   date:
+ *                     type: string
+ *                     format: date-time
  *       404:
- *         description: Usuario o curso no encontrado
+ *         description: Usuario o tarea no encontrados
  *       500:
  *         description: Error en el servidor
  */
-router.post(
-  "/create/comentario",
+router.get(
+  "/timeline/user/:user_id/task/:task_id",
   authMiddleware,
-  admin,
-  obtenerUserIdDeToken,
-  extractSedeIdMiddleware,
-  createTimeline
+  adminOrDecano,
+  getTimelineByUserAndTask
 );
 
 module.exports = router;

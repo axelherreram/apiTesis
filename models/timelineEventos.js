@@ -19,21 +19,13 @@ const TimelineEventos = sequelize.define("TimelineEventos", {
       key: "user_id",
     },
   },
-  tipoEvento: {
+  typeEvent: {
     type: DataTypes.STRING(255),
     allowNull: false,
   },
   descripcion: {
     type: DataTypes.STRING(255),
     allowNull: false,
-  },
-  course_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    references: {
-      model: Course,
-      key: "course_id",
-    },
   },
   task_id: {
     type: DataTypes.INTEGER,
@@ -43,7 +35,7 @@ const TimelineEventos = sequelize.define("TimelineEventos", {
       key: "task_id",
     },
   },
-  fecha:{
+  date:{
     type: DataTypes.DATE,
     allowNull: false,
   },

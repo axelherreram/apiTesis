@@ -121,7 +121,6 @@ const createTask = async (req, res) => {
         userEmail.user_id,
         "Tarea creada",
         `Se ha creado una nueva tarea en el curso ${courseSedeAssignment.course_id} con el título: ${title}`,
-        courseSedeAssignment.course_id,
         newTask.task_id
       );
       /*          await sendEmailTask(
