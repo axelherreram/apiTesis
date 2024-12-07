@@ -15,7 +15,7 @@ const searchStudentByCarnet = async (req, res) => {
   }
 
   // Validar que el carnet tenga al menos el formato "1890-21"
-  const carnetPattern = /^[0-9]{4}-[0-9]{2}$/; // Formato "1890-21"
+  const carnetPattern = /^[0-9]{4}-[0-9]{2}(-[0-9]+)?$/; // Formato "1890-21"
   if (!carnetPattern.test(carnet)) {
     return res.status(400).json({
       message:
@@ -78,7 +78,7 @@ const searchProfessorByCarnet = async (req, res) => {
   }
 
   // Validar que el carnet tenga al menos el formato "1890-21"
-  const carnetPattern = /^[0-9]{4}-[0-9]{2}$/;
+  const carnetPattern = /^[0-9]{4}-[0-9]{2}(-[0-9]+)?$/;
   if (!carnetPattern.test(carnet)) {
     return res.status(400).json({
       message:
@@ -140,7 +140,7 @@ const searchStudentByCarnetWithoutSede = async (req, res) => {
   }
 
   // Validar que el carnet tenga al menos el formato "1890-21"
-  const carnetPattern = /^[0-9]{4}-[0-9]{2}$/;
+  const carnetPattern = /^[0-9]{4}-[0-9]{2}(-[0-9]+)?$/;
   if (!carnetPattern.test(carnet)) {
     return res.status(400).json({
       message:
