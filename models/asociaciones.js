@@ -12,6 +12,9 @@ const rolComision = require("./rolComision");
 const GroupComision = require("./groupComision");
 const EstudianteComision = require("./estudianteComision");
 const TypeTask = require("./typeTask");
+const Comments = require('./comments');
+const CommentVersion = require('./commentVersion');
+
 
 module.exports = function associateModels() {
   // Relación entre Task y CourseSedeAssignment
@@ -52,8 +55,6 @@ module.exports = function associateModels() {
   User.hasMany(CourseSedeAssignment, { foreignKey: "sede_id" });
 
   TimelineEventos.belongsTo(User, { foreignKey: "user_id" });
-  TimelineEventos.belongsTo(Course, { foreignKey: "course_id" });
-  Course.hasMany(TimelineEventos, { foreignKey: "course_id" });
   User.hasMany(TimelineEventos, { foreignKey: "user_id" });
 
   User.belongsTo(Roles, { foreignKey: "rol_id", as: "role" });
@@ -95,4 +96,12 @@ module.exports = function associateModels() {
     foreignKey: "group_id",
     as: "group",
   });
+
+
+  Comments.hasMany(CommentVersion, { foreignKey: 'comment_id' });
+  CommentVersion.belongsTo(Comments, { foreignKey: 'comment_id' });
+  
+  CommentVersion.belongsTo(User, { foreignKey: 'user_id' });
+  User.hasMany(CommentVersion, { foreignKey: 'user_id' });
+
 };
