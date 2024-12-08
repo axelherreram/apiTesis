@@ -1,11 +1,20 @@
 const { Op } = require("sequelize");
 const User = require("../models/user");
 const Sede = require("../models/sede");
+const Year = require("../models/year");
 
 // Buscar estudiantes por carnet
 const searchStudentByCarnet = async (req, res) => {
-  const { carnet } = req.query;
+  const {sede_id, year, carnet } = req.query;
   const { sede_id: tokenSedeId } = req;
+
+
+  const yearRecord = await Year.findOne({
+    where: {  year },
+    attributes: ["year_id"],
+  });
+  const year_id = yearRecord ? yearRecord.year_id : null;
+
 
   // Validar que se envíe el parámetro carnet
   if (!carnet) {
@@ -27,6 +36,8 @@ const searchStudentByCarnet = async (req, res) => {
     // Realizar la búsqueda de estudiantes, filtrando por sede_id
     const students = await User.findAll({
       where: {
+        year_id,
+        sede_id,
         carnet: {
           [Op.like]: `${carnet}%`,
         },
@@ -39,7 +50,7 @@ const searchStudentByCarnet = async (req, res) => {
     // Verificar si se encontraron estudiantes
     if (students.length === 0) {
       return res.status(404).json({
-        message: "No se encontraron estudiantes con ese carnet en esta sede.",
+        message: "No se encontraron estudiantes con los datos proporcionados.",
       });
     }
 

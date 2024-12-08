@@ -20,6 +20,18 @@ const decano = verifyRole([5]); // Solo Decano
  *       - bearerAuth: []
  *     parameters:
  *       - in: query
+ *         name: sede_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la sede del estudiante
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Año de ingreso del estudiante en formato 'YYYY'
+ *       - in: query
  *         name: carnet
  *         schema:
  *           type: string
@@ -39,7 +51,7 @@ const decano = verifyRole([5]); // Solo Decano
  *         content:
  *           application/json:
  *             example:
- *               message: "El parámetro 'carnet' es obligatorio."
+ *               message: "Los parámetros 'sede_id', 'year' y 'carnet' son obligatorios."
  *       500:
  *         description: Error en el servidor
  *         content:
