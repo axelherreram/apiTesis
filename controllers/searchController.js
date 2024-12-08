@@ -96,7 +96,7 @@ const searchProfessorByCarnet = async (req, res) => {
         rol_id: 2, // Solo catedráticos
         sede_id: tokenSedeId,
       },
-      attributes: ["user_id", "name", "carnet", "email", "profilePhoto", "sede_id"],
+      attributes: ["user_id", "name", "carnet", "email", "profilePhoto", "active"],
     });
 
     // Verificar si se encontraron catedráticos
@@ -115,7 +115,7 @@ const searchProfessorByCarnet = async (req, res) => {
         ? `${process.env.BASE_URL}/public/fotoPerfil/${professor.profilePhoto}`
         : null,
       carnet: professor.carnet,
-      sede: professor.sede_id,
+      active: professor.active,
     }));
 
     res.status(200).json({ formattedProfessors });
