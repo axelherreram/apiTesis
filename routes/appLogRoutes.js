@@ -21,7 +21,7 @@ const admin = verifyRole([3]);
 
 /**
  * @swagger
- * /api/bitacoraxuser/{carnet}:
+ * /api/bitacoraxuser/{user_id}:
  *   get:
  *     tags: [Bitácora]
  *     summary: Listar las bitácoras de un usuario
@@ -30,11 +30,11 @@ const admin = verifyRole([3]);
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: carnet
+ *         name: user_id
  *         schema:
  *           type: integer
  *         required: true
- *         description: Carnet del usuario para el que se listarán las bitácoras
+ *         description: ID del usuario para el que se listarán las bitácoras
  *     responses:
  *       200:
  *         description: Lista de bitácoras
@@ -49,8 +49,7 @@ const admin = verifyRole([3]);
  *       500:
  *         description: Error en el servidor
  */
-router.get("/bitacoraxuser/:carnet", authMiddleware, admin, listLogsByUser);
-
+router.get("/bitacoraxuser/:user_id", authMiddleware, admin, listLogsByUser);
 /**
  * @swagger
  * /api/bitacora/{sede_id}:
