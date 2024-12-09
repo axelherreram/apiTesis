@@ -137,7 +137,14 @@ const removeUserFromComision = async (req, res) => {
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
-    // Verificar si el grupo pertenece a la sede del token
+    const currentYear = new Date().getFullYear();
+    const yearData = await Year.findOne({ where: { year: currentYear } });
+    if (!yearData) {
+      return res.status(404).json({ message: "Año no encontrado" });
+    }
+    const year_id = yearData.year_id;
+
+    // Verificar si el grupo existe
     const group = await GroupComision.findOne({ where: { group_id } });
     if (!group) {
       return res
@@ -145,6 +152,15 @@ const removeUserFromComision = async (req, res) => {
         .json({ message: "Grupo de comisión no encontrado" });
     }
 
+    const year_id_group = group.year_id;
+
+    if (parseInt(year_id, 10) !== parseInt(year_id_group, 10)) {
+      return res.status(400).json({
+        message: "No es posible eliminar usuarios de grupos de años anteriores",
+      });
+    }
+
+    // Validar que el grupo pertenezca a la sede autorizada
     if (parseInt(group.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
       return res
         .status(403)
@@ -152,7 +168,7 @@ const removeUserFromComision = async (req, res) => {
     }
 
     // Buscar al usuario en la comisión
-    const comision = await Comisiones.findOne({ where: { group_id, user_id } });
+    const comision = await Comisiones.findOne({ where: { group_id, user_id, year_id } });
     if (!comision) {
       return res
         .status(404)
@@ -167,7 +183,8 @@ const removeUserFromComision = async (req, res) => {
     // Validar que el grupo no quede con menos de 3 usuarios
     if (existingComisionCount <= 2) {
       return res.status(400).json({
-        message: "No se puede eliminar al usuario, el grupo debe tener al menos 2 usuarios",
+        message:
+          "No se puede eliminar al usuario, el grupo debe tener al menos 2 usuarios",
       });
     }
 
@@ -183,7 +200,6 @@ const removeUserFromComision = async (req, res) => {
     });
   }
 };
-
 
 // Agregar usuario a una comisión existente
 const addUserToComision = async (req, res) => {
@@ -270,7 +286,6 @@ const addUserToComision = async (req, res) => {
     });
   }
 };
-
 
 // Obtener grupos de comisión y usuarios por sede y año
 const getGroupsAndUsersBySedeAndYear = async (req, res) => {

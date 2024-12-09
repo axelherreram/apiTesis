@@ -68,7 +68,13 @@ const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administra
  *       500:
  *         description: Error en el servidor
  */
-router.post("/comisiones/grupo", authMiddleware, admin, extractSedeIdMiddleware, createGroupComision);
+router.post(
+  "/comisiones/grupo",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  createGroupComision
+);
 
 /**
  * @swagger
@@ -100,7 +106,13 @@ router.post("/comisiones/grupo", authMiddleware, admin, extractSedeIdMiddleware,
  *       500:
  *         description: Error en el servidor
  */
-router.delete("/comisiones/:group_id/usuario/:user_id", authMiddleware, admin, extractSedeIdMiddleware, removeUserFromComision);
+router.delete(
+  "/comisiones/:group_id/usuario/:user_id",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  removeUserFromComision
+);
 
 /**
  * @swagger
@@ -187,7 +199,7 @@ router.post(
  *     description: Obtiene todos los grupos de comisión por sede y año, junto con los usuarios y sus roles asociados.
  *     tags: [Comisiones]
  *     security:
- *       - bearerAuth: []  
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: sede_id
@@ -248,6 +260,12 @@ router.post(
  *       500:
  *         description: Error en el servidor
  */
-router.get("/comisiones/grupos/:sede_id/:year", authMiddleware, admin, extractSedeIdMiddleware, getGroupsAndUsersBySedeAndYear);
+router.get(
+  "/comisiones/grupos/:sede_id/:year",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  getGroupsAndUsersBySedeAndYear
+);
 
 module.exports = router;
