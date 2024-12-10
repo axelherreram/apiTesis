@@ -2,12 +2,14 @@ const express = require("express");
 const router = express.Router();
 const {
   uploadProposal,
+  updateProposal,
 } = require("../controllers/thesisSubmissionsController");
 const { handleMulterErrors } = require("../middlewares/uploadMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 
 const student = verifyRole([1]); // Permitir solo a usuarios con rol de estudiante
+const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
 
 /**
  * @swagger
@@ -92,5 +94,58 @@ router.post(
   uploadProposal,
   handleMulterErrors
 );
+
+/**
+ * @swagger
+ * /api/thesis-submission/{thesisSubmissions_id}/{user_id}/update:
+ *   put:
+ *     summary: Actualiza una entrega de tesis
+ *     description: Actualiza una entrega de tesis especificada
+ *     tags:
+ *       - Tesis
+ *     parameters:
+ *       - name: thesisSubmissions_id
+ *         in: path
+ *         description: ID de la entrega de tesis
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - name: user_id
+ *         in: path
+ *         description: ID del usuario que realizó la entrega
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               proposal:
+ *                 type: string
+ *                 format: binary
+ *                 description: Archivo PDF de la propuesta
+ *     responses:
+ *       200:
+ *         description: Entrega de tesis actualizada exitosamente
+ *       400:
+ *         description: La propuesta ya ha sido aprobada o falta algún campo requerido
+ *       404:
+ *         description: No se encontró la entrega de tesis o el usuario no existe
+ *       500:
+ *         description: Error interno del servidor
+ *     security:
+ *       - bearerAuth: []
+ */
+router.put(
+  "/thesis-submission/:thesisSubmissions_id/:user_id/update",
+  authMiddleware, // Middleware de autenticación
+  student,        // Middleware de verificación de rol
+  updateProposal, // Controlador que actualiza la entrega de tesis
+  handleMulterErrors // Middleware para manejar errores de Multer
+);
+
 
 module.exports = router;

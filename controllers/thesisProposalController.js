@@ -51,7 +51,9 @@ const updateApprovedProposal = async (req, res) => {
 
     res
       .status(200)
-      .json({ message: "Campo 'approved_proposal' actualizado exitosamente" });
+      .json({
+        message: `La propuesta número ${approved_proposal} ha sido aprobada con éxito.`,
+      });
   } catch (error) {
     console.error("Error al actualizar el campo 'approved_proposal':", error);
     res.status(500).json({
