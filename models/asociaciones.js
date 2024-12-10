@@ -15,6 +15,7 @@ const TypeTask = require("./typeTask");
 const Comments = require("./comments");
 const CommentVersion = require("./commentVersion");
 const ThesisSubmission = require("./thesisSubmissions");
+const TaskSubmissions = require("./taskSubmissions");
 
 module.exports = function associateModels() {
   // Relación entre Task y CourseSedeAssignment
@@ -140,4 +141,20 @@ module.exports = function associateModels() {
     foreignKey: "task_id",
     as: "task",
   });
+
+    // Relación entre User y TaskSubmissions
+    User.hasMany(TaskSubmissions, { foreignKey: "user_id" });
+    TaskSubmissions.belongsTo(User, { foreignKey: "user_id" });
+  
+    // Relación entre Task y TaskSubmissions
+    Task.hasMany(TaskSubmissions, { foreignKey: "task_id" });
+    TaskSubmissions.belongsTo(Task, { foreignKey: "task_id" });
+  
+    // Relación entre User y ThesisSubmission
+    User.hasMany(ThesisSubmission, { foreignKey: "user_id" });
+    ThesisSubmission.belongsTo(User, { foreignKey: "user_id" });
+  
+    // Relación entre Task y ThesisSubmission
+    Task.hasMany(ThesisSubmission, { foreignKey: "task_id" });
+    ThesisSubmission.belongsTo(Task, { foreignKey: "task_id" });
 };

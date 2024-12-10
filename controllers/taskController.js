@@ -9,8 +9,10 @@ const { sendEmailTask } = require("./emailController");
 const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
 const TypeTask = require("../models/typeTask");
+const { sequelize } = require("../config/database");
+const TaskSubmissions = require("../models/taskSubmissions");
+const { Op } = require("sequelize");
 
-const { parse } = require("dotenv");
 require("dotenv").config();
 
 const BASE_URL = process.env.BASE_URL;
@@ -31,6 +33,14 @@ const createTask = async (req, res) => {
   const { sede_id: tokenSedeId } = req;
 
   try {
+    // Validar que la fecha de inicio no sea mayor a la fecha final
+    if (new Date(taskStart) > new Date(endTask)) {
+      return res.status(400).json({
+        message: "La fecha de inicio no puede ser mayor a la fecha final",
+      });
+    }
+
+
     // Validar que el sede_id en la solicitud coincida con el sede_id del token
     if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
       return res.status(403).json({ message: "No tienes acceso a esta sede" });
@@ -105,6 +115,48 @@ const createTask = async (req, res) => {
       "Creación de tarea"
     );
 
+    // Obtener la tarea anterior
+    const previousTask = await Task.findOne({
+      where: { asigCourse_id, year_id },
+      order: [['endTask', 'DESC']],
+      limit: 1,
+      offset: 1, // Para obtener la tarea anterior a la recién creada
+    });
+
+    if (previousTask) {
+      // Obtener todos los estudiantes asignados al curso
+      const students = await User.findAll({
+        where: { rol_id: 1, sede_id, year_id },
+        include: [
+          {
+            model: CourseAssignment,
+            where: { asigCourse_id },
+          },
+        ],
+        attributes: ['user_id'],
+      });
+
+      // Filtrar los estudiantes que no han entregado la tarea anterior
+      for (const student of students) {
+        const submission = await TaskSubmissions.findOne({
+          where: {
+            user_id: student.user_id,
+            task_id: previousTask.task_id,
+            submission_complete: true,
+          },
+        });
+
+        if (!submission) {
+          await TaskSubmissions.create({
+            user_id: student.user_id,
+            task_id: newTask.task_id,
+            submission_complete: false,
+            date: new Date(),
+          });
+        }
+      }
+    }
+
     // Obtener usuarios relacionados al curso y enviar notificaciones
     const userEmails = await User.findAll({
       where: { rol_id: 1, sede_id, year_id },
@@ -118,25 +170,12 @@ const createTask = async (req, res) => {
     });
 
     for (const userEmail of userEmails) {
-      /*const templateVariables = {
-          nombre: userEmail.name,
-          titulo: title,
-          descripcion: description,
-          fecha: new Date(endTask).toLocaleDateString(),
-          autor: user.name,
-        }; */
       await addTimeline(
         userEmail.user_id,
         "Tarea creada",
         `Se ha creado una nueva tarea en el curso ${courseSedeAssignment.course_id} con el título: ${title}`,
         newTask.task_id
       );
-      /*          await sendEmailTask(
-           "Nueva tarea creada: " + title,
-           `Se ha creado una nueva tarea en la plataforma TesM con el título: ${title}`,
-           userEmail.email,
-           templateVariables
-         ); */
     }
 
     res.status(201).json({
@@ -148,6 +187,10 @@ const createTask = async (req, res) => {
       error: error.message || error,
     });
   }
+};
+
+module.exports = {
+  createTask,
 };
 
 const listTasks = async (req, res) => {
