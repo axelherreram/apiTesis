@@ -23,6 +23,7 @@ const comisionRoutes = require('./routes/comisionRoutes');
 const StudianteComision = require('./routes/studentComisionRoutes');
 const SearchRoutes = require('./routes/searchRoutes');
 const CommentRoutes = require('./routes/commentRoutes');
+const thesisSubmissionsRoutes = require('./routes/thesisSubmissionsRoutes');  
 
 const path = require('path');
 const cors = require('cors');
@@ -63,6 +64,7 @@ app.use('/api', comisionRoutes);
 app.use('/api', StudianteComision);
 app.use('/api', SearchRoutes);
 app.use('/api', CommentRoutes);
+app.use('/api', thesisSubmissionsRoutes);
 
 
 

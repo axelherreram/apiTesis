@@ -1,75 +1,117 @@
-const Submissions = require("../models/submissions");
+const Task = require("../models/task");
+const ThesisSubmission = require("../models/thesisSubmissions");
 const User = require("../models/user");
-const { logActivity } = require("../sql/appLog");
+const dotenv = require("dotenv");
 
-const aprobProposal = async (req, res) => {
+dotenv.config();
+
+/**
+ * Controlador para actualizar el campo approved_proposal
+ * @param {Object} req - Objeto de solicitud
+ * @param {Object} res - Objeto de respuesta
+ */
+const updateApprovedProposal = async (req, res) => {
+  const { thesisSubmissions_id, user_id } = req.params;
+  const { approved_proposal } = req.body;
+
   try {
-    const { user_id, submission_id, approved_proposal } = req.body;
-
-    const { sede_id: tokenSedeId } = req;
-
-    // validar que el estudiante exista
-    const user = await User.findByPk(user_id);
-    if (!user) {
-      return res.status(404).json({
-        message: "Usuario no encontrado",
-      });
-    }
-    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
-    if (parseInt(user.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
-      return res
-        .status(403)
-        .json({ message: "No tienes acceso a los grupos de esta sede" }); 
-    }
-    // validar que la entrega exista
-    const submission = await Submissions.findByPk(submission_id);
-    if (!submission) {
-      return res.status(404).json({
-        message: "Propuesta no encontrada",
-      });
-    }
-
-    // validar que la propuesta sea aprobada
-    if (
-      approved_proposal !== 1 &&
-      approved_proposal !== 2 &&
-      approved_proposal !== 3
-    ) {
+    // Validar que approved_proposal sea 0, 1, 2 o 3
+    if (![1, 2, 3].includes(parseInt(approved_proposal, 10))) {
       return res.status(400).json({
-        message: "Número de propuesta inválido",
+        message: "El valor de 'approved_proposal' debe ser 0, 1, 2 o 3",
       });
     }
 
-    // Actualizar la propuesta
-    await Submissions.update(
-      { approved_proposal },
-      {
-        where: {
-          user_id,
-          submission_id,
-        },
-      }
-    );
-
-    // Registrar la actividad del usuario
-    await logActivity(
-      user_id,
-      user.sede_id,
-      user.name,
-      `Se aprobo la propuesta: ${approved_proposal}, para el estudiante: ${user.name}`,
-      "Propuesta aprobada"
-    );
-
-    res.status(200).json({
-      message: "Propuesta actualizada",
+    // Buscar la entrega de tesis basada en thesisSubmissions_id y user_id
+    const thesisSubmission = await ThesisSubmission.findOne({
+      where: {
+        thesisSubmissions_id,
+        user_id,
+      },
     });
+
+    // Verificar si la entrega de tesis existe
+    if (!thesisSubmission) {
+      return res
+        .status(404)
+        .json({ message: "Entrega de tesis no encontrada" });
+    }
+
+    // Validar si el campo approved_proposal ya fue aprobado (valor 1, 2 o 3)
+    if ([1, 2, 3].includes(thesisSubmission.approved_proposal)) {
+      return res.status(400).json({
+        message:
+          "La propuesta ya ha sido aprobada, no se puede modificar el estado",
+      });
+    }
+
+    // Actualizar el campo approved_proposal
+    thesisSubmission.approved_proposal = approved_proposal;
+    await thesisSubmission.save();
+
+    res
+      .status(200)
+      .json({ message: "Campo 'approved_proposal' actualizado exitosamente" });
   } catch (error) {
-    console.error("Error al aprobar la propuesta:", error);
+    console.error("Error al actualizar el campo 'approved_proposal':", error);
     res.status(500).json({
-      message: "Error al procesar la solicitud",
-      error: error.message || error,
+      message:
+        "Error en el servidor al actualizar el campo 'approved_proposal'",
+      error: error.message,
     });
   }
 };
 
-module.exports = { aprobProposal };
+/**
+ * Controlador para obtener una entrega de tesis basada en user_id y task_id
+ * @param {Object} req - Objeto de solicitud
+ * @param {Object} res - Objeto de respuesta
+ */
+const getThesisSubmission = async (req, res) => {
+  const { user_id, task_id } = req.params;
+
+  try {
+    const taskInfo = await Task.findByPk(task_id);
+    if (!taskInfo) {
+      return res.status(404).json({ message: "La tarea no existe" });
+    }
+
+    if (taskInfo.typeTask_id !== 1) {
+      return res
+        .status(400)
+        .json({ message: "La tarea no es de tipo entrega de tesis" });
+    }
+
+    // Buscar la entrega de tesis basada en user_id y task_id
+    const thesisSubmission = await ThesisSubmission.findOne({
+      where: {
+        user_id,
+        task_id,
+      },
+    });
+
+    // Verificar si la entrega de tesis existe
+    if (!thesisSubmission) {
+      return res
+        .status(404)
+        .json({ message: "Entrega de tesis no encontrada" });
+    }
+    const formattedSubmission = {
+      ...thesisSubmission.toJSON(),
+      file_path: `${process.env.BASE_URL}/${thesisSubmission.file_path}`,
+    };
+
+    res.status(200).json(formattedSubmission);
+  } catch (error) {
+    console.error("Error al obtener la entrega de tesis:", error);
+    res.status(500).json({
+      message: "Error en el servidor al obtener la entrega de tesis",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  updateApprovedProposal,
+  getThesisSubmission,
+};

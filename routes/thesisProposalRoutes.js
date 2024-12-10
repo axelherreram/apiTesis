@@ -1,28 +1,32 @@
 const express = require("express");
 const router = express.Router();
-const { aprobProposal } = require("../controllers/thesisProposalController");
+const { updateApprovedProposal, getThesisSubmission } = require("../controllers/thesisProposalController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
-const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
-const admin = verifyRole([3]);
-
-/**
- * @swagger
- * tags:
- *   name: Aprobar tesis
- *   description: Operaciones relacionadas con la aprobación de propuestas de tesis
- */
+const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
 
 /**
  * @swagger
- * /api/aprobar-propuesta:
- *   post:
- *     tags: [Aprobar tesis]
- *     summary: Aprueba una propuesta de tesis
- *     description: Aprueba una propuesta específica para un estudiante mediante su ID y el ID de la entrega. Solo una propuesta de 1 a 3 puede ser aprobada.
- *     security:
- *       - bearerAuth: []
+ * /api/thesis-submission/{thesisSubmissions_id}/{user_id}/update-approved-proposal:
+ *   put:
+ *     summary: Actualiza el estado de la propuesta aprobada para una entrega de tesis
+ *     description: Actualiza el campo `approved_proposal` de la entrega de tesis especificada
+ *     tags:
+ *       - Tesis
+ *     parameters:
+ *       - name: thesisSubmissions_id
+ *         in: path
+ *         description: ID de la entrega de tesis
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - name: user_id
+ *         in: path
+ *         description: ID del usuario que realizó la entrega
+ *         required: true
+ *         schema:
+ *           type: integer
  *     requestBody:
  *       required: true
  *       content:
@@ -30,71 +34,72 @@ const admin = verifyRole([3]);
  *           schema:
  *             type: object
  *             properties:
- *               user_id:
- *                 type: integer
- *                 description: ID del estudiante que presenta la propuesta
- *                 example: 101
- *               submission_id:
- *                 type: integer
- *                 description: ID de la entrega de la propuesta
- *                 example: 202
  *               approved_proposal:
  *                 type: integer
- *                 description: Estado de la aprobación de la propuesta. 
- *                 example: 1
+ *                 description: Estado de aprobación de la propuesta (0, 1, 2 o 3)
+ *                 enum: [0, 1, 2, 3]
  *     responses:
  *       200:
- *         description: Propuesta actualizada exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Propuesta actualizada
+ *         description: Campo 'approved_proposal' actualizado exitosamente
  *       400:
- *         description: Error de validación (usuario, entrega o número de propuesta inválido)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Número de propuesta inválido
+ *         description: El valor de 'approved_proposal' es incorrecto o la propuesta ya ha sido aprobada
  *       404:
- *         description: Usuario o entrega no encontrada
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Usuario no encontrado
+ *         description: No se encontró la entrega de tesis
  *       500:
- *         description: Error interno al procesar la solicitud
+ *         description: Error interno del servidor
+ *     security:
+ *       - bearerAuth: []
+ */
+router.put(
+  "/thesis-submission/:thesisSubmissions_id/:user_id/update-approved-proposal",
+  authMiddleware, // Middleware de autenticación
+  admin,          // Middleware de verificación de rol
+  updateApprovedProposal // Controlador que actualiza la propuesta
+);
+
+/**
+ * @swagger
+ * /api/thesis-submission/{user_id}/{task_id}:
+ *   get:
+ *     summary: Obtener una entrega de tesis
+ *     description: Obtiene una entrega de tesis basada en user_id y task_id
+ *     tags:
+ *       - Tesis
+ *     parameters:
+ *       - name: user_id
+ *         in: path
+ *         description: ID del usuario que realizó la entrega
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - name: task_id
+ *         in: path
+ *         description: ID de la tarea
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Entrega de tesis obtenida exitosamente
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 message:
- *                   type: string
- *                   example: Error al procesar la solicitud
- *                 error:
- *                   type: string
- *                   example: Error interno del servidor
+ *                 thesisSubmission:
+ *                   $ref: '#/components/schemas/ThesisSubmission'
+ *       404:
+ *         description: No se encontró la entrega de tesis
+ *       500:
+ *         description: Error interno del servidor
+ *     security:
+ *       - bearerAuth: []
  */
-
-// Ruta para aprobar propuesta
-router.post(
-  "/aprobar-propuesta",
-  authMiddleware,
-  admin,
-  extractSedeIdMiddleware,
-  aprobProposal
+router.get(
+  "/thesis-submission/:user_id/:task_id",
+  authMiddleware, // Middleware de autenticación
+  admin,          // Middleware de verificación de rol
+  getThesisSubmission // Controlador que obtiene la entrega de tesis
 );
 
 module.exports = router;

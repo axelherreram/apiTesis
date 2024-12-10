@@ -4,10 +4,10 @@ const User = require("./user");
 const Task = require("./task");
 
 // Modelo para Task Submissions
-const TaskSubmissions = sequelize.define(
-  "TaskSubmissions",
+const thesisSubmissions = sequelize.define(
+  "thesisSubmissions",
   {
-    submission_id: {
+    thesisSubmissions_id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
@@ -28,22 +28,31 @@ const TaskSubmissions = sequelize.define(
         key: "task_id",
       },
     },
-    submission_complete: {
-      type: DataTypes.BOOLEAN,
+    file_path: {
+      type: DataTypes.STRING,
       allowNull: false,
-      defaultValue: false,
     },
     date: {
       type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
- 
+    approved_proposal: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0,
+      validate: {
+        isIn: {
+          args: [[0,1, 2, 3]],
+          msg: "El valor de 'approved_proposal' debe ser 1, 2 o 3",
+        },
+      },
+    },
   },
   {
-    tableName: "TaskSubmissions",
+    tableName: "thesisSubmissions",
     timestamps: false,
   }
 );
 
-module.exports = TaskSubmissions;
+module.exports = thesisSubmissions;
