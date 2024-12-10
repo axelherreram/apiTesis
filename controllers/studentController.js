@@ -109,13 +109,13 @@ const bulkUploadUsers = async (req, res) => {
           nombre: nombre,
           password: randomPassword,
         };
-
+/* 
         await sendEmailPassword(
           "Registro exitoso",
           `Hola ${nombre}, tu contraseña temporal es: ${randomPassword}`,
           email,
           templateVariables
-        );
+        ); */
       }
 
       // Paso 15: Verificar si ya existe la asignación del estudiante
