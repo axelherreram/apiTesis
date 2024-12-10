@@ -10,7 +10,6 @@ const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
 const TypeTask = require("../models/typeTask");
 
-const Subbmissions = require("../models/submissions");
 const { parse } = require("dotenv");
 require("dotenv").config();
 
@@ -56,6 +55,15 @@ const createTask = async (req, res) => {
     if (!courseSedeAssignment) {
       return res.status(404).json({
         message: "No se encontró una asignación válida de curso, sede y año",
+      });
+    }
+
+    const course_id1 = courseSedeAssignment.course_id;
+
+    if (typeTask_id === 1 && course_id1 === 2) {
+      return res.status(404).json({
+        message:
+          "No se puede crear una tarea de propuesta de tesis en este curso",
       });
     }
 
@@ -254,7 +262,6 @@ const listTask = async (req, res) => {
   }
 };
 
-
 const listTasksByCourse = async (req, res) => {
   const { sede_id, course_id, year } = req.params;
   const user_id = req.user_id;
@@ -399,86 +406,10 @@ const updateTask = async (req, res) => {
   }
 };
 
-const listInfoTaksByUser = async (req, res) => {
-  const { user_id, task_id } = req.params;
-
-  try {
-    // Validar si el usuario existe
-    const userExist = await User.findByPk(user_id);
-    if (!userExist) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
-
-    // Obtener la información de la tarea
-    const task = await Task.findOne({
-      where: { task_id },
-      attributes: [
-        "task_id",
-        "title",
-        "description",
-        "taskStart",
-        "endTask",
-        "asigCourse_id",
-      ],
-    });
-
-    if (!task) {
-      return res.status(404).json({ message: "Tarea no encontrada" });
-    }
-
-    // Validar si la asignación de curso existe
-    const asigCourse_id = task.asigCourse_id;
-    const asigCourseExist = await CourseSedeAssignment.findByPk(asigCourse_id);
-    if (!asigCourseExist) {
-      return res.status(404).json({
-        message:
-          "No se encontró una asignación válida para el curso asociado a la tarea.",
-      });
-    }
-
-    if (!asigCourseExist.courseActive) {
-      return res.status(400).json({
-        message: "La tarea pertenece a un curso inactivo.",
-      });
-    }
-
-    // Obtener todas las entregas realizadas por el usuario para esta tarea
-    const submissions = await Subbmissions.findAll({
-      where: { user_id, task_id },
-      attributes: [
-        "submission_id",
-        "directory",
-        "submission_date",
-        "task_id",
-        "user_id",
-      ],
-    });
-
-    // Mapear y transformar los datos de las entregas
-    const formattedSubmissions = submissions.map((submission) => ({
-      submission_id: submission.submission_id,
-      directory: `${BASE_URL}/public/${submission.directory}`, // Usar BASE_URL
-      submission_date: submission.submission_date,
-      task_id: submission.task_id,
-      user_id: submission.user_id,
-    }));
-
-    // Responder con la información de la tarea y las entregas del usuario
-    res.status(200).json({ task, submissions: formattedSubmissions });
-  } catch (error) {
-    console.error("Error al obtener la información de la tarea:", error);
-    res.status(500).json({
-      message: "Error al obtener la información de la tarea",
-      error: error.message || "Error desconocido",
-    });
-  }
-};
-
 module.exports = {
   createTask,
   listTasks,
   listTask,
   updateTask,
   listTasksByCourse,
-  listInfoTaksByUser,
 };
