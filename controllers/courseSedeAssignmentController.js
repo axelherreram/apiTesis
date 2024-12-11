@@ -8,7 +8,7 @@ const createSedeAssignment = async (req, res) => {
 
   try {
     // Obtener el año actual
-    const currentYear = 2025; //new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
 
     // Buscar el año actual en la tabla Year, si no existe, crearlo
     const [yearRecord] = await Year.findOrCreate({
