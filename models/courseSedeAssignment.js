@@ -28,9 +28,6 @@ const CourseSedeAssignment = sequelize.define(
         key: "sede_id",
       },
     },
-    courseActive: {
-      type: DataTypes.BOOLEAN,
-    },
     year_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -39,6 +36,10 @@ const CourseSedeAssignment = sequelize.define(
         key: "year_id",
       },
     },
+    courseActive: {
+      type: DataTypes.BOOLEAN,
+    },
+
   },
   {
     timestamps: false,

@@ -8,7 +8,7 @@ const createSedeAssignment = async (req, res) => {
 
   try {
     // Obtener el año actual
-    const currentYear = new Date().getFullYear();
+    const currentYear = 2025; //new Date().getFullYear();
 
     // Buscar el año actual en la tabla Year, si no existe, crearlo
     const [yearRecord] = await Year.findOrCreate({
@@ -18,8 +18,6 @@ const createSedeAssignment = async (req, res) => {
 
     const year_id = yearRecord.year_id;
 
-    const currentMonth = new Date().getMonth() + 1; // Mes actual (1-12)
-
     const course = await Course.findByPk(course_id);
     if (!course) {
       return res.status(404).json({
@@ -28,17 +26,7 @@ const createSedeAssignment = async (req, res) => {
     }
 
     const course_name = course.courseName;
-/* 
-    // Validar periodo de asignación basado en los meses
-    if (
-      (course_id === 1 && !(currentMonth >= 2 && currentMonth <= 6)) || // PG1 (febrero a junio)
-      (course_id === 2 && !(currentMonth >= 7 && currentMonth <= 11))   // PG2 (julio a noviembre)
-    ) {
-      return res.status(400).json({
-        message: `El curso ${course_name} está fuera del periodo de asignación permitido.`,
-      });
-    }
- */
+
     // Verificar si la asignación ya existe en el año actual
     const existingAssignment = await CourseSedeAssignment.findOne({
       where: {
@@ -62,6 +50,43 @@ const createSedeAssignment = async (req, res) => {
       });
     }
 
+    // Desactivar el curso anterior si se asigna PG2
+    if (course_id === 2) {
+      // PG2 tiene course_id = 2
+      await CourseSedeAssignment.update(
+        { courseActive: false },
+        {
+          where: {
+            course_id: 1, // PG1 tiene course_id = 1
+            sede_id,
+            year_id,
+          },
+        }
+      );
+    }
+
+    // Desactivar PG2 del año anterior si se asigna PG1 en el año actual
+    if (course_id === 1) { // Suponiendo que PG1 tiene course_id = 1
+      const previousYear = currentYear - 1;
+      const previousYearRecord = await Year.findOne({
+        where: { year: previousYear },
+      });
+
+      if (previousYearRecord) {
+        const previousYear_id = previousYearRecord.year_id;
+        await CourseSedeAssignment.update(
+          { courseActive: false },
+          {
+            where: {
+              course_id: 2, // PG2 tiene course_id = 2
+              sede_id,
+              year_id: previousYear_id,
+            },
+          }
+        );
+      }
+    }
+
     // Crear una nueva asignación de curso y sede con courseActive en true
     await CourseSedeAssignment.create({
       course_id,
@@ -81,7 +106,6 @@ const createSedeAssignment = async (req, res) => {
     });
   }
 };
-
 
 const getCoursesBySede = async (req, res) => {
   const { sede_id } = req.params;

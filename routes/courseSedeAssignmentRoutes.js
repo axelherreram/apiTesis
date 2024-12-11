@@ -29,14 +29,27 @@ const admin = verifyRole([3,4]);
  *       content:
  *         application/json:
  *           schema:
- *             $ref: '#/components/schemas/CourseSedeAssignment'
+ *             type: object
+ *             properties:
+ *               course_id:
+ *                 type: integer
+ *                 description: ID del curso
+ *                 example: 1
+ *               sede_id:
+ *                 type: integer
+ *                 description: ID de la sede
+ *                 example: 1
  *     responses:
  *       201:
  *         description: Asignación de curso a sede creada exitosamente
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/CourseSedeAssignment'
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Asignación de curso a sede creada exitosamente.
  *       400:
  *         description: Error en la creación de la asignación (curso en periodo incorrecto, asignación ya existente, etc.)
  *       500:
