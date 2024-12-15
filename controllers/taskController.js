@@ -33,22 +33,22 @@ const createTask = async (req, res) => {
   const { sede_id: tokenSedeId } = req;
 
   try {
-    // Validar que la fecha de inicio no sea mayor a la fecha final
+    // Paso 1: Validar que la fecha de inicio no sea mayor a la fecha final
     if (new Date(taskStart) > new Date(endTask)) {
       return res.status(400).json({
         message: "La fecha de inicio no puede ser mayor a la fecha final",
       });
     }
 
-    // Validar que el sede_id en la solicitud coincida con el sede_id del token
+    // Paso 2: Validar que el sede_id en la solicitud coincida con el sede_id del token
     if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
       return res.status(403).json({ message: "No tienes acceso a esta sede" });
     }
 
-    // Obtener el año actual
+    // Paso 3: Obtener el año actual
     const currentYear = new Date().getFullYear();
 
-    // Buscar o crear el año actual en la tabla Year
+    // Paso 4: Buscar o crear el año actual en la tabla Year
     const [yearRecord] = await Year.findOrCreate({
       where: { year: currentYear },
       defaults: { year: currentYear },
@@ -56,9 +56,9 @@ const createTask = async (req, res) => {
 
     const year_id = yearRecord.year_id;
 
-    // Validar la asignación del curso y sede
+    // Paso 5: Validar la asignación del curso y sede
     const courseSedeAssignment = await CourseSedeAssignment.findOne({
-      where: { course_id, sede_id, courseActive: true, year_id },
+      where: { course_id, sede_id, year_id },
     });
 
     if (!courseSedeAssignment) {
@@ -67,8 +67,16 @@ const createTask = async (req, res) => {
       });
     }
 
+    // Paso 6: Validar si el curso está activo
+    if (!courseSedeAssignment.courseActive) {
+      return res.status(400).json({
+        message: "El curso no está activo",
+      });
+    }
+
     const assignedCourseId = courseSedeAssignment.course_id;
 
+    // Paso 7: Validar si el tipo de tarea es "Propuesta de tesis" y el curso no permite este tipo de tarea
     if (typeTask_id === 1 && assignedCourseId === 2) {
       return res.status(404).json({
         message: "No se puede crear una tarea de propuesta de tesis en este curso",
@@ -77,7 +85,7 @@ const createTask = async (req, res) => {
 
     const asigCourse_id = courseSedeAssignment.asigCourse_id;
 
-    // Validar si ya existe una tarea de tipo "Propuesta de tesis"
+    // Paso 8: Validar si ya existe una tarea de tipo "Propuesta de tesis"
     if (typeTask_id === 1) {
       const tareaExistente = await Task.findOne({
         where: { asigCourse_id, typeTask_id: 1, year_id },
@@ -90,7 +98,7 @@ const createTask = async (req, res) => {
       }
     }
 
-    // Crear la nueva tarea
+    // Paso 9: Crear la nueva tarea
     const newTask = await Task.create({
       asigCourse_id,
       typeTask_id,
@@ -103,7 +111,7 @@ const createTask = async (req, res) => {
       year_id,
     });
 
-    // Registrar actividad del usuario
+    // Paso 10: Registrar actividad del usuario
     const user = await User.findByPk(user_id);
     await logActivity(
       user_id,
@@ -113,7 +121,7 @@ const createTask = async (req, res) => {
       "Creación de tarea"
     );
 
-    // Obtener la tarea anterior
+    // Paso 11: Obtener la tarea anterior
     const previousTask = await Task.findOne({
       where: { asigCourse_id, year_id },
       order: [["endTask", "DESC"]],
@@ -122,7 +130,7 @@ const createTask = async (req, res) => {
     });
 
     if (previousTask) {
-      // Obtener todos los estudiantes asignados al curso
+      // Paso 12: Obtener todos los estudiantes asignados al curso
       const students = await User.findAll({
         where: { rol_id: 1, sede_id, year_id },
         include: [
@@ -134,7 +142,7 @@ const createTask = async (req, res) => {
         attributes: ["user_id"],
       });
 
-      // Filtrar los estudiantes que no han entregado la tarea anterior
+      // Paso 13: Filtrar los estudiantes que no han entregado la tarea anterior
       for (const student of students) {
         const submission = await TaskSubmissions.findOne({
           where: {
@@ -155,7 +163,7 @@ const createTask = async (req, res) => {
       }
     }
 
-    // Obtener usuarios relacionados al curso y enviar notificaciones
+    // Paso 14: Obtener usuarios relacionados al curso y enviar notificaciones
     const userEmails = await User.findAll({
       where: { rol_id: 1, sede_id, year_id },
       include: [
@@ -168,13 +176,6 @@ const createTask = async (req, res) => {
     });
 
     for (const userEmail of userEmails) {
-      /*const templateVariables = {
-          nombre: userEmail.name,
-          titulo: title,
-          descripcion: description,
-          fecha: new Date(endTask).toLocaleDateString(),
-          autor: user.name,
-        }; */
       const course = await Course.findByPk(courseSedeAssignment.course_id);
 
       await addTimeline(
@@ -183,18 +184,14 @@ const createTask = async (req, res) => {
         `Se ha creado una nueva tarea en el curso: ${course.courseName} con el título: ${title}`,
         newTask.task_id
       );
-      /*          await sendEmailTask(
-           "Nueva tarea creada: " + title,
-           `Se ha creado una nueva tarea en la plataforma TesM con el título: ${title}`,
-           userEmail.email,
-           templateVariables
-         ); */
     }
 
+    // Paso 15: Enviar respuesta de éxito
     res.status(201).json({
       message: "Tarea creada exitosamente",
     });
   } catch (error) {
+    // Paso 16: Manejar errores y enviar respuesta de error
     res.status(500).json({
       message: "Error al crear la tarea",
       error: error.message || error,
