@@ -40,7 +40,6 @@ const createTask = async (req, res) => {
       });
     }
 
-
     // Validar que el sede_id en la solicitud coincida con el sede_id del token
     if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
       return res.status(403).json({ message: "No tienes acceso a esta sede" });
@@ -68,12 +67,11 @@ const createTask = async (req, res) => {
       });
     }
 
-    const course_id1 = courseSedeAssignment.course_id;
+    const assignedCourseId = courseSedeAssignment.course_id;
 
-    if (typeTask_id === 1 && course_id1 === 2) {
+    if (typeTask_id === 1 && assignedCourseId === 2) {
       return res.status(404).json({
-        message:
-          "No se puede crear una tarea de propuesta de tesis en este curso",
+        message: "No se puede crear una tarea de propuesta de tesis en este curso",
       });
     }
 
@@ -111,14 +109,14 @@ const createTask = async (req, res) => {
       user_id,
       user.sede_id,
       user.name,
-      `El usuario creó una nueva tarea con título: ${title}`,
+      `Nueva tarea con título: ${title}`,
       "Creación de tarea"
     );
 
     // Obtener la tarea anterior
     const previousTask = await Task.findOne({
       where: { asigCourse_id, year_id },
-      order: [['endTask', 'DESC']],
+      order: [["endTask", "DESC"]],
       limit: 1,
       offset: 1, // Para obtener la tarea anterior a la recién creada
     });
@@ -133,7 +131,7 @@ const createTask = async (req, res) => {
             where: { asigCourse_id },
           },
         ],
-        attributes: ['user_id'],
+        attributes: ["user_id"],
       });
 
       // Filtrar los estudiantes que no han entregado la tarea anterior
@@ -170,12 +168,27 @@ const createTask = async (req, res) => {
     });
 
     for (const userEmail of userEmails) {
+      /*const templateVariables = {
+          nombre: userEmail.name,
+          titulo: title,
+          descripcion: description,
+          fecha: new Date(endTask).toLocaleDateString(),
+          autor: user.name,
+        }; */
+      const course = await Course.findByPk(courseSedeAssignment.course_id);
+
       await addTimeline(
         userEmail.user_id,
         "Tarea creada",
-        `Se ha creado una nueva tarea en el curso ${courseSedeAssignment.course_id} con el título: ${title}`,
+        `Se ha creado una nueva tarea en el curso: ${course.courseName} con el título: ${title}`,
         newTask.task_id
       );
+      /*          await sendEmailTask(
+           "Nueva tarea creada: " + title,
+           `Se ha creado una nueva tarea en la plataforma TesM con el título: ${title}`,
+           userEmail.email,
+           templateVariables
+         ); */
     }
 
     res.status(201).json({
@@ -187,10 +200,6 @@ const createTask = async (req, res) => {
       error: error.message || error,
     });
   }
-};
-
-module.exports = {
-  createTask,
 };
 
 const listTasks = async (req, res) => {

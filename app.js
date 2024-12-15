@@ -23,7 +23,8 @@ const comisionRoutes = require('./routes/comisionRoutes');
 const StudianteComision = require('./routes/studentComisionRoutes');
 const SearchRoutes = require('./routes/searchRoutes');
 const CommentRoutes = require('./routes/commentRoutes');
-const thesisSubmissionsRoutes = require('./routes/thesisSubmissionsRoutes');  
+const thesisSubmissionsRoutes = require('./routes/thesisSubmissionsRoutes'); 
+const TaskSubmissionRoutes = require('./routes/taskSubmissionsRoutes'); 
 
 const path = require('path');
 const cors = require('cors');
@@ -31,20 +32,27 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+
+// Asociar modelos
 associateModels();
 
+// Configurar CORS
 app.use(cors({
   origin: 'http://localhost:5173',
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true, 
 }));
 
+// Servir archivos estáticos
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
+// Configurar body-parser para analizar JSON
 app.use(bodyParser.json());
 
+// Configurar Swagger para la documentación de la API
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+// Definir rutas de la API
 app.use('/auth', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', AppLogRoutes);
@@ -55,7 +63,7 @@ app.use('/api', CourseRoutes);
 app.use('/api', StudentRoutes);
 app.use('/api', typeTaskRoutes);
 app.use('/api', CourseSedeAssignmentRoutes);
-app.use('/api', YearRoutes)
+app.use('/api', YearRoutes);
 app.use('/api', ThesisProposalRoutes);
 app.use('/api', professorRoutes);
 app.use('/api', TimeLineRoutes);
@@ -65,9 +73,9 @@ app.use('/api', StudianteComision);
 app.use('/api', SearchRoutes);
 app.use('/api', CommentRoutes);
 app.use('/api', thesisSubmissionsRoutes);
+app.use('/api', TaskSubmissionRoutes);
 
-
-
+// Sincronizar la base de datos y arrancar el servidor
 sequelize.sync({ alter: false, force: false })
   .then(async () => {
     console.log('Base de datos sincronizada');

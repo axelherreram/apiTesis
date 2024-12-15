@@ -78,6 +78,12 @@ const bulkUploadUsers = async (req, res) => {
       });
     }
 
+    if (!sedeCourseAssignment.courseActive) {
+      return res.status(400).json({
+        message: "El curso no se encuentra activo para la sede seleccionada",
+      });
+    }
+
     const asigCourse_id = sedeCourseAssignment.asigCourse_id; // Obtener el ID de la asignación de curso
 
     // Paso 10: Procesar cada usuario en el archivo Excel
