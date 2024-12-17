@@ -33,7 +33,7 @@ const createGroupComision = async (req, res) => {
     // 3. Validar tamaño mínimo del grupo
     if (groupData.length < 3) {
       return res.status(400).json({
-        message: "El grupo de comisión debe tener al menos 3 usuarios",
+        message: "La comisión debe tener al menos 3 usuarios",
       });
     }
     // 3. Verificar que no exista otro grupo para el mismo año y sede
@@ -43,7 +43,7 @@ const createGroupComision = async (req, res) => {
     if (existingGroup) {
       return res
         .status(400)
-        .json({ message: "Ya existe un grupo para este año y sede" });
+        .json({ message: "Ya existe una comisión para este año y sede" });
     }
 
     // 4. Validar asignación del curso
