@@ -9,9 +9,7 @@ const { sendEmailTask } = require("./emailController");
 const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
 const TypeTask = require("../models/typeTask");
-const { sequelize } = require("../config/database");
 const TaskSubmissions = require("../models/taskSubmissions");
-const { Op } = require("sequelize");
 
 require("dotenv").config();
 
@@ -36,13 +34,16 @@ const createTask = async (req, res) => {
     // Paso 1: Validar que la fecha de inicio no sea mayor a la fecha final
     if (new Date(taskStart) > new Date(endTask)) {
       return res.status(400).json({
-        message: "La fecha de inicio no puede ser mayor a la fecha final",
+        message:
+          "La fecha de inicio de la tarea no puede ser posterior a la fecha de finalización.",
       });
     }
 
     // Paso 2: Validar que el sede_id en la solicitud coincida con el sede_id del token
     if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
-      return res.status(403).json({ message: "No tienes acceso a esta sede" });
+      return res.status(403).json({
+        message: "No tienes permiso para acceder a esta sede.",
+      });
     }
 
     // Paso 3: Obtener el año actual
@@ -63,14 +64,15 @@ const createTask = async (req, res) => {
 
     if (!courseSedeAssignment) {
       return res.status(404).json({
-        message: "No se encontró una asignación válida de curso, sede y año",
+        message:
+          "No se encontró una asignación válida de curso, sede y año.",
       });
     }
 
     // Paso 6: Validar si el curso está activo
     if (!courseSedeAssignment.courseActive) {
       return res.status(400).json({
-        message: "El curso no está activo",
+        message: "El curso no está activo.",
       });
     }
 
@@ -79,7 +81,8 @@ const createTask = async (req, res) => {
     // Paso 7: Validar si el tipo de tarea es "Propuesta de tesis" y el curso no permite este tipo de tarea
     if (typeTask_id === 1 && assignedCourseId === 2) {
       return res.status(404).json({
-        message: "No se puede crear una tarea de propuesta de tesis en este curso",
+        message:
+          "No se puede crear una tarea de propuesta de tesis en este curso.",
       });
     }
 
@@ -93,7 +96,8 @@ const createTask = async (req, res) => {
 
       if (tareaExistente) {
         return res.status(400).json({
-          message: "¡La tarea de propuesta de tesis ya existe!",
+          message:
+            "Ya existe una tarea de propuesta de tesis para este curso y año.",
         });
       }
     }
@@ -112,14 +116,14 @@ const createTask = async (req, res) => {
     });
 
     // Paso 10: Registrar actividad del usuario
-    const user = await User.findByPk(user_id);
+    /*     const user = await User.findByPk(user_id);
     await logActivity(
       user_id,
       user.sede_id,
       user.name,
       `Nueva tarea con título: ${title}`,
       "Creación de tarea"
-    );
+    ); */
 
     // Paso 11: Obtener la tarea anterior
     const previousTask = await Task.findOne({
@@ -176,6 +180,21 @@ const createTask = async (req, res) => {
     });
 
     for (const userEmail of userEmails) {
+/*       const templateVariables = {
+        nombre: userEmail.name,
+        titulo: title,
+        descripcion: description,
+        fecha: new Date(endTask).toLocaleDateString(),
+        autor: user.name,
+      };
+
+      await sendEmailTask(
+        "Nueva tarea creada: " + title,
+        `Se ha creado una nueva tarea en la plataforma TesM con el título: ${title}`,
+        userEmail.email,
+        templateVariables
+      ); */
+
       const course = await Course.findByPk(courseSedeAssignment.course_id);
 
       await addTimeline(
@@ -188,7 +207,7 @@ const createTask = async (req, res) => {
 
     // Paso 15: Enviar respuesta de éxito
     res.status(201).json({
-      message: "Tarea creada exitosamente",
+      message: "La tarea ha sido creada exitosamente.",
     });
   } catch (error) {
     // Paso 16: Manejar errores y enviar respuesta de error
