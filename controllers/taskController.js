@@ -64,8 +64,7 @@ const createTask = async (req, res) => {
 
     if (!courseSedeAssignment) {
       return res.status(404).json({
-        message:
-          "No se encontró una asignación válida de curso, sede y año.",
+        message: "No se encontró una asignación válida de curso, sede y año.",
       });
     }
 
@@ -126,16 +125,11 @@ const createTask = async (req, res) => {
     ); */
 
     // Paso 11: Obtener la tarea anterior
-    const previousTask = await Task.findOne({
-      where: { asigCourse_id, year_id },
-      order: [["endTask", "DESC"]],
-      limit: 1,
-      offset: 1, // Para obtener la tarea anterior a la recién creada
-    });
+    const newTaskId = newTask.task_id;
 
-    if (previousTask) {
-      // Paso 12: Obtener todos los estudiantes asignados al curso
-      const students = await User.findAll({
+    if (newTaskId) {
+      // Paso 12 y 14: Obtener todos los estudiantes asignados al curso y enviar notificaciones
+      const studentsAndEmails = await User.findAll({
         where: { rol_id: 1, sede_id, year_id },
         include: [
           {
@@ -143,66 +137,47 @@ const createTask = async (req, res) => {
             where: { asigCourse_id },
           },
         ],
-        attributes: ["user_id"],
+        attributes: ["user_id", "name", "email"],
       });
-
-      // Paso 13: Filtrar los estudiantes que no han entregado la tarea anterior
-      for (const student of students) {
-        const submission = await TaskSubmissions.findOne({
-          where: {
-            user_id: student.user_id,
-            task_id: previousTask.task_id,
-            submission_complete: true,
-          },
-        });
-
-        if (!submission) {
+      
+      // Validar si la tarea es "Propuesta de tesis", no crear los registros de TaskSubmissions
+      if (typeTask_id !== 1) {
+        // Paso 13: Asignar la nueva tarea a todos los estudiantes
+        for (const student of studentsAndEmails) {
           await TaskSubmissions.create({
             user_id: student.user_id,
-            task_id: newTask.task_id,
+            task_id: newTaskId,
             submission_complete: false,
             date: new Date(),
           });
         }
       }
-    }
 
-    // Paso 14: Obtener usuarios relacionados al curso y enviar notificaciones
-    const userEmails = await User.findAll({
-      where: { rol_id: 1, sede_id, year_id },
-      include: [
-        {
-          model: CourseAssignment,
-          where: { asigCourse_id },
-        },
-      ],
-      attributes: ["user_id", "name", "email"],
-    });
+      for (const userEmail of studentsAndEmails) {
+        /*       const templateVariables = {
+          nombre: userEmail.name,
+          titulo: title,
+          descripcion: description,
+          fecha: new Date(endTask).toLocaleDateString(),
+          autor: user.name,
+        };
 
-    for (const userEmail of userEmails) {
-/*       const templateVariables = {
-        nombre: userEmail.name,
-        titulo: title,
-        descripcion: description,
-        fecha: new Date(endTask).toLocaleDateString(),
-        autor: user.name,
-      };
+        await sendEmailTask(
+          "Nueva tarea creada: " + title,
+          `Se ha creado una nueva tarea en la plataforma TesM con el título: ${title}`,
+          userEmail.email,
+          templateVariables
+        ); */
 
-      await sendEmailTask(
-        "Nueva tarea creada: " + title,
-        `Se ha creado una nueva tarea en la plataforma TesM con el título: ${title}`,
-        userEmail.email,
-        templateVariables
-      ); */
+        const course = await Course.findByPk(courseSedeAssignment.course_id);
 
-      const course = await Course.findByPk(courseSedeAssignment.course_id);
-
-      await addTimeline(
-        userEmail.user_id,
-        "Tarea creada",
-        `Se ha creado una nueva tarea en el curso: ${course.courseName} con el título: ${title}`,
-        newTask.task_id
-      );
+        await addTimeline(
+          userEmail.user_id,
+          "Tarea creada",
+          `Se ha creado una nueva tarea en el curso: ${course.courseName} con el título: ${title}`,
+          newTask.task_id
+        );
+      }
     }
 
     // Paso 15: Enviar respuesta de éxito
