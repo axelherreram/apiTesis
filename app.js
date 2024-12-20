@@ -37,11 +37,23 @@ const app = express();
 associateModels();
 
 // Configurar CORS
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5500'
+];
+
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true, 
+  credentials: true,
 }));
+
 
 // Servir archivos estáticos
 app.use('/public', express.static(path.join(__dirname, 'public')));

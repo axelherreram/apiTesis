@@ -21,14 +21,25 @@ const createTaskSubmission = async (req, res) => {
       return res.status(404).json({ message: "La tarea no existe" });
     }
 
+    // Obtener la fecha y hora actual en la zona horaria local
     const currentDate = new Date();
-    const currentTime = currentDate.toTimeString().split(' ')[0];
+    const localDate = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000);
+    const currentTime = localDate.toTimeString().split(' ')[0];
+
+    // Convertir las horas a formato comparable (segundos desde la medianoche)
+    const [currentHour, currentMinute, currentSecond] = currentTime.split(':').map(Number);
+    const [startHour, startMinute, startSecond] = taskExist.startTime.split(':').map(Number);
+    const [endHour, endMinute, endSecond] = taskExist.endTime.split(':').map(Number);
+
+    const currentTotalSeconds = currentHour * 3600 + currentMinute * 60 + currentSecond;
+    const startTotalSeconds = startHour * 3600 + startMinute * 60 + startSecond;
+    const endTotalSeconds = endHour * 3600 + endMinute * 60 + endSecond;
 
     if (
-      currentDate < new Date(taskExist.taskStart) ||
-      currentDate > new Date(taskExist.endTask) ||
-      currentTime < taskExist.startTime ||
-      currentTime > taskExist.endTime
+      localDate < new Date(taskExist.taskStart) ||
+      localDate > new Date(taskExist.endTask) ||
+      currentTotalSeconds < startTotalSeconds ||
+      currentTotalSeconds > endTotalSeconds
     ) {
       return res.status(400).json({
         message: "La tarea no está dentro del rango de fechas y horas permitido para la entrega",
@@ -40,8 +51,14 @@ const createTaskSubmission = async (req, res) => {
       where: { user_id, task_id },
     });
     if (taskSubmissionExist) {
-      return res.status(400).json({
-        message: "La tarea de envío ya existe para este usuario y tarea",
+      // Si ya existe, actualizar el registro con la fecha actual
+      await taskSubmissionExist.update({
+        submission_complete: true,
+        date: localDate,
+      });
+
+      return res.status(200).json({
+        message: "Tarea de envío actualizada exitosamente",
       });
     }
 
@@ -50,6 +67,7 @@ const createTaskSubmission = async (req, res) => {
       user_id,
       task_id,
       submission_complete: true,
+      date: localDate,
     });
 
     // Paso 5: Enviar respuesta exitosa
@@ -71,9 +89,9 @@ const getCourseDetails = async (req, res) => {
   const { course_id, sede_id } = req.params;
 
   try {
-    // Validar la asignación del curso y sede
+    // Paso 1: Validar la asignación del curso y sede
     const courseSedeAssignment = await CourseSedeAssignment.findOne({
-      where: { course_id, sede_id: sede_id},
+      where: { course_id, sede_id },
     });
 
     if (!courseSedeAssignment) {
@@ -84,7 +102,7 @@ const getCourseDetails = async (req, res) => {
 
     const asigCourse_id = courseSedeAssignment.asigCourse_id;
 
-    // Obtener todos los estudiantes asignados al curso
+    // Paso 2: Obtener todos los estudiantes asignados al curso
     const students = await User.findAll({
       where: { rol_id: 1, sede_id },
       include: [
@@ -93,16 +111,16 @@ const getCourseDetails = async (req, res) => {
           where: { asigCourse_id },
         },
       ],
-      attributes: ["user_id", "name", "email"],
+      attributes: ["user_id", "name", "email", "carnet"],
     });
 
-    // Obtener todas las tareas del curso
+    // Paso 3: Obtener todas las tareas del curso
     const tasks = await Task.findAll({
       where: { asigCourse_id },
       attributes: ["task_id", "title", "description", "taskStart", "endTask"],
     });
 
-    // Obtener las entregas de tareas de los estudiantes
+    // Paso 4: Obtener las entregas de tareas de los estudiantes
     const studentTasks = await Promise.all(
       students.map(async (student) => {
         const submissions = await TaskSubmissions.findAll({
@@ -117,12 +135,12 @@ const getCourseDetails = async (req, res) => {
       })
     );
 
+    // Paso 5: Enviar la respuesta con los detalles del curso
     res.status(200).json({
-      course: courseSedeAssignment,
       students: studentTasks,
-      tasks,
     });
   } catch (error) {
+    // Paso 6: Manejo de errores del servidor
     res.status(500).json({
       message: "Error al obtener la información del curso",
       error: error.message || error,
