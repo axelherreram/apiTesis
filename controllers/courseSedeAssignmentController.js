@@ -2,13 +2,29 @@ const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const Course = require("../models/course");
 const Sede = require("../models/sede");
 const Year = require("../models/year");
+const User = require("../models/user");
 
 const createSedeAssignment = async (req, res) => {
   const { course_id, sede_id } = req.body;
 
   try {
-    // Obtener el año actual
-    const currentYear = new Date().getFullYear();
+    // Obtener el año y mes actual
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // Los meses en JavaScript son 0-11
+
+    // Validar que PG1 solo se pueda asignar en los primeros 6 meses y PG2 en los otros 6 meses
+    if (course_id === 1 && currentMonth > 6) {
+      return res.status(400).json({
+        message: "PG1 solo se puede asignar en los primeros 6 meses del año.",
+      });
+    }
+
+    if (course_id === 2 && currentMonth <= 6) {
+      return res.status(400).json({
+        message: "PG2 solo se puede asignar en los últimos 6 meses del año.",
+      });
+    }
 
     // Buscar el año actual en la tabla Year, si no existe, crearlo
     const [yearRecord] = await Year.findOrCreate({
@@ -66,7 +82,8 @@ const createSedeAssignment = async (req, res) => {
     }
 
     // Desactivar PG2 del año anterior si se asigna PG1 en el año actual
-    if (course_id === 1) { // Suponiendo que PG1 tiene course_id = 1
+    if (course_id === 1) {
+      // Suponiendo que PG1 tiene course_id = 1
       const previousYear = currentYear - 1;
       const previousYearRecord = await Year.findOne({
         where: { year: previousYear },
@@ -109,14 +126,24 @@ const createSedeAssignment = async (req, res) => {
 
 const getCoursesBySede = async (req, res) => {
   const { sede_id } = req.params;
-  const { sede_id: tokenSedeId } = req; // Sede extraída del token
+  const { sede_id: tokenSedeId, user_id } = req; // Sede extraída del token
 
   try {
-    // Verificar que el `sede_id` del token coincida con el `sede_id` de la solicitud
-    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
-      return res
-        .status(403)
-        .json({ message: "No tienes acceso a los cursos de esta sede" });
+    const user = await User.findByPk(user_id);
+    if (!user) {
+      return res.status(404).json({
+        message: `No se encontró un usuario con el ID ${user_id}.`,
+      });
+    }
+    
+    // Verificación de sede solo si es administrador,  si es secretario se salta la verificación
+    if (user.sede_id != null) {
+      // Verificar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+      if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+        return res
+          .status(403)
+          .json({ message: "No tienes acceso a los cursos de esta sede" });
+      }
     }
 
     // Obtener el año actual

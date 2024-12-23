@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getCourseDetails,
   createTaskSubmission,
+  getStudentCourseDetails
 } = require("../controllers/taskSubmissionsController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
@@ -13,7 +14,7 @@ const student = verifyRole([1]); // Permitir solo a usuarios con rol de estudian
 // Ruta para obtener detalles del curso
 /**
  * @swagger
- * /api/courses/{course_id}/{sede_id}/details:
+ * /api/courses/{course_id}/{sede_id}/{year}/details:
  *   get:
  *     summary: Obtener detalles del curso, incluyendo estudiantes y sus entregas de tareas
  *     tags: [TaskSubmissions]
@@ -30,6 +31,12 @@ const student = verifyRole([1]); // Permitir solo a usuarios con rol de estudian
  *           type: integer
  *         required: true
  *         description: ID de la sede
+ *       - in: path
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Año de la asignación
  *     responses:
  *       200:
  *         description: Detalles del curso obtenidos exitosamente
@@ -41,7 +48,7 @@ const student = verifyRole([1]); // Permitir solo a usuarios con rol de estudian
  *       - bearerAuth: []
  */
 router.get(
-  "/courses/:course_id/:sede_id/details",
+  "/courses/:course_id/:sede_id/:year/details",
   authMiddleware,
   admin,
   getCourseDetails
@@ -80,5 +87,53 @@ router.get(
  *       - bearerAuth: []
  */
 router.post("/task-submissions", authMiddleware, student, createTaskSubmission);
+
+/**
+ * @swagger
+ * /api/students/{user_id}/courses/{course_id}/sede/{sede_id}/year/{year}/details:
+ *   get:
+ *     summary: Obtener detalles del curso de un estudiante, incluyendo sus entregas de tareas
+ *     tags: [TaskSubmissions]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del estudiante
+ *       - in: path
+ *         name: course_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del curso
+ *       - in: path
+ *         name: sede_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la sede
+ *       - in: path
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Año de la asignación
+ *     responses:
+ *       200:
+ *         description: Detalles del curso del estudiante obtenidos exitosamente
+ *       404:
+ *         description: No se encontró una asignación válida de curso y sede o el estudiante no está asignado al curso
+ *       500:
+ *         description: Error interno del servidor
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get(
+  "/students/:user_id/courses/:course_id/sede/:sede_id/year/:year/details",
+  authMiddleware,
+  admin,
+  getStudentCourseDetails
+);
 
 module.exports = router;

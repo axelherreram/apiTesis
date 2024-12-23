@@ -51,7 +51,7 @@ const uploadProposal = async (req, res) => {
       }
 
       // Validar que la tarea exista
-      const taskInfo = await Task.findOne({ where: { id: task_id } });
+      const taskInfo = await Task.findOne({ where: { task_id } });
       if (!taskInfo) {
         // Eliminar el archivo si la tarea no existe
         if (req.file && req.file.path) {

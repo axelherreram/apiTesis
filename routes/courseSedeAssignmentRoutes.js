@@ -7,7 +7,7 @@ const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware"
 
 const router = express.Router();
 const SuperAdmin = verifyRole([4]);
-const admin = verifyRole([3,4]);
+const adminOrSuperadmin = verifyRole([1,3,4]);
 
 /**
  * @swagger
@@ -96,7 +96,7 @@ router.get(
   "/cursosPorSede/:sede_id",
   authMiddleware,
   obtenerUserIdDeToken,
-  admin,
+  adminOrSuperadmin,
   extractSedeIdMiddleware,
   getCoursesBySede
 );
