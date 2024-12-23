@@ -5,7 +5,7 @@ const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 
 const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
-
+const adminOrStudent = verifyRole([1, 3]); // Permitir solo a usuarios con rol de estudiante o administrador
 /**
  * @swagger
  * /api/thesis-submission/{thesisSubmissions_id}/{user_id}/update-approved-proposal:
@@ -98,7 +98,7 @@ router.put(
 router.get(
   "/thesis-submission/:user_id/:task_id",
   authMiddleware, // Middleware de autenticación
-  admin,          // Middleware de verificación de rol
+  adminOrStudent,          // Middleware de verificación de rol
   getThesisSubmission // Controlador que obtiene la entrega de tesis
 );
 
