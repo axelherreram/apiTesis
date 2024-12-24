@@ -21,7 +21,7 @@ const AppLog = sequelize.define(
     },
     sede_id: {  // Sede se mantiene igual
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
       references: {
         model: Sede,
         key: "sede_id",

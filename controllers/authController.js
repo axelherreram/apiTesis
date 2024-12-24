@@ -114,13 +114,15 @@ const loginUser = async (req, res) => {
       { expiresIn: "1h" }
     );
 
-    await logActivity(
-      user.user_id,
-      user.sede_id,
-      user.name,
-      `El usuario inició sesión`,
-      "Inicio de sesión"
-    );
+    if (user.role_id !== 4) {
+      await logActivity(
+        user.user_id,
+        user.sede_id,
+        user.name,
+        `El usuario inició sesión`,
+        "Inicio de sesión"
+      );
+    }
 
     res.status(200).json({
       message: "Inicio de sesión exitoso",

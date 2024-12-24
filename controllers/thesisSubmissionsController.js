@@ -28,7 +28,7 @@ const uploadProposal = async (req, res) => {
       }
 
       return res.status(400).json({
-        message: "Faltan campos requeridos: user_id y task_id son obligatorios",
+        message: "Faltan campos requeridos",
       });
     }
 
@@ -47,7 +47,7 @@ const uploadProposal = async (req, res) => {
 
         return res
           .status(404)
-          .json({ message: `El usuario con ID ${user_id} no existe` });
+          .json({ message: `El usuario no existe` });
       }
 
       // Validar que la tarea exista
@@ -64,7 +64,7 @@ const uploadProposal = async (req, res) => {
 
         return res
           .status(404)
-          .json({ message: `La tarea con ID ${task_id} no existe` });
+          .json({ message: `La tarea no existe` });
       }
 
       // Validar que la tarea sea una tesis
@@ -80,7 +80,7 @@ const uploadProposal = async (req, res) => {
 
         return res
           .status(400)
-          .json({ message: `La tarea con ID ${task_id} no es una tesis` });
+          .json({ message: `La tarea con no es propuesta de tesis` });
       }
 
       // Validar que no exista más de una entrega para el mismo usuario y tarea
@@ -111,8 +111,7 @@ const uploadProposal = async (req, res) => {
       });
 
       res.status(201).json({
-        message: "Propuesta de tesis subida exitosamente",
-        data: newSubmission,
+        message: "Propuesta de tesis entregada exitosamente",
       });
     } catch (dbError) {
       // Eliminar el archivo si ocurre un error en la base de datos
@@ -162,7 +161,7 @@ const updateProposal = async (req, res) => {
 
       return res.status(400).json({
         message:
-          "Faltan campos requeridos: user_id y thesisSubmissions_id son obligatorios",
+          "Faltan campos requeridos",
       });
     }
 
@@ -181,7 +180,7 @@ const updateProposal = async (req, res) => {
 
         return res
           .status(404)
-          .json({ message: `El usuario con ID ${user_id} no existe` });
+          .json({ message: `El usuario no existe` });
       }
 
       // Buscar la entrega de tesis
@@ -237,7 +236,6 @@ const updateProposal = async (req, res) => {
 
       res.status(200).json({
         message: "Entrega de tesis actualizada exitosamente",
-        data: existingSubmission,
       });
     } catch (dbError) {
       // Eliminar el archivo si ocurre un error en la base de datos

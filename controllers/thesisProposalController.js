@@ -2,9 +2,10 @@ const Task = require("../models/task");
 const ThesisSubmission = require("../models/thesisSubmissions");
 const User = require("../models/user");
 const dotenv = require("dotenv");
+const path = require('path');
+const fs = require('fs');
 
 dotenv.config();
-
 /**
  * Controlador para actualizar el campo approved_proposal
  * @param {Object} req - Objeto de solicitud
@@ -64,54 +65,43 @@ const updateApprovedProposal = async (req, res) => {
   }
 };
 
-/**
- * Controlador para obtener una entrega de tesis basada en user_id y task_id
- * @param {Object} req - Objeto de solicitud
- * @param {Object} res - Objeto de respuesta
- */
+
 const getThesisSubmission = async (req, res) => {
-  const { user_id, task_id } = req.params;
+  const { user_id } = req.params;
 
   try {
-    const taskInfo = await Task.findByPk(task_id);
-    if (!taskInfo) {
-      return res.status(404).json({ message: "La tarea no existe" });
-    }
-
-    if (taskInfo.typeTask_id !== 1) {
-      return res
-        .status(400)
-        .json({ message: "La tarea no es de tipo entrega de tesis" });
-    }
-
-    // Buscar la entrega de tesis basada en user_id y task_id
+    // Buscar la entrega de tesis basada en user_id
     const thesisSubmission = await ThesisSubmission.findOne({
-      where: {
-        user_id,
-        task_id,
-      },
+      where: { user_id },
     });
 
     // Verificar si la entrega de tesis existe
     if (!thesisSubmission) {
-      return res
-        .status(404)
-        .json({ message: "Entrega de tesis no encontrada" });
+      return res.status(404).json({
+        message: "Entrega de tesis no encontrada",
+      });
     }
-    const formattedSubmission = {
-      ...thesisSubmission.toJSON(),
-      file_path: `${process.env.BASE_URL}/${thesisSubmission.file_path}`,
+
+    // Reemplazar las barras invertidas (\) por barras diagonales (/)
+    const correctedFilePath = thesisSubmission.file_path.replace(/\\/g, '/');
+
+    // Formatear la respuesta solo con los campos requeridos
+    const response = {
+      file_path: encodeURI(`${process.env.BASE_URL}/${correctedFilePath}`),
+      date: thesisSubmission.date,
+      approved_proposal: thesisSubmission.approved_proposal,
     };
 
-    res.status(200).json(formattedSubmission);
+    res.status(200).json(response);
   } catch (error) {
     console.error("Error al obtener la entrega de tesis:", error);
+
     res.status(500).json({
-      message: "Error en el servidor al obtener la entrega de tesis",
-      error: error.message,
+      message: "Error inesperado al procesar la solicitud. Por favor, inténtelo más tarde.",
     });
   }
 };
+
 
 module.exports = {
   updateApprovedProposal,

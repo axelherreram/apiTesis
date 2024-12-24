@@ -59,7 +59,7 @@ router.put(
 
 /**
  * @swagger
- * /api/thesis-submission/{user_id}/{task_id}:
+ * /api/thesis-submission/{user_id}:
  *   get:
  *     summary: Obtener una entrega de tesis
  *     description: Obtiene una entrega de tesis basada en user_id y task_id
@@ -69,12 +69,6 @@ router.put(
  *       - name: user_id
  *         in: path
  *         description: ID del usuario que realizó la entrega
- *         required: true
- *         schema:
- *           type: integer
- *       - name: task_id
- *         in: path
- *         description: ID de la tarea
  *         required: true
  *         schema:
  *           type: integer
@@ -96,7 +90,7 @@ router.put(
  *       - bearerAuth: []
  */
 router.get(
-  "/thesis-submission/:user_id/:task_id",
+  "/thesis-submission/:user_id",
   authMiddleware, // Middleware de autenticación
   adminOrStudent,          // Middleware de verificación de rol
   getThesisSubmission // Controlador que obtiene la entrega de tesis
