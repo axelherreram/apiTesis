@@ -87,6 +87,7 @@ const getThesisSubmission = async (req, res) => {
 
     // Formatear la respuesta solo con los campos requeridos
     const response = {
+      thesisSubmissions_id: thesisSubmission.thesisSubmissions_id,
       file_path: encodeURI(`${process.env.BASE_URL}/${correctedFilePath}`),
       date: thesisSubmission.date,
       approved_proposal: thesisSubmission.approved_proposal,
