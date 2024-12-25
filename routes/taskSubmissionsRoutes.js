@@ -3,7 +3,8 @@ const router = express.Router();
 const {
   getCourseDetails,
   createTaskSubmission,
-  getStudentCourseDetails
+  getStudentCourseDetails,
+  getAllTasksBySedeYearAndUser,
 } = require("../controllers/taskSubmissionsController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
@@ -88,6 +89,7 @@ router.get(
  */
 router.post("/task-submissions", authMiddleware, student, createTaskSubmission);
 
+
 /**
  * @swagger
  * /api/students/{user_id}/courses/{course_id}/sede/{sede_id}/year/{year}/details:
@@ -134,6 +136,49 @@ router.get(
   authMiddleware,
   admin,
   getStudentCourseDetails
+);
+
+// Nueva ruta para obtener todas las tareas por sede, año y usuario
+/**
+ * @swagger
+ * /api/submissions/student/{user_id}/{year}/{sede_id}:
+ *   get:
+ *     summary: Obtener todas las tareas por sede, año y verificar si el usuario ya las entregó
+ *     tags: [TaskSubmissions]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del usuario
+ *       - in: path
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: Año de la asignación
+ *       - in: path
+ *         name: sede_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la sede
+ *     responses:
+ *       200:
+ *         description: Tareas obtenidas exitosamente
+ *       404:
+ *         description: No se encontraron asignaciones de cursos para la sede y el año especificados
+ *       500:
+ *         description: Error interno del servidor
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get(
+  "/submissions/student/:user_id/:year/:sede_id",
+  authMiddleware,
+  student,
+  getAllTasksBySedeYearAndUser
 );
 
 module.exports = router;

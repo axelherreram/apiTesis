@@ -236,8 +236,83 @@ const getStudentCourseDetails = async (req, res) => {
   }
 };
 
+const getAllTasksBySedeYearAndUser = async (req, res) => {
+  const { user_id, year, sede_id } = req.params;
+
+  try {
+    // Paso 1: Verificar si el usuario existe
+    const user = await User.findByPk(user_id);
+    if (!user) {
+      return res.status(404).json({ message: "El usuario no existe" });
+    }
+
+    // Paso 2: Verificar si el año existe
+    const yearRecord = await Year.findOne({
+      where: { year },
+    });
+    if (!yearRecord) {
+      return res.status(404).json({ message: "El año no existe" });
+    }
+    const year_id = yearRecord.year_id;
+
+    // Paso 3: Obtener todas las asignaciones de cursos para la sede y el año
+    const courseSedeAssignments = await CourseSedeAssignment.findAll({
+      where: { sede_id, year_id },
+    });
+
+    if (courseSedeAssignments.length === 0) {
+      return res.status(404).json({
+        message: "No se encontraron asignaciones de cursos para la sede y el año especificados",
+      });
+    }
+
+    // Paso 4: Obtener todas las tareas de los cursos asignados
+    const tasks = await Task.findAll({
+      where: {
+        asigCourse_id: courseSedeAssignments.map(assignment => assignment.asigCourse_id),
+      },
+      attributes: ["task_id", "title", "description", "taskStart", "endTask", "startTime", "endTime"],  
+    });
+
+    if (tasks.length === 0) {
+      return res.status(404).json({
+        message: "No se encontraron tareas para los cursos asignados",
+      });
+    }
+
+    // Paso 5: Obtener las entregas de tareas del usuario
+    const submissions = await TaskSubmissions.findAll({
+      where: { user_id },
+      attributes: ["task_id", "submission_complete", "date"],
+    });
+
+    // Paso 6: Mapear las tareas con su estado de entrega
+    const tasksWithSubmissionStatus = tasks.map(task => {
+      const submission = submissions.find(sub => sub.task_id === task.task_id);
+      return {
+        ...task.dataValues,
+        submission_complete: submission ? submission.submission_complete : null,
+        submission_date: submission ? submission.date : null,
+      };
+    });
+
+    // Paso 7: Enviar la respuesta con las tareas y su estado de entrega
+    res.status(200).json({
+      tasks: tasksWithSubmissionStatus,
+    });
+  } catch (error) {
+    // Paso 8: Manejo de errores del servidor
+    res.status(500).json({
+      message: "Error al obtener las tareas y su estado de entrega",
+      error: error.message || error,
+    });
+  }
+};
+
 module.exports = {
   getCourseDetails,
   createTaskSubmission,
-  getStudentCourseDetails
+  getStudentCourseDetails,
+  getAllTasksBySedeYearAndUser
 };
+
