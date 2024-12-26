@@ -10,52 +10,65 @@ const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
 
   try {
-    // Paso 1: Verificar si el usuario existe
     const userExist = await User.findByPk(user_id);
     if (!userExist) {
       return res.status(404).json({ message: "El usuario no existe" });
     }
 
-    // Paso 2: Verificar si la tarea existe y está dentro del rango de fechas y horas
     const taskExist = await Task.findByPk(task_id);
     if (!taskExist) {
       return res.status(404).json({ message: "La tarea no existe" });
     }
-
-    // Obtener la fecha y hora actual en la zona horaria local
+    // Obtener la fecha y hora actual
     const currentDate = new Date();
-    const localDate = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000);
-    const currentTime = localDate.toTimeString().split(' ')[0];
 
-    // Convertir las horas a formato comparable (segundos desde la medianoche)
-    const [currentHour, currentMinute, currentSecond] = currentTime.split(':').map(Number);
-    const [startHour, startMinute, startSecond] = taskExist.startTime.split(':').map(Number);
-    const [endHour, endMinute, endSecond] = taskExist.endTime.split(':').map(Number);
+    // Convertir fechas de la tarea a objetos Date
+    const taskStart = new Date(taskExist.taskStart); // Fecha de inicio
+    const taskEnd = new Date(taskExist.endTask); // Fecha de fin
 
-    const currentTotalSeconds = currentHour * 3600 + currentMinute * 60 + currentSecond;
-    const startTotalSeconds = startHour * 3600 + startMinute * 60 + startSecond;
-    const endTotalSeconds = endHour * 3600 + endMinute * 60 + endSecond;
-
-    if (
-      localDate < new Date(taskExist.taskStart) ||
-      localDate > new Date(taskExist.endTask) ||
-      currentTotalSeconds < startTotalSeconds ||
-      currentTotalSeconds > endTotalSeconds
-    ) {
+    // Comparar fechas (asegurándose de que no haya desajustes de zona horaria)
+    if (currentDate < taskStart || currentDate > taskEnd) {
       return res.status(400).json({
-        message: "La tarea no está dentro del rango de fechas y horas permitido para la entrega",
+        message:
+          "La tarea no está dentro del rango de fechas permitido para la entrega",
+        debug: {
+          currentDate: currentDate.toISOString(),
+          taskStart: taskStart.toISOString(),
+          taskEnd: taskEnd.toISOString(),
+        },
       });
     }
 
-    // Paso 3: Verificar si ya existe una tarea de envío para este usuario y tarea
+    // Convertir las horas de inicio y fin de la tarea a segundos
+    const currentSeconds =
+      currentDate.getHours() * 3600 +
+      currentDate.getMinutes() * 60 +
+      currentDate.getSeconds();
+    const [startHour, startMinute, startSecond] = taskExist.startTime
+      .split(":")
+      .map(Number);
+    const [endHour, endMinute, endSecond] = taskExist.endTime
+      .split(":")
+      .map(Number);
+    const startSeconds = startHour * 3600 + startMinute * 60 + startSecond;
+    const endSeconds = endHour * 3600 + endMinute * 60 + endSecond;
+
+    // Verificar si la hora actual está dentro del rango permitido
+    if (currentSeconds < startSeconds || currentSeconds > endSeconds) {
+      return res.status(400).json({
+        message:
+          "La tarea no está dentro del rango de horas permitido para la entrega",
+      });
+    }
+
     const taskSubmissionExist = await TaskSubmission.findOne({
       where: { user_id, task_id },
     });
+
     if (taskSubmissionExist) {
-      // Si ya existe, actualizar el registro con la fecha actual
       await taskSubmissionExist.update({
         submission_complete: true,
-        date: localDate,
+        date: currentDate,
       });
 
       return res.status(200).json({
@@ -63,22 +76,18 @@ const createTaskSubmission = async (req, res) => {
       });
     }
 
-    // Paso 4: Crear un nuevo registro de tarea de envío con submission_complete a true
     await TaskSubmission.create({
       user_id,
       task_id,
       submission_complete: true,
-      date: localDate,
+      date: currentDate,
     });
 
-    // Paso 5: Enviar respuesta exitosa
     res.status(201).json({
       message: "Tarea de envío creada exitosamente",
     });
   } catch (error) {
     console.error("Error al crear la tarea de envío:", error);
-
-    // Paso 6: Manejo de errores del servidor
     res.status(500).json({
       message: "Error en el servidor al crear la tarea de envío",
       error: error.message,
@@ -90,7 +99,6 @@ const getCourseDetails = async (req, res) => {
   const { course_id, sede_id, year } = req.params;
 
   try {
-
     const yearRecord = await Year.findOne({
       where: { year },
     });
@@ -206,7 +214,7 @@ const getStudentCourseDetails = async (req, res) => {
     const submissions = await TaskSubmissions.findAll({
       where: {
         user_id,
-        task_id: tasks.map(task => task.task_id), // Filtrar por las tareas del curso
+        task_id: tasks.map((task) => task.task_id), // Filtrar por las tareas del curso
       },
       attributes: ["task_id", "submission_complete", "date"],
     });
@@ -262,16 +270,27 @@ const getAllTasksBySedeYearAndUser = async (req, res) => {
 
     if (courseSedeAssignments.length === 0) {
       return res.status(404).json({
-        message: "No se encontraron asignaciones de cursos para la sede y el año especificados",
+        message:
+          "No se encontraron asignaciones de cursos para la sede y el año especificados",
       });
     }
 
     // Paso 4: Obtener todas las tareas de los cursos asignados
     const tasks = await Task.findAll({
       where: {
-        asigCourse_id: courseSedeAssignments.map(assignment => assignment.asigCourse_id),
+        asigCourse_id: courseSedeAssignments.map(
+          (assignment) => assignment.asigCourse_id
+        ),
       },
-      attributes: ["task_id", "title", "description", "taskStart", "endTask", "startTime", "endTime"],  
+      attributes: [
+        "task_id",
+        "title",
+        "description",
+        "taskStart",
+        "endTask",
+        "startTime",
+        "endTime",
+      ],
     });
 
     if (tasks.length === 0) {
@@ -287,8 +306,10 @@ const getAllTasksBySedeYearAndUser = async (req, res) => {
     });
 
     // Paso 6: Mapear las tareas con su estado de entrega
-    const tasksWithSubmissionStatus = tasks.map(task => {
-      const submission = submissions.find(sub => sub.task_id === task.task_id);
+    const tasksWithSubmissionStatus = tasks.map((task) => {
+      const submission = submissions.find(
+        (sub) => sub.task_id === task.task_id
+      );
       return {
         ...task.dataValues,
         submission_complete: submission ? submission.submission_complete : null,
@@ -313,6 +334,5 @@ module.exports = {
   getCourseDetails,
   createTaskSubmission,
   getStudentCourseDetails,
-  getAllTasksBySedeYearAndUser
+  getAllTasksBySedeYearAndUser,
 };
-
