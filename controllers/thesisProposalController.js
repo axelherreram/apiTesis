@@ -2,8 +2,9 @@ const Task = require("../models/task");
 const ThesisSubmission = require("../models/thesisSubmissions");
 const User = require("../models/user");
 const dotenv = require("dotenv");
-const path = require('path');
-const fs = require('fs');
+const path = require("path");
+const fs = require("fs");
+const { addTimeline } = require("../sql/timeline");
 
 dotenv.config();
 /**
@@ -50,11 +51,17 @@ const updateApprovedProposal = async (req, res) => {
     thesisSubmission.approved_proposal = approved_proposal;
     await thesisSubmission.save();
 
-    res
-      .status(200)
-      .json({
-        message: `La propuesta número ${approved_proposal} ha sido aprobada con éxito.`,
-      });
+    // Agregar la acción a la línea de tiempo
+    await addTimeline(
+      thesisSubmission.user_id,
+      "Propuesta de tesis aprobada",
+      `La propuesta de tesis numero ${approved_proposal} ha sido aprobada`,
+      thesisSubmission.task_id
+    );
+
+    res.status(200).json({
+      message: `La propuesta número ${approved_proposal} ha sido aprobada con éxito.`,
+    });
   } catch (error) {
     console.error("Error al actualizar el campo 'approved_proposal':", error);
     res.status(500).json({
@@ -64,7 +71,6 @@ const updateApprovedProposal = async (req, res) => {
     });
   }
 };
-
 
 const getThesisSubmission = async (req, res) => {
   const { user_id } = req.params;
@@ -83,7 +89,7 @@ const getThesisSubmission = async (req, res) => {
     }
 
     // Reemplazar las barras invertidas (\) por barras diagonales (/)
-    const correctedFilePath = thesisSubmission.file_path.replace(/\\/g, '/');
+    const correctedFilePath = thesisSubmission.file_path.replace(/\\/g, "/");
 
     // Formatear la respuesta solo con los campos requeridos
     const response = {
@@ -98,11 +104,11 @@ const getThesisSubmission = async (req, res) => {
     console.error("Error al obtener la entrega de tesis:", error);
 
     res.status(500).json({
-      message: "Error inesperado al procesar la solicitud. Por favor, inténtelo más tarde.",
+      message:
+        "Error inesperado al procesar la solicitud. Por favor, inténtelo más tarde.",
     });
   }
 };
-
 
 module.exports = {
   updateApprovedProposal,

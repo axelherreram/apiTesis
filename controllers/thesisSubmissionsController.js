@@ -3,6 +3,7 @@ const Task = require("../models/task");
 const User = require("../models/user");
 const upload = require("../middlewares/uploadPdf");
 const fs = require("fs");
+const { addTimeline } = require("../sql/timeline");
 
 const uploadProposal = async (req, res) => {
   // Subir el archivo primero
@@ -45,9 +46,7 @@ const uploadProposal = async (req, res) => {
           });
         }
 
-        return res
-          .status(404)
-          .json({ message: `El usuario no existe` });
+        return res.status(404).json({ message: `El usuario no existe` });
       }
 
       // Validar que la tarea exista
@@ -62,9 +61,7 @@ const uploadProposal = async (req, res) => {
           });
         }
 
-        return res
-          .status(404)
-          .json({ message: `La tarea no existe` });
+        return res.status(404).json({ message: `La tarea no existe` });
       }
 
       // Validar que la tarea sea una tesis
@@ -103,12 +100,13 @@ const uploadProposal = async (req, res) => {
       }
 
       // Crear registro en la base de datos
-      const newSubmission = await ThesisSubmission.create({
+      await ThesisSubmission.create({
         user_id,
         task_id,
         file_path: req.file.path,
         date: new Date(),
       });
+
 
       res.status(201).json({
         message: "Propuesta de tesis entregada exitosamente",
@@ -160,8 +158,7 @@ const updateProposal = async (req, res) => {
       }
 
       return res.status(400).json({
-        message:
-          "Faltan campos requeridos",
+        message: "Faltan campos requeridos",
       });
     }
 
@@ -178,9 +175,7 @@ const updateProposal = async (req, res) => {
           });
         }
 
-        return res
-          .status(404)
-          .json({ message: `El usuario no existe` });
+        return res.status(404).json({ message: `El usuario no existe` });
       }
 
       // Buscar la entrega de tesis
@@ -223,16 +218,29 @@ const updateProposal = async (req, res) => {
       if (existingSubmission.file_path) {
         fs.unlink(existingSubmission.file_path, (err) => {
           if (err) {
-            console.error(`Error al eliminar el archivo anterior: ${err.message}`);
+            console.error(
+              `Error al eliminar el archivo anterior: ${err.message}`
+            );
           }
         });
       }
 
       // Actualizar la entrega con el nuevo archivo si se pasa uno
-      existingSubmission.file_path = req.file ? req.file.path : existingSubmission.file_path;
+      existingSubmission.file_path = req.file
+        ? req.file.path
+        : existingSubmission.file_path;
       existingSubmission.date = new Date();
 
       await existingSubmission.save();
+
+      // Agregar a la línea de tiempo
+      await addTimeline(
+        user_id,
+        "Entrega de propuesta de tesis actualizada",
+        "Se actualizó la propuesta de tesis",
+        existingSubmission.task_id
+      );
+      
 
       res.status(200).json({
         message: "Entrega de tesis actualizada exitosamente",
@@ -255,7 +263,6 @@ const updateProposal = async (req, res) => {
     }
   });
 };
-
 
 module.exports = {
   uploadProposal,

@@ -5,6 +5,7 @@ const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const TaskSubmissions = require("../models/taskSubmissions");
 const CourseAssignment = require("../models/courseAssignment");
 const Year = require("../models/year");
+const { addTimeline } = require("../sql/timeline");
 
 const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
@@ -76,6 +77,14 @@ const createTaskSubmission = async (req, res) => {
         date: new Date(),
       });
 
+      await addTimeline(
+        userExist.user_id,
+        "Tarea de envío actualizada",
+        `Confirmación de entrega entrega para la tarea`,
+        taskExist.task_id
+      );
+
+
       return res.status(200).json({
         message: "Tarea de envío actualizada exitosamente",
       });
@@ -89,6 +98,8 @@ const createTaskSubmission = async (req, res) => {
       date: new Date(),
     });
 
+  
+
     res.status(201).json({
       message: "Tarea de envío creada exitosamente",
     });
@@ -100,7 +111,6 @@ const createTaskSubmission = async (req, res) => {
     });
   }
 };
-
 
 const getCourseDetails = async (req, res) => {
   const { course_id, sede_id, year } = req.params;
