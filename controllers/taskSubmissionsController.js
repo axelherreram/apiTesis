@@ -80,7 +80,7 @@ const createTaskSubmission = async (req, res) => {
       await addTimeline(
         userExist.user_id,
         "Tarea de envío actualizada",
-        `Confirmación de entrega entrega para la tarea`,
+        `Confirmación de entrega para la tarea`,
         taskExist.task_id
       );
 
