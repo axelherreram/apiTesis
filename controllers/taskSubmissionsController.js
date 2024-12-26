@@ -20,33 +20,45 @@ const createTaskSubmission = async (req, res) => {
       return res.status(404).json({ message: "La tarea no existe" });
     }
 
-    // Fecha y hora actuales en la zona horaria local
-    const now = new Date();
-    const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+    // Fecha y hora actuales ajustadas a UTC
+    const currentDateTime = new Date();
 
-    // Combinar fecha y hora para `taskStart` y `endTask`
-    const taskStartDateTime = new Date(
-      taskExist.taskStart.getFullYear(),
-      taskExist.taskStart.getMonth(),
-      taskExist.taskStart.getDate(),
-      ...taskExist.startTime.split(":").map(Number)
-    );
+    // Convertir taskStart y endTask en objetos Date
+    const taskStartDate = new Date(taskExist.taskStart).setHours(0, 0, 0, 0);
+    const taskEndDate = new Date(taskExist.endTask).setHours(0, 0, 0, 0);
+    const currentDate = new Date(currentDateTime).setHours(0, 0, 0, 0);
 
-    const taskEndDateTime = new Date(
-      taskExist.endTask.getFullYear(),
-      taskExist.endTask.getMonth(),
-      taskExist.endTask.getDate(),
-      ...taskExist.endTime.split(":").map(Number)
-    );
+    // Convertir las horas de inicio y fin en objetos Date
+    const [startHour, startMinute, startSecond] = taskExist.startTime
+      .split(":")
+      .map(Number);
+    const [endHour, endMinute, endSecond] = taskExist.endTime
+      .split(":")
+      .map(Number);
 
-    // Verificar si la fecha y hora actuales están dentro del rango
-    if (localNow < taskStartDateTime || localNow > taskEndDateTime) {
+    const startTime = new Date(currentDateTime);
+    startTime.setHours(startHour, startMinute, startSecond);
+
+    const endTime = new Date(currentDateTime);
+    endTime.setHours(endHour, endMinute, endSecond);
+
+    // Validar la fecha y hora actual contra las fechas y horas de inicio y fin
+    if (
+      currentDate < taskStartDate ||
+      currentDate > taskEndDate ||
+      currentDateTime < startTime ||
+      currentDateTime > endTime
+    ) {
       return res.status(400).json({
-        message: "La tarea no está dentro del rango de fechas y horas permitido para la entrega",
+        message:
+          "La tarea no está dentro del rango de fechas y horas permitido para la entrega",
         debug: {
-          currentDateTime: localNow.toISOString(),
-          taskStartDateTime: taskStartDateTime.toISOString(),
-          taskEndDateTime: taskEndDateTime.toISOString(),
+          currentDateTime: currentDateTime.toISOString(),
+          taskStartDateTime: new Date(taskStartDate).toISOString(),
+          taskEndDateTime: new Date(taskEndDate).toISOString(),
+          currentTime: currentDateTime.toTimeString(),
+          startTime: startTime.toTimeString(),
+          endTime: endTime.toTimeString(),
         },
       });
     }
@@ -58,15 +70,20 @@ const createTaskSubmission = async (req, res) => {
     if (taskSubmissionExist) {
       await taskSubmissionExist.update({
         submission_complete: true,
-        date: localNow,
+        date: currentDateTime,
       });
 
       return res.status(200).json({
         message: "Tarea de envío actualizada exitosamente",
-        debug: {
-          currentDateTime: localNow.toISOString(),
-          taskStartDateTime: taskStartDateTime.toISOString(),
-          taskEndDateTime: taskEndDateTime.toISOString(),
+        debugfecha: {
+          currentDateTime: currentDateTime.toISOString(),
+          taskStartDateTime: new Date(taskStartDate).toISOString(),
+          taskEndDateTime: new Date(taskEndDate).toISOString(),
+        },
+        debughora: {
+          currentTime: currentDateTime.toTimeString(),
+          startTime: startTime.toTimeString(),
+          endTime: endTime.toTimeString(),
         },
       });
     }
@@ -75,7 +92,7 @@ const createTaskSubmission = async (req, res) => {
       user_id,
       task_id,
       submission_complete: true,
-      date: localNow,
+      date: currentDateTime,
     });
 
     res.status(201).json({
@@ -89,8 +106,6 @@ const createTaskSubmission = async (req, res) => {
     });
   }
 };
-
-
 
 const getCourseDetails = async (req, res) => {
   const { course_id, sede_id, year } = req.params;
