@@ -1,5 +1,4 @@
 const Sede = require("../models/sede");
-const { logActivity } = require("../sql/appLog");
 const User = require("../models/user");
 
 const listSede = async (req, res) => {
@@ -33,15 +32,6 @@ const createSede = async (req, res) => {
     }
 
     const user = await User.findByPk(user_id);
-
-    // Script para registrar en la bitácora
-    await logActivity(
-      user_id,
-      user.sede_id,
-      user.name,
-      "Creación de sede",
-      `Una nueva sede: (${nameSede}), fue creada.`
-    );
 
     // Crear la nueva sede
     await Sede.create({ nameSede });

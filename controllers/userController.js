@@ -131,14 +131,14 @@ const getUsersByCourse = async (req, res) => {
         .json({ message: "No se encontró el usuario solicitante" });
     }
 
-    // Registrar actividad
+/*     // Registrar actividad
     await logActivity(
       user_id,
       requestingUser.sede_id,
       requestingUser.name,
       "Listar estudiantes",
       `Listó todos los estudiantes del curso: ${course.courseName}`
-    );
+    ); */
 
     res.status(200).json({
       countUsers: users.length,

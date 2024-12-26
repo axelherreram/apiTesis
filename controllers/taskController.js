@@ -139,7 +139,7 @@ const createTask = async (req, res) => {
         ],
         attributes: ["user_id", "name", "email"],
       });
-      
+
       // Validar si la tarea es "Propuesta de tesis", no crear los registros de TaskSubmissions
       if (typeTask_id !== 1) {
         // Paso 13: Asignar la nueva tarea a todos los estudiantes
@@ -246,13 +246,13 @@ const listTasks = async (req, res) => {
     }
 
     // Registrar actividad en la bitácora
-    await logActivity(
+/*     await logActivity(
       user_id,
       user.sede_id,
       user.name,
       "Obtener todas las tareas",
       `Listó todas las tareas para la sede ${sede_id} y el año ${year}.`
-    );
+    ); */
 
     // Devolver las tareas
     res.status(200).json(tasks);
@@ -368,13 +368,13 @@ const listTasksByCourse = async (req, res) => {
     }
 
     // Registrar actividad en la bitácora
-    await logActivity(
+    /*     await logActivity(
       user_id,
       user.sede_id,
       user.name,
       "Obtener todas las tareas",
       `Listó todas las tareas del curso con ID ${course_id} para la sede ${sede_id} en el año ${year}`
-    );
+    ); */
 
     // Responder con las tareas encontradas
     res.status(200).json(tasks);
@@ -432,7 +432,7 @@ const updateTask = async (req, res) => {
       user_id,
       user.sede_id,
       user.name,
-      `Actualizó tarea con id: ${task_id}`,
+      `Actualizó tarea con titulo: ${task.title}`,
       "Se actualizó tarea"
     );
 
