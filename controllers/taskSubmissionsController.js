@@ -10,65 +10,66 @@ const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
 
   try {
+    // Verificar si el usuario existe
     const userExist = await User.findByPk(user_id);
     if (!userExist) {
       return res.status(404).json({ message: "El usuario no existe" });
     }
 
+    // Verificar si la tarea existe
     const taskExist = await Task.findByPk(task_id);
     if (!taskExist) {
       return res.status(404).json({ message: "La tarea no existe" });
     }
-    // Obtener la fecha y hora actual
-    const currentDate = new Date();
 
-    // Convertir fechas de la tarea a objetos Date
-    const taskStart = new Date(taskExist.taskStart); // Fecha de inicio
-    const taskEnd = new Date(taskExist.endTask); // Fecha de fin
+    // Fecha y hora actuales en la zona horaria local
+    const now = new Date();
+    const currentLocalDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
 
-    // Comparar fechas (asegurándose de que no haya desajustes de zona horaria)
-    if (currentDate < taskStart || currentDate > taskEnd) {
+    // Convertir fechas de la tarea a objetos Date (sin hora)
+    const taskStartDate = new Date(
+      new Date(taskExist.taskStart).getFullYear(),
+      new Date(taskExist.taskStart).getMonth(),
+      new Date(taskExist.taskStart).getDate()
+    );
+    const taskEndDate = new Date(
+      new Date(taskExist.endTask).getFullYear(),
+      new Date(taskExist.endTask).getMonth(),
+      new Date(taskExist.endTask).getDate()
+    );
+
+    // Comparar fechas (solo día, mes y año)
+    if (currentLocalDate < taskStartDate || currentLocalDate > taskEndDate) {
       return res.status(400).json({
-        message:
-          "La tarea no está dentro del rango de fechas permitido para la entrega",
-        debug: {
-          currentDate: currentDate.toISOString(),
-          taskStart: taskStart.toISOString(),
-          taskEnd: taskEnd.toISOString(),
-        },
+        message: "La tarea no está dentro del rango de fechas permitido para la entrega",
       });
     }
 
-    // Convertir las horas de inicio y fin de la tarea a segundos
-    const currentSeconds =
-      currentDate.getHours() * 3600 +
-      currentDate.getMinutes() * 60 +
-      currentDate.getSeconds();
-    const [startHour, startMinute, startSecond] = taskExist.startTime
-      .split(":")
-      .map(Number);
-    const [endHour, endMinute, endSecond] = taskExist.endTime
-      .split(":")
-      .map(Number);
-    const startSeconds = startHour * 3600 + startMinute * 60 + startSecond;
-    const endSeconds = endHour * 3600 + endMinute * 60 + endSecond;
+    // Comparar horas
+    const [currentHour, currentMinute, currentSecond] = currentTime.split(':').map(Number);
+    const [startHour, startMinute, startSecond] = taskExist.startTime.split(':').map(Number);
+    const [endHour, endMinute, endSecond] = taskExist.endTime.split(':').map(Number);
 
-    // Verificar si la hora actual está dentro del rango permitido
-    if (currentSeconds < startSeconds || currentSeconds > endSeconds) {
+    const currentTotalSeconds = currentHour * 3600 + currentMinute * 60 + currentSecond;
+    const startTotalSeconds = startHour * 3600 + startMinute * 60 + startSecond;
+    const endTotalSeconds = endHour * 3600 + endMinute * 60 + endSecond;
+
+    if (currentTotalSeconds < startTotalSeconds || currentTotalSeconds > endTotalSeconds) {
       return res.status(400).json({
-        message:
-          "La tarea no está dentro del rango de horas permitido para la entrega",
+        message: "La tarea no está dentro del rango de horas permitido para la entrega",
       });
     }
 
+    // Verificar si ya existe un envío para este usuario y tarea
     const taskSubmissionExist = await TaskSubmission.findOne({
       where: { user_id, task_id },
     });
-
     if (taskSubmissionExist) {
+      // Si ya existe, actualizar el registro con la fecha actual
       await taskSubmissionExist.update({
         submission_complete: true,
-        date: currentDate,
+        date: now,
       });
 
       return res.status(200).json({
@@ -76,11 +77,12 @@ const createTaskSubmission = async (req, res) => {
       });
     }
 
+    // Crear un nuevo registro de tarea de envío con submission_complete a true
     await TaskSubmission.create({
       user_id,
       task_id,
       submission_complete: true,
-      date: currentDate,
+      date: now,
     });
 
     res.status(201).json({
