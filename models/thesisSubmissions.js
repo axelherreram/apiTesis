@@ -43,8 +43,8 @@ const thesisSubmissions = sequelize.define(
       defaultValue: 0,
       validate: {
         isIn: {
-          args: [[0,1, 2, 3]],
-          msg: "El valor de 'approved_proposal' debe ser 1, 2 o 3",
+          args: [[0, 1, 2, 3]],
+          msg: "El valor de 'approved_proposal' debe ser 0, 1, 2 o 3",
         },
       },
     },
@@ -52,6 +52,13 @@ const thesisSubmissions = sequelize.define(
   {
     tableName: "thesisSubmissions",
     timestamps: false,
+    hooks: {
+      beforeCreate: (thesisSubmission, options) => {
+        // Ajustar la fecha a la zona horaria correcta
+        const currentDate = new Date();
+        thesisSubmission.date = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000);
+      },
+    },
   }
 );
 

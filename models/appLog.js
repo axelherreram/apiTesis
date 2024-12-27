@@ -48,6 +48,13 @@ const AppLog = sequelize.define(
   {
     timestamps: false,
     tableName: "AppLog",  // BitacoraApp
+    hooks: {
+      beforeCreate: (appLog, options) => {
+        // Ajustar la fecha a la zona horaria correcta
+        const currentDate = new Date();
+        appLog.date = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000);
+      },
+    },
   }
 );
 

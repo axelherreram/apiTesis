@@ -38,11 +38,17 @@ const TaskSubmissions = sequelize.define(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
- 
   },
   {
     tableName: "TaskSubmissions",
     timestamps: false,
+    hooks: {
+      beforeCreate: (taskSubmission, options) => {
+        // Ajustar la fecha a la zona horaria correcta
+        const currentDate = new Date();
+        taskSubmission.date = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000);
+      },
+    },
   }
 );
 

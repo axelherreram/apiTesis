@@ -39,6 +39,13 @@ const CommentVersion = sequelize.define(
   {
     tableName: "commentVersion",
     timestamps: false,
+    hooks: {
+      beforeCreate: (commentVersion, options) => {
+        // Ajustar la fecha a la zona horaria correcta
+        const currentDate = new Date();
+        commentVersion.datecomment = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000);
+      },
+    },
   }
 );
 

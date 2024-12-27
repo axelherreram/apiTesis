@@ -1,7 +1,6 @@
 const { DataTypes } = require("sequelize");
 const User = require("./user");
 const { sequelize } = require('../config/database'); 
-const Course = require("./course");
 const Task = require("./task");
 
 const TimelineEventos = sequelize.define("TimelineEventos", {
@@ -34,15 +33,20 @@ const TimelineEventos = sequelize.define("TimelineEventos", {
       key: "task_id",
     },
   },
-  date:{
+  date: {
     type: DataTypes.DATE,
     allowNull: false,
   },
-
-},{
-    timestamps: false,
-    tableName: 'TimelineEventos'
-}
-);
+}, {
+  timestamps: false,
+  tableName: 'TimelineEventos',
+  hooks: {
+    beforeCreate: (timelineEvento, options) => {
+      // Ajustar la fecha a la zona horaria correcta
+      const currentDate = new Date();
+      timelineEvento.date = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000);
+    },
+  },
+});
 
 module.exports = TimelineEventos;
