@@ -25,18 +25,44 @@ const addCommentForTask = async (req, res) => {
       return res.status(404).json({ message: "Tarea no encontrada" });
     }
 
-    // Verificar si la fecha actual está dentro del rango de taskStart y endTask
-    const currentDate = new Date();
+    // Fecha actual ajustada a día, mes y año (sin hora)
+    const currentDateTime = new Date();
+    currentDateTime.setHours(0, 0, 0, 0);
 
-    if (currentDate < new Date(task.taskStart) || currentDate > new Date(task.endTask)) {
-      return res.status(400).json({ message: "El comentario solo se puede agregar entre las fechas de inicio y fin de la tarea" });
-    }
+    // Convertir taskStart y endTask en objetos Date ajustados a día, mes y año
+    const taskStartDate = new Date(task.taskStart);
+    taskStartDate.setHours(0, 0, 0, 0);
+    const taskEndDate = new Date(task.endTask);
+    taskEndDate.setHours(0, 0, 0, 0);
 
-    // Verificar si la hora actual está dentro del rango de startTime y endTime
-    const currentTime = currentDate.toTimeString().split(' ')[0]; // Obtener solo la hora y minutos
+    // Convertir las horas de inicio y fin en objetos Date
+    const [startHour, startMinute, startSecond] = task.startTime.split(":").map(Number);
+    const [endHour, endMinute, endSecond] = task.endTime.split(":").map(Number);
 
-    if (currentTime < task.startTime || currentTime > task.endTime) {
-      return res.status(400).json({ message: "El comentario solo se puede agregar durante el horario de la tarea" });
+    const startTime = new Date();
+    startTime.setHours(startHour, startMinute, startSecond);
+
+    const endTime = new Date();
+    endTime.setHours(endHour, endMinute, endSecond);
+
+    // Validar la fecha y hora actual contra las fechas y horas de inicio y fin
+    if (
+      currentDateTime < taskStartDate ||
+      currentDateTime > taskEndDate ||
+      new Date() < startTime ||
+      new Date() > endTime
+    ) {
+      return res.status(400).json({
+        message: "El comentario solo se puede agregar entre las fechas y horas de inicio y fin de la tarea",
+        debug: {
+          currentDateTime: currentDateTime.toISOString(),
+          taskStartDateTime: taskStartDate.toISOString(),
+          taskEndDateTime: taskEndDate.toISOString(),
+          currentTime: new Date().toTimeString(),
+          startTime: startTime.toTimeString(),
+          endTime: endTime.toTimeString(),
+        },
+      });
     }
 
     // Verificar si ya existe un comentario con el mismo user_id y task_id
@@ -66,7 +92,6 @@ const addCommentForTask = async (req, res) => {
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
-
 
 // Controlador para obtener todos los comentarios de una tarea y un user_id específico
 const getAllCommentsForTaskAndUser = async (req, res) => {

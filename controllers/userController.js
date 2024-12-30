@@ -336,8 +336,8 @@ const removeAdmin = async (req, res) => {
       });
     }
 
-    // Eliminar el usuario como administrador de la sede
-    await user.update({ sede_id: null }); // Eliminar la sede del usuario
+    // Eliminar el usuario como administrador de la sede y le asigna el rol de catedratico
+    await user.update({ rol_id: 2 }); 
 
     res.status(200).json({
       message: "Administrador eliminado de la sede exitosamente.",
@@ -446,7 +446,7 @@ const assignAdminToSede = async (req, res) => {
     }
 
     // Asignar el usuario como administrador a la sede
-    await user.update({ sede_id });
+    await user.update({ rol_id: 3 });
 
     res.status(200).json({
       message: "Administrador asignado a la sede con éxito.",
