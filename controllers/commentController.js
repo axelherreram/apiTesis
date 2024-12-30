@@ -81,7 +81,6 @@ const addCommentForTask = async (req, res) => {
     // Crear una nueva versión del comentario
     await CommentVersion.create({
       comment: comment,
-      datecomment: new Date(),
       role: role,
       comment_id: existingComment.comment_id,
     });
