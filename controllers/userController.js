@@ -9,37 +9,6 @@ const bcrypt = require("bcrypt");
 const Sede = require("../models/sede");
 const { sendEmailPassword } = require("./emailController");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
-// Datos de la dashboard principal
-const dataGraphics = async (req, res) => {
-  const { sede_id } = req.params;
-  const { sede_id: tokenSedeId } = req;
-
-  try {
-    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
-    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
-      return res
-        .status(403)
-        .json({ message: "No tienes acceso a los grupos de esta sede" });
-    }
-
-    const totalStudents = await User.count({ where: { rol_id: 1 } });
-    const totalStudentsSede = await User.count({
-      where: { rol_id: 1, sede_id },
-    });
-    // const totalStudentsClosedGlobal = await User.count({where: { rol_id: 1, closedPlan: 1 }});
-    // const totalStudentsClosed = await User.count({where: { rol_id: 1, sede_id, closedPlan: 1 }});
-
-    res.status(200).json({
-      totalStudents,
-      totalStudentsSede,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error al obtener los datos gráficos",
-      error: error.message,
-    });
-  }
-};
 
 // Obtener usuarios asignados a un curso
 const getUsersByCourse = async (req, res) => {
@@ -463,7 +432,6 @@ const assignAdminToSede = async (req, res) => {
 module.exports = {
   getUsersByCourse,
   listuserbytoken,
-  dataGraphics,
   createAdmin,
   removeAdmin,
   listAllAdmins,

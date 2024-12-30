@@ -102,52 +102,6 @@ router.get(
 
 /**
  * @swagger
- * /api/sedes/{sede_id}/estudiantes/data-graphics:
- *   get:
- *     summary: Obtener estadísticas de estudiantes para una sede específica
- *     tags: [Estudiantes]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: sede_id
- *         schema:
- *           type: integer
- *         required: true
- *         description: ID de la sede para obtener las estadísticas
- *     responses:
- *       200:
- *         description: Estadísticas obtenidas exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 totalStudents:
- *                   type: integer
- *                 totalStudentsSede:
- *                   type: integer
- *                 totalStudentsClosedGlobal:
- *                   type: integer
- *                 totalStudentsClosed:
- *                   type: integer
- *       401:
- *         description: No autorizado
- *       404:
- *         description: Sede no encontrada
- *       500:
- *         description: Error en el servidor
- */
-router.get(
-  "/sedes/:sede_id/estudiantes/data-graphics",
-  authMiddleware,
-  admin,
-  extractSedeIdMiddleware,
-  userController.dataGraphics
-);
-
-/**
- * @swagger
  * /api/admin/create:
  *   post:
  *     summary: Crear un nuevo administrador
