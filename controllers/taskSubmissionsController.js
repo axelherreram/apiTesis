@@ -21,51 +21,6 @@ const createTaskSubmission = async (req, res) => {
       return res.status(404).json({ message: "La tarea no existe" });
     }
 
-    // Fecha actual ajustada a día, mes y año (sin hora)
-    const currentDateTime = new Date();
-    currentDateTime.setHours(0, 0, 0, 0);
-
-    // Convertir taskStart y endTask en objetos Date ajustados a día, mes y año
-    const taskStartDate = new Date(taskExist.taskStart);
-    taskStartDate.setHours(0, 0, 0, 0);
-    const taskEndDate = new Date(taskExist.endTask);
-    taskEndDate.setHours(0, 0, 0, 0);
-
-    // Convertir las horas de inicio y fin en objetos Date
-    const [startHour, startMinute, startSecond] = taskExist.startTime
-      .split(":")
-      .map(Number);
-    const [endHour, endMinute, endSecond] = taskExist.endTime
-      .split(":")
-      .map(Number);
-
-    const startTime = new Date();
-    startTime.setHours(startHour, startMinute, startSecond);
-
-    const endTime = new Date();
-    endTime.setHours(endHour, endMinute, endSecond);
-
-    // Validar la fecha y hora actual contra las fechas y horas de inicio y fin
-    if (
-      currentDateTime < taskStartDate ||
-      currentDateTime > taskEndDate ||
-      new Date() < startTime ||
-      new Date() > endTime
-    ) {
-      return res.status(400).json({
-        message:
-          "La tarea no está dentro del rango de fechas permitido para la entrega",
-        debug: {
-          currentDateTime: currentDateTime.toISOString(),
-          taskStartDateTime: taskStartDate.toISOString(),
-          taskEndDateTime: taskEndDate.toISOString(),
-          currentTime: new Date().toTimeString(),
-          startTime: startTime.toTimeString(),
-          endTime: endTime.toTimeString(),
-        },
-      });
-    }
-
     // Verificar si ya existe una entrega
     const taskSubmissionExist = await TaskSubmission.findOne({
       where: { user_id, task_id },
@@ -84,7 +39,6 @@ const createTaskSubmission = async (req, res) => {
         taskExist.task_id
       );
 
-
       return res.status(200).json({
         message: "Tarea de envío actualizada exitosamente",
       });
@@ -97,8 +51,6 @@ const createTaskSubmission = async (req, res) => {
       submission_complete: true,
       date: new Date(),
     });
-
-  
 
     res.status(201).json({
       message: "Tarea de envío creada exitosamente",

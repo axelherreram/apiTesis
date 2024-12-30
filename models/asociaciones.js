@@ -117,11 +117,11 @@ module.exports = function associateModels() {
   // Relación entre Comments y CommentVersion
   Comments.hasMany(CommentVersion, { foreignKey: "comment_id" });
   CommentVersion.belongsTo(Comments, { foreignKey: "comment_id" });
-
+/* 
   // Relación entre CommentVersion y User
   CommentVersion.belongsTo(User, { foreignKey: "user_id" });
   User.hasMany(CommentVersion, { foreignKey: "user_id" });
-
+ */
   // Relación entre User y ThesisSubmission
   User.hasMany(ThesisSubmission, {
     foreignKey: "user_id",
