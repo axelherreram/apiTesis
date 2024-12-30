@@ -53,7 +53,7 @@ const addCommentForTask = async (req, res) => {
       new Date() > endTime
     ) {
       return res.status(400).json({
-        message: "El comentario solo se puede agregar entre las fechas y horas de inicio y fin de la tarea",
+        message: "El comentario solo se puede agregar, fuera de horario de la tarea.",
         debug: {
           currentDateTime: currentDateTime.toISOString(),
           taskStartDateTime: taskStartDate.toISOString(),
@@ -122,13 +122,12 @@ const getAllCommentsForTaskAndUser = async (req, res) => {
         commentVersion_id: version.commentVersion_id,
         comment: version.comment,
         datecomment: version.datecomment,
-        role: version.role,
+        role: version.role === "student" ? "Estudiante" : "Catedratico",
       })),
     }));
 
     res.status(200).json(formattedComments);
   } catch (error) {
-    console.error("Error al obtener comentarios:", error.message);
     res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };

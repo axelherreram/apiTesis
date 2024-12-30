@@ -54,7 +54,7 @@ const createTaskSubmission = async (req, res) => {
     ) {
       return res.status(400).json({
         message:
-          "La tarea no está dentro del rango de fechas y horas permitido para la entrega",
+          "La tarea no está dentro del rango de fechas permitido para la entrega",
         debug: {
           currentDateTime: currentDateTime.toISOString(),
           taskStartDateTime: taskStartDate.toISOString(),
