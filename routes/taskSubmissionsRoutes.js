@@ -11,7 +11,7 @@ const verifyRole = require("../middlewares/roleMiddleware");
 
 const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
 const student = verifyRole([1]); // Permitir solo a usuarios con rol de estudiante
-
+const adminOrStudent = verifyRole([1, 3]); // Permitir solo a usuarios con rol de estudiante o administrador
 // Ruta para obtener detalles del curso
 /**
  * @swagger
@@ -177,7 +177,7 @@ router.get(
 router.get(
   "/submissions/student/:user_id/:year/:sede_id",
   authMiddleware,
-  student,
+  adminOrStudent,
   getAllTasksBySedeYearAndUser
 );
 
