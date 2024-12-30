@@ -30,10 +30,8 @@ const addCommentForTask = async (req, res) => {
     currentDateTime.setHours(0, 0, 0, 0);
 
     // Convertir taskStart y endTask en objetos Date ajustados a día, mes y año
-    const taskStartDate = new Date(task.taskStart);
-    taskStartDate.setHours(0, 0, 0, 0);
-    const taskEndDate = new Date(task.endTask);
-    taskEndDate.setHours(0, 0, 0, 0);
+    const taskStartDate = new Date(Date.UTC(task.taskStart.getFullYear(), task.taskStart.getMonth(), task.taskStart.getDate()));
+    const taskEndDate = new Date(Date.UTC(task.endTask.getFullYear(), task.endTask.getMonth(), task.endTask.getDate()));
 
     // Convertir las horas de inicio y fin en objetos Date
     const [startHour, startMinute, startSecond] = task.startTime.split(":").map(Number);
