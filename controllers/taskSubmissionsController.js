@@ -6,6 +6,7 @@ const TaskSubmissions = require("../models/taskSubmissions");
 const CourseAssignment = require("../models/courseAssignment");
 const Year = require("../models/year");
 const { addTimeline } = require("../sql/timeline");
+const Sede = require("../models/sede");
 
 const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
@@ -173,36 +174,49 @@ const getStudentCourseDetails = async (req, res) => {
       });
     }
 
+    // Obtener la sede del estudiante
+    const SedeInfo = await Sede.findOne({
+      where: { sede_id },
+    });
+
     // Paso 5: Obtener todas las tareas del curso
     const tasks = await Task.findAll({
       where: { asigCourse_id },
       attributes: ["task_id"],
     });
 
-    // Paso 6: Obtener las entregas de tareas del estudiante filtradas por curso
+       // Paso 6: Obtener las entregas de tareas del estudiante filtradas por curso
     const submissions = await TaskSubmissions.findAll({
       where: {
         user_id,
-        task_id: tasks.map((task) => task.task_id), // Filtrar por las tareas del curso
+        task_id: tasks.map((task) => task.task_id), 
       },
-      attributes: ["task_id", "submission_complete", "date"],
+      attributes: [ "submission_complete", "date"],
+      include: [
+        {
+          model: Task,
+          attributes: ["title"], 
+        },
+      ],
     });
+    
+    // Formatear las entregas para incluir el título de la tarea
+    const formattedSubmissions = submissions.map((submission) => ({
+      title: submission.Task.title, 
+      submission_complete: submission.submission_complete,
+      date: submission.date,
+    }));
 
     // Paso 7: Enviar la respuesta con los detalles del curso y las entregas del estudiante
     res.status(200).json({
       student: {
-        user_id: student.user_id,
         name: student.name,
         email: student.email,
         carnet: student.carnet,
+        sede: SedeInfo.nameSede,
+
       },
-      course: {
-        course_id: courseSedeAssignment.course_id,
-        sede_id: courseSedeAssignment.sede_id,
-        year_id: courseSedeAssignment.year_id,
-        courseActive: courseSedeAssignment.courseActive,
-      },
-      submissions,
+      formattedSubmissions,
     });
   } catch (error) {
     // Paso 8: Manejo de errores del servidor
