@@ -9,6 +9,7 @@ const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
 const Course = require("../models/course");
 
+// Crear una tarea de envío
 const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
 
@@ -66,6 +67,7 @@ const createTaskSubmission = async (req, res) => {
   }
 };
 
+// Obtener informacion por curso
 const getCourseDetails = async (req, res) => {
   const { course_id, sede_id, year } = req.params;
 
@@ -74,11 +76,23 @@ const getCourseDetails = async (req, res) => {
       where: { year },
     });
 
+    if (!yearRecord) {
+      return res.status(404).json({
+        message: "No se encontró el año especificado",
+      });
+    }
+
     const year_id = yearRecord.year_id;
 
     // Paso 1: Validar la asignación del curso y sede
     const courseSedeAssignment = await CourseSedeAssignment.findOne({
       where: { course_id, sede_id, year_id },
+      include: [
+        {
+          model: Course,
+          attributes: ["courseName"], // Incluir el nombre del curso
+        },
+      ],
     });
 
     if (!courseSedeAssignment) {
@@ -88,6 +102,12 @@ const getCourseDetails = async (req, res) => {
     }
 
     const asigCourse_id = courseSedeAssignment.asigCourse_id;
+    const courseName = courseSedeAssignment.Course?.courseName;
+
+    const infoSede = await Sede.findOne({
+      where: { sede_id },
+    });
+    const nameSede = infoSede.nameSede;
 
     // Paso 2: Obtener todos los estudiantes asignados al curso
     const students = await User.findAll({
@@ -113,17 +133,35 @@ const getCourseDetails = async (req, res) => {
         const submissions = await TaskSubmissions.findAll({
           where: { user_id: student.user_id },
           attributes: ["task_id", "submission_complete", "date"],
+          include: [
+            {
+              model: Task,
+              attributes: ["title"], // Incluir el título de la tarea
+            },
+          ],
         });
 
+        const formattedSubmissions = submissions.map((submission) => ({
+          title: submission.Task?.title, // Agregar el título de la tarea
+          submission_complete: submission.submission_complete,
+          date: submission.date,
+        }));
+
         return {
-          student,
-          submissions,
+          student: {
+            name: student.name,
+            email: student.email,
+            carnet: student.carnet,
+          },
+          submissions: formattedSubmissions,
         };
       })
     );
 
     // Paso 5: Enviar la respuesta con los detalles del curso
     res.status(200).json({
+      course:courseName,
+      sede: nameSede,
       students: studentTasks,
     });
   } catch (error) {
@@ -135,6 +173,7 @@ const getCourseDetails = async (req, res) => {
   }
 };
 
+// Obtener detalles del curso del estudiante
 const getStudentCourseDetails = async (req, res) => {
   const { user_id, course_id, sede_id, year } = req.params;
 
@@ -239,6 +278,7 @@ const getStudentCourseDetails = async (req, res) => {
   }
 };
 
+// Obtener todas las tareas de una sede, año y usuario
 const getAllTasksBySedeYearAndUser = async (req, res) => {
   const { user_id, year, sede_id } = req.params;
 
