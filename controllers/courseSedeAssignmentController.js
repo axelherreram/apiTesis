@@ -137,7 +137,7 @@ const getCoursesBySede = async (req, res) => {
     }
     
     // Verificación de sede solo si es administrador,  si es secretario se salta la verificación
-    if (user.sede_id != null) {
+    if (user.sede_id != null || user.rol_id === 4) {
       // Verificar que el `sede_id` del token coincida con el `sede_id` de la solicitud
       if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
         return res
