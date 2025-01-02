@@ -65,7 +65,7 @@ router.post(
 
 /**
  * @swagger
- * /api/cursosPorSede/{sede_id}:
+ * /api/cursosPorSede/{sede_id}/{year}:
  *   get:
  *     summary: Obtener los cursos asignados a una sede
  *     tags: [Asignación de curso a sede]
@@ -78,6 +78,12 @@ router.post(
  *         schema:
  *           type: integer
  *         description: ID de la sede para la que se quieren obtener los cursos
+ *       - in: path
+ *         name: year
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Año para el que se quieren obtener los cursos
  *     responses:
  *       200:
  *         description: Cursos asignados a la sede recuperados exitosamente
@@ -93,8 +99,8 @@ router.post(
  *         description: Error del servidor al recuperar los cursos
  */
 router.get(
-  "/cursosPorSede/:sede_id",
-  authMiddleware,
+  "/cursosPorSede/:sede_id/:year",
+  authMiddleware, 
   obtenerUserIdDeToken,
   adminOrSuperadmin,
   extractSedeIdMiddleware,

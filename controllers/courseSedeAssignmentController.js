@@ -125,7 +125,7 @@ const createSedeAssignment = async (req, res) => {
 };
 
 const getCoursesBySede = async (req, res) => {
-  const { sede_id } = req.params;
+  const { sede_id, year } = req.params;
   const { sede_id: tokenSedeId, user_id } = req; // Sede extraída del token
 
   try {
@@ -146,18 +146,15 @@ const getCoursesBySede = async (req, res) => {
       }
     }
 
-    // Obtener el año actual
-    const currentYear = new Date().getFullYear();
-
     // Buscar el año actual en la tabla Year
     const yearRecord = await Year.findOne({
-      where: { year: currentYear },
+      where: { year: year },
     });
 
     // Si no se encuentra el año, devolver un error
     if (!yearRecord) {
       return res.status(404).json({
-        message: `No se encontró un registro para el año ${currentYear}.`,
+        message: `No se encontró un registro para el año`,
       });
     }
 
@@ -185,7 +182,7 @@ const getCoursesBySede = async (req, res) => {
     // Si no se encontraron asignaciones, devolver una lista vacía
     if (assignments.length === 0) {
       return res.status(200).json({
-        message: `No se encontraron cursos asignados a la sede ${sede.nameSede} para el año ${currentYear}.`,
+        message: `No se encontraron cursos asignados a la sede ${sede.nameSede} para el año ${year}.`,
         data: [],
       });
     }
@@ -195,7 +192,6 @@ const getCoursesBySede = async (req, res) => {
 
     // Responder con los cursos asignados
     res.status(200).json({
-      message: `Cursos asignados a la sede ${sede.nameSede} para el año ${currentYear} recuperados exitosamente.`,
       data: courses,
     });
   } catch (error) {
