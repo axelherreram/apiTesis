@@ -7,6 +7,7 @@ const CourseAssignment = require("../models/courseAssignment");
 const Year = require("../models/year");
 const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
+const Course = require("../models/course");
 
 const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
@@ -156,12 +157,23 @@ const getStudentCourseDetails = async (req, res) => {
     // Paso 3: Validar la asignación del curso y sede
     const courseSedeAssignment = await CourseSedeAssignment.findOne({
       where: { course_id, sede_id, year_id },
+      include: [
+        {
+          model: Course,
+          attributes: ["courseName"],
+        },
+      ],
     });
+
     if (!courseSedeAssignment) {
       return res.status(404).json({
         message: "No se encontró una asignación válida de curso y sede",
       });
     }
+
+    // Obtener el nombre del curso
+    const courseName = courseSedeAssignment.Course.courseName;
+
     const asigCourse_id = courseSedeAssignment.asigCourse_id;
 
     // Paso 4: Verificar si el estudiante está asignado al curso
@@ -185,24 +197,24 @@ const getStudentCourseDetails = async (req, res) => {
       attributes: ["task_id"],
     });
 
-       // Paso 6: Obtener las entregas de tareas del estudiante filtradas por curso
+    // Paso 6: Obtener las entregas de tareas del estudiante filtradas por curso
     const submissions = await TaskSubmissions.findAll({
       where: {
         user_id,
-        task_id: tasks.map((task) => task.task_id), 
+        task_id: tasks.map((task) => task.task_id),
       },
-      attributes: [ "submission_complete", "date"],
+      attributes: ["submission_complete", "date"],
       include: [
         {
           model: Task,
-          attributes: ["title"], 
+          attributes: ["title"],
         },
       ],
     });
-    
+
     // Formatear las entregas para incluir el título de la tarea
     const formattedSubmissions = submissions.map((submission) => ({
-      title: submission.Task.title, 
+      title: submission.Task.title,
       submission_complete: submission.submission_complete,
       date: submission.date,
     }));
@@ -214,7 +226,7 @@ const getStudentCourseDetails = async (req, res) => {
         email: student.email,
         carnet: student.carnet,
         sede: SedeInfo.nameSede,
-
+        course: courseName,
       },
       formattedSubmissions,
     });
