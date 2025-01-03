@@ -28,25 +28,24 @@ const bulkUploadUsers = async (req, res) => {
       return res.status(403).json({ message: "No tienes acceso a esta sede" });
     }
 
-    // Paso 3: Validar que course_id esté presente
     if (!course_id) {
       return res
         .status(400)
         .json({ message: "El campo course_id es obligatorio" });
     }
 
-    // Paso 4: Leer el archivo Excel
     const filename = path.basename(req.file.originalname);
-    const filePath = path.join(__dirname, "../public/uploads/excels", filename);
+    filePath = path.join(__dirname, "../public/uploads/excels", filename);
+
     const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const usersData = xlsx.utils.sheet_to_json(sheet);
 
-    // Paso 5: Validar que el archivo Excel no esté vacío
     if (!usersData.length) {
-      return res.status(400).json({ message: "El archivo está vacío" });
+      throw new Error("El archivo está vacío");
     }
+
     // Obtener el nombre del curso
     const course = await Course.findOne({
       where: { course_id },
@@ -158,7 +157,7 @@ const bulkUploadUsers = async (req, res) => {
       });
 
       if (existingAssignmentForCourse) {
-        alreadyAssignedCount++; 
+        alreadyAssignedCount++;
         continue;
       }
 
@@ -179,6 +178,12 @@ const bulkUploadUsers = async (req, res) => {
       }
     }
 
+    fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(`Error al eliminar el archivo Excel: ${err.message}`);
+      }
+    });
+
     if (alreadyAssignedCount === usersData.length) {
       return res.status(200).json({
         message:
@@ -186,20 +191,13 @@ const bulkUploadUsers = async (req, res) => {
       });
     }
 
-    fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error(`Error al eliminar el archivo Excel: ${err.message}`);
-      }
-    });
-
     res
       .status(201)
       .json({ message: `Estudiantes asignados exitosamente a ${courseName}` });
   } catch (error) {
     console.error("Error al cargar usuarios:", error);
 
-    // Paso 18: Eliminar el archivo Excel en caso de error
-    if (req.file && filePath) {
+    if (filePath && fs.existsSync(filePath)) {
       fs.unlink(filePath, (err) => {
         if (err) {
           console.error(`Error al eliminar el archivo Excel: ${err.message}`);
