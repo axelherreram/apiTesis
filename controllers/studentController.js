@@ -15,6 +15,7 @@ const bulkUploadUsers = async (req, res) => {
 
   // Definir filePath fuera del bloque try
   let filePath;
+  let alreadyAssignedCount = 0;
 
   try {
     // Paso 1: Validar que se haya subido un archivo
@@ -156,12 +157,9 @@ const bulkUploadUsers = async (req, res) => {
         ],
       });
 
-      // Si ya está asignado al curso actual, omitir asignación
       if (existingAssignmentForCourse) {
-        console.log(
-          `El usuario con email ${email} ya está asignado al curso con course_id ${course_id}.`
-        );
-        continue; // Omite la asignación para este usuario
+        alreadyAssignedCount++; 
+        continue;
       }
 
       // Paso 16: Crear la asignación para el estudiante con el asigCourse_id
@@ -181,7 +179,13 @@ const bulkUploadUsers = async (req, res) => {
       }
     }
 
-    // Paso 17: Eliminar el archivo Excel después de completar la carga
+    if (alreadyAssignedCount === usersData.length) {
+      return res.status(200).json({
+        message:
+          "Todos los estudiantes del archivo ya estaban asignados al curso.",
+      });
+    }
+
     fs.unlink(filePath, (err) => {
       if (err) {
         console.error(`Error al eliminar el archivo Excel: ${err.message}`);
