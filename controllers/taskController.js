@@ -275,7 +275,7 @@ const listTask = async (req, res) => {
       include: [
         {
           model: CourseSedeAssignment,
-          attributes: ["sede_id"], // Solo traer la información necesaria
+          attributes: ["sede_id", "course_id"], // Incluir sede_id y course_id
         },
       ],
     });
@@ -293,7 +293,10 @@ const listTask = async (req, res) => {
 
     res.status(200).json({
       message: "Tarea encontrada exitosamente.",
-      data: task,
+      data: {
+        ...task.toJSON(),
+        course_id: courseSedeAssignment.course_id, // Incluir course_id en la respuesta
+      },
     });
   } catch (error) {
     console.error("Error al obtener la tarea:", error);

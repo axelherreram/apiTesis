@@ -115,7 +115,7 @@ const bulkUploadUsers = async (req, res) => {
           nombre: nombre,
           password: randomPassword,
         };
-/* 
+        /* 
         await sendEmailPassword(
           "Registro exitoso",
           `Hola ${nombre}, tu contraseña temporal es: ${randomPassword}`,
@@ -124,22 +124,35 @@ const bulkUploadUsers = async (req, res) => {
         ); */
       }
 
-      // Paso 15: Verificar si ya existe la asignación del estudiante
-      const existingAssignment = await CourseAssignment.findOne({
+      // Paso 15: Verificar si el estudiante ya está asignado a los cursos 1 o 2 en cualquier año
+      const existingCourseAssignment = await CourseAssignment.findOne({
         where: {
           student_id: existingUser.user_id,
-          asigCourse_id, // Usar el ID de la asignación de curso
+          asigCourse_id: sedeCourseAssignment.asigCourse_id, // Usar el ID de la asignación de curso
+          year_id: { [Op.ne]: year_id }, // En cualquier año distinto al actual
         },
+        include: [
+          {
+            model: CourseSedeAssignment,
+            where: {
+              course_id: [1, 2], // Validar solo los cursos 1 y 2
+            },
+          },
+        ],
       });
 
-      if (!existingAssignment) {
-        // Paso 16: Crear la asignación para el estudiante con el asigCourse_id
-        await CourseAssignment.create({
-          student_id: existingUser.user_id,
-          asigCourse_id, // Asociar con la asignación de curso, sede y año
-          year_id,
+      if (existingCourseAssignment) {
+        return res.status(400).json({
+          message: `El estudiante con email ${email} ya está asignado a uno de los cursos (1 o 2) en otro año.`,
         });
       }
+
+      // Paso 16: Crear la asignación para el estudiante con el asigCourse_id
+      await CourseAssignment.create({
+        student_id: existingUser.user_id,
+        asigCourse_id, // Asociar con la asignación de curso, sede y año
+        year_id,
+      });
     }
 
     // Paso 17: Eliminar el archivo Excel después de completar la carga
@@ -171,3 +184,4 @@ const bulkUploadUsers = async (req, res) => {
 module.exports = {
   bulkUploadUsers,
 };
+
