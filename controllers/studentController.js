@@ -7,10 +7,14 @@ const fs = require("fs");
 const Year = require("../models/year");
 const { sendEmailPassword } = require("./emailController");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
+const Course = require("../models/course");
 
 const bulkUploadUsers = async (req, res) => {
   const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
   const { sede_id, course_id } = req.body; // Extraer los valores de sede_id y course_id del cuerpo de la solicitud
+
+  // Definir filePath fuera del bloque try
+  let filePath;
 
   try {
     // Paso 1: Validar que se haya subido un archivo
@@ -25,7 +29,9 @@ const bulkUploadUsers = async (req, res) => {
 
     // Paso 3: Validar que course_id esté presente
     if (!course_id) {
-      return res.status(400).json({ message: "El campo course_id es obligatorio" });
+      return res
+        .status(400)
+        .json({ message: "El campo course_id es obligatorio" });
     }
 
     // Paso 4: Leer el archivo Excel
@@ -40,21 +46,34 @@ const bulkUploadUsers = async (req, res) => {
     if (!usersData.length) {
       return res.status(400).json({ message: "El archivo está vacío" });
     }
+    // Obtener el nombre del curso
+    const course = await Course.findOne({
+      where: { course_id },
+      attributes: ["courseName"], // Asegúrate de que este campo sea correcto
+    });
+
+    if (!course) {
+      return res.status(404).json({ message: "Curso no encontrado" });
+    }
+
+    const courseName = course.courseName;
 
     // Paso 6: Definir los campos necesarios y verificar si están presentes en cada fila de datos
     const requiredFields = ["email", "nombre", "carnet"];
     for (const user of usersData) {
-      const missingFields = requiredFields.filter(field => !user[field]);
+      const missingFields = requiredFields.filter((field) => !user[field]);
       if (missingFields.length > 0) {
         return res.status(400).json({
-          message: `El archivo de Excel está incompleto. Faltan los siguientes campos: ${missingFields.join(", ")}`,
+          message: `El archivo de Excel está incompleto. Faltan los siguientes campos: ${missingFields.join(
+            ", "
+          )}`,
         });
       }
     }
 
     // Paso 7: Obtener el año actual
     const currentYear = new Date().getFullYear();
-
+    //
     // Paso 8: Buscar el año actual en la tabla Year, si no existe, crearlo
     const [yearRecord] = await Year.findOrCreate({
       where: { year: currentYear },
@@ -124,35 +143,42 @@ const bulkUploadUsers = async (req, res) => {
         ); */
       }
 
-      // Paso 15: Verificar si el estudiante ya está asignado a los cursos 1 o 2 en cualquier año
-      const existingCourseAssignment = await CourseAssignment.findOne({
+      // Paso 15: Verificar si el usuario ya está asignado al curso actual
+      const existingAssignmentForCourse = await CourseAssignment.findOne({
         where: {
           student_id: existingUser.user_id,
-          asigCourse_id: sedeCourseAssignment.asigCourse_id, // Usar el ID de la asignación de curso
-          year_id: { [Op.ne]: year_id }, // En cualquier año distinto al actual
         },
         include: [
           {
             model: CourseSedeAssignment,
-            where: {
-              course_id: [1, 2], // Validar solo los cursos 1 y 2
-            },
+            where: { course_id }, // Verifica específicamente el curso actual (course_id)
           },
         ],
       });
 
-      if (existingCourseAssignment) {
-        return res.status(400).json({
-          message: `El estudiante con email ${email} ya está asignado a uno de los cursos (1 o 2) en otro año.`,
-        });
+      // Si ya está asignado al curso actual, omitir asignación
+      if (existingAssignmentForCourse) {
+        console.log(
+          `El usuario con email ${email} ya está asignado al curso con course_id ${course_id}.`
+        );
+        continue; // Omite la asignación para este usuario
       }
 
       // Paso 16: Crear la asignación para el estudiante con el asigCourse_id
-      await CourseAssignment.create({
-        student_id: existingUser.user_id,
-        asigCourse_id, // Asociar con la asignación de curso, sede y año
-        year_id,
+      const existingAssignment = await CourseAssignment.findOne({
+        where: {
+          student_id: existingUser.user_id,
+          asigCourse_id, // Usar el ID de la asignación de curso
+        },
       });
+
+      if (!existingAssignment) {
+        await CourseAssignment.create({
+          student_id: existingUser.user_id,
+          asigCourse_id, // Asociar con la asignación de curso, sede y año
+          year_id,
+        });
+      }
     }
 
     // Paso 17: Eliminar el archivo Excel después de completar la carga
@@ -162,7 +188,9 @@ const bulkUploadUsers = async (req, res) => {
       }
     });
 
-    res.status(201).json({ message: "Usuarios cargados exitosamente" });
+    res
+      .status(201)
+      .json({ message: `Estudiantes asignados exitosamente a ${courseName}` });
   } catch (error) {
     console.error("Error al cargar usuarios:", error);
 
@@ -184,4 +212,3 @@ const bulkUploadUsers = async (req, res) => {
 module.exports = {
   bulkUploadUsers,
 };
-
