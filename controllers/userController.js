@@ -100,7 +100,7 @@ const getUsersByCourse = async (req, res) => {
         .json({ message: "No se encontró el usuario solicitante" });
     }
 
-/*     // Registrar actividad
+    /*     // Registrar actividad
     await logActivity(
       user_id,
       requestingUser.sede_id,
@@ -210,10 +210,10 @@ const createAdmin = async (req, res) => {
       },
     });
 
-    if (adminCount >= 3) {
+    if (adminCount >= 2) {
       return res.status(400).json({
         message:
-          "Ya existen 3 administradores en esta sede. No se puede agregar más.",
+          "Ya existen 2 administradores en esta sede. No se puede agregar más.",
       });
     }
 
@@ -252,16 +252,9 @@ const createAdmin = async (req, res) => {
       year_id: yearRecord.year_id,
     });
 
+    console.log("Administrador creado:", admin.email, "password", password);
     res.status(201).json({
       message: "Administrador creado con éxito.",
-      admin: {
-        user_id: admin.user_id,
-        email: admin.email,
-        name: admin.name,
-        carnet: admin.carnet,
-        sede_id: admin.sede_id,
-      },
-      password,
     });
   } catch (error) {
     console.error(error);
@@ -279,7 +272,7 @@ const removeAdmin = async (req, res) => {
   if (!user_id || !sede_id) {
     return res
       .status(400)
-      .json({ message: "Los campos user_id y sede_id son obligatorios." });
+      .json({ message: "Todos los campos son obligatorios." });
   }
 
   try {
@@ -294,7 +287,7 @@ const removeAdmin = async (req, res) => {
     // Verificar si el usuario es el único administrador de la sede
     const adminCount = await User.count({
       where: {
-        rol_id: 3, // Rol de administrador
+        rol_id: 3,
         sede_id,
       },
     });
@@ -306,10 +299,10 @@ const removeAdmin = async (req, res) => {
     }
 
     // Eliminar el usuario como administrador de la sede y le asigna el rol de catedratico
-    await user.update({ rol_id: 2 }); 
+    await user.update({ rol_id: 2 });
 
     res.status(200).json({
-      message: "Administrador eliminado de la sede exitosamente.",
+      message: "Administrador eliminado exitosamente.",
     });
   } catch (error) {
     console.error(error);
@@ -379,7 +372,7 @@ const assignAdminToSede = async (req, res) => {
   if (!user_id || !sede_id) {
     return res
       .status(400)
-      .json({ message: "Los campos user_id y sede_id son obligatorios." });
+      .json({ message: "Todos los campos son obligatorios." });
   }
 
   try {
@@ -407,10 +400,10 @@ const assignAdminToSede = async (req, res) => {
       },
     });
 
-    if (adminCount >= 3) {
+    if (adminCount >= 2) {
       return res.status(400).json({
         message:
-          "Ya existen 3 administradores en esta sede. No se puede asignar más.",
+          "Ya existen 2 administradores en esta sede. No se puede asignar más.",
       });
     }
 

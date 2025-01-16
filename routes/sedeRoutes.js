@@ -1,5 +1,5 @@
 const express = require('express');
-const { listSede, createSede } = require('../controllers/sedeController');
+const { listSede, createSede, editSede } = require('../controllers/sedeController');
 const verifyRole = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
 const obtenerUserIdDeToken = require('../middlewares/obtenerUserIdDeToken');
@@ -58,7 +58,79 @@ const superAdmin = verifyRole([4]);
  *         description: Error interno del servidor al intentar crear la sede.
  */
 
+/**
+ * @swagger
+ * /api/sedes/{sede_id}:
+ *   put:
+ *     summary: Edita el nombre de una sede
+ *     tags: [Sede]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: sede_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la sede a editar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nameSede:
+ *                 type: string
+ *                 example: "Nueva Sede"
+ *                 description: Nuevo nombre de la sede
+ *     responses:
+ *       200:
+ *         description: Sede actualizada satisfactoriamente.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Sede actualizada satisfactoriamente"
+ *       400:
+ *         description: El nombre de la sede es necesario.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "El nombre de la sede es necesario"
+ *       404:
+ *         description: Sede no encontrada.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Sede no encontrada"
+ *       500:
+ *         description: Error al actualizar la sede.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Error al actualizar la sede"
+ *                 error:
+ *                   type: string
+ */
+
 router.get('/sedes', authMiddleware, listSede);
 router.post('/sedes', authMiddleware, obtenerUserIdDeToken, superAdmin, createSede);
+router.put('/sedes/:sede_id', authMiddleware, obtenerUserIdDeToken, superAdmin, editSede);
 
 module.exports = router;

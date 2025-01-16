@@ -42,5 +42,31 @@ const createSede = async (req, res) => {
   }
 };
 
+const editSede = async (req, res) => {
+  try {
+    const { sede_id } = req.params;
+    const { nameSede } = req.body;
 
-module.exports = { listSede, createSede };
+    if (!nameSede) {
+      return res
+        .status(400)
+        .json({ message: "El nombre de la sede es necesario" });
+    }
+
+    // Verificar si la sede existe
+    const sede = await Sede.findByPk(sede_id);
+    if (!sede) {
+      return res.status(404).json({ message: "Sede no encontrada" });
+    }
+
+    // Actualizar el nombre de la sede
+    sede.nameSede = nameSede;
+    await sede.save();
+
+    res.status(200).json({ message: "Sede actualizada satisfactoriamente" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al actualizar la sede", error });
+  }
+};
+
+module.exports = { listSede, createSede, editSede };
