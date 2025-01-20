@@ -9,19 +9,58 @@ const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
 const Course = require("../models/course");
 
+const moment = require("moment-timezone");
+
 // Crear una tarea de envío
 const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
 
   try {
+    // Verificar si el usuario existe
     const userExist = await User.findByPk(user_id);
     if (!userExist) {
       return res.status(404).json({ message: "El usuario no existe" });
     }
 
+    // Verificar si la tarea existe
     const taskExist = await Task.findByPk(task_id);
     if (!taskExist) {
       return res.status(404).json({ message: "La tarea no existe" });
+    }
+
+    // Configurar zona horaria
+    const timeZone = "America/Guatemala";
+    const currentDate = moment.tz(timeZone); // Fecha y hora actual ajustada
+    const currentTime = moment(currentDate.format("HH:mm:ss"), "HH:mm:ss");
+
+    // Convertir fechas y horas de la tarea a la zona horaria correcta
+    const taskStart = moment.tz(taskExist.taskStart, timeZone);
+    const endTask = moment.tz(taskExist.endTask, timeZone);
+    const startTime = moment(taskExist.startTime, "HH:mm:ss");
+    const endTime = moment(taskExist.endTime, "HH:mm:ss");
+
+    // Validar rango de fechas y horas
+    const isDateValid = currentDate.isBetween(taskStart, endTask, "day", "[]");
+    const isTimeValid = currentTime.isBetween(
+      startTime,
+      endTime,
+      "second",
+      "[]"
+    );
+
+    if (!isDateValid || !isTimeValid) {
+      return res.status(400).json({
+        message:
+          "La tarea no puede ser entregada fuera del rango de fecha y hora permitidos",
+        debug: {
+          currentDate: currentDate.format("YYYY-MM-DD HH:mm:ss"),
+          taskStart: taskStart.format("YYYY-MM-DD HH:mm:ss"),
+          endTask: endTask.format("YYYY-MM-DD HH:mm:ss"),
+          currentTime: currentTime.format("HH:mm:ss"),
+          startTime: startTime.format("HH:mm:ss"),
+          endTime: endTime.format("HH:mm:ss"),
+        },
+      });
     }
 
     // Verificar si ya existe una entrega
@@ -160,7 +199,7 @@ const getCourseDetails = async (req, res) => {
 
     // Paso 5: Enviar la respuesta con los detalles del curso
     res.status(200).json({
-      course:courseName,
+      course: courseName,
       sede: nameSede,
       students: studentTasks,
     });
