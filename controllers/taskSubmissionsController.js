@@ -96,6 +96,14 @@ const createTaskSubmission = async (req, res) => {
 
     res.status(201).json({
       message: "Tarea de envío creada exitosamente",
+      debug: {
+        currentDate: currentDate.format("YYYY-MM-DD HH:mm:ss"),
+        taskStart: taskStart.format("YYYY-MM-DD HH:mm:ss"),
+        endTask: endTask.format("YYYY-MM-DD HH:mm:ss"),
+        currentTime: currentTime.format("HH:mm:ss"),
+        startTime: startTime.format("HH:mm:ss"),
+        endTime: endTime.format("HH:mm:ss"),
+      }
     });
   } catch (error) {
     console.error("Error al crear la tarea de envío:", error);
