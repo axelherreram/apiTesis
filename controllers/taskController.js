@@ -13,7 +13,7 @@ const TaskSubmissions = require("../models/taskSubmissions");
 
 require("dotenv").config();
 
-const BASE_URL = process.env.BASE_URL;
+const moment = require("moment-timezone");
 
 const createTask = async (req, res) => {
   const {
@@ -32,7 +32,12 @@ const createTask = async (req, res) => {
 
   try {
     // Paso 1: Validar que la fecha de inicio no sea mayor a la fecha final
-    if (new Date(taskStart) > new Date(endTask)) {
+    const formattedTaskStart = moment
+      .tz(taskStart, "America/Guatemala")
+      .toDate();
+    const formattedEndTask = moment.tz(endTask, "America/Guatemala").toDate();
+
+    if (formattedTaskStart > formattedEndTask) {
       return res.status(400).json({
         message:
           "La fecha de inicio de la tarea no puede ser posterior a la fecha de finalización.",
@@ -47,7 +52,7 @@ const createTask = async (req, res) => {
     }
 
     // Paso 3: Obtener el año actual
-    const currentYear = new Date().getFullYear();
+    const currentYear = moment().tz("America/Guatemala").year();
 
     // Paso 4: Buscar o crear el año actual en la tabla Year
     const [yearRecord] = await Year.findOrCreate({
@@ -107,8 +112,8 @@ const createTask = async (req, res) => {
       typeTask_id,
       title,
       description,
-      taskStart,
-      endTask,
+      taskStart: formattedTaskStart,
+      endTask: formattedEndTask,
       startTime,
       endTime,
       year_id,
@@ -157,7 +162,7 @@ const createTask = async (req, res) => {
           nombre: userEmail.name,
           titulo: title,
           descripcion: description,
-          fecha: new Date(endTask).toLocaleDateString(),
+          fecha: moment.tz(endTask, "America/Guatemala").format("DD/MM/YYYY"),
           autor: user.name,
         };
 
@@ -246,7 +251,7 @@ const listTasks = async (req, res) => {
     }
 
     // Registrar actividad en la bitácora
-/*     await logActivity(
+    /*     await logActivity(
       user_id,
       user.sede_id,
       user.name,
