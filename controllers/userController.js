@@ -228,19 +228,20 @@ const createAdmin = async (req, res) => {
     const [yearRecord] = await Year.findOrCreate({
       where: { year: currentYear },
     });
+    
     // Enviar correo electrónico con la contraseña temporal
     const templateVariables = {
       nombre: name,
       password: password,
     };
 
-    await sendEmailPassword(
+/*     await sendEmailPassword(
       "Registro exitoso",
       `Hola ${name}, tu contraseña temporal es: ${password}`,
       email,
       templateVariables
     );
-
+ */
     // Crear el administrador
     const admin = await User.create({
       email,
