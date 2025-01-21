@@ -10,10 +10,9 @@ const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
 const TypeTask = require("../models/typeTask");
 const TaskSubmissions = require("../models/taskSubmissions");
+const moment = require("moment-timezone");
 
 require("dotenv").config();
-
-const moment = require("moment-timezone");
 
 const createTask = async (req, res) => {
   const {
@@ -397,20 +396,27 @@ const listTasksByCourse = async (req, res) => {
 
 const updateTask = async (req, res) => {
   const { task_id } = req.params;
-  const { title, description, taskStart, endTask, startTime, endTime } =
-    req.body;
+  const { title, description, taskStart, endTask, startTime, endTime } = req.body;
   const user_id = req.user_id;
   const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
+
   try {
     // Validar que la tarea exista
     const task = await Task.findByPk(task_id);
     if (!task) {
       return res.status(404).json({ message: "Tarea no encontrada" });
     }
+
     // Validar la asignación de curso y sede
     const courseSedeAssignment = await CourseSedeAssignment.findOne({
       where: { course_id: task.asigCourse_id },
     });
+
+    if (!courseSedeAssignment) {
+      return res.status(404).json({
+        message: "No se encontró una asignación válida para la tarea.",
+      });
+    }
 
     // Validar que el sede_id de la tarea coincida con el del token
     if (
@@ -418,6 +424,7 @@ const updateTask = async (req, res) => {
     ) {
       return res.status(403).json({ message: "No tienes acceso a esta tarea" });
     }
+
     // Validar si el curso está inactivo
     if (!courseSedeAssignment.courseActive) {
       return res.status(400).json({
@@ -426,11 +433,30 @@ const updateTask = async (req, res) => {
       });
     }
 
+    // Validar que las fechas sean consistentes si se actualizan
+    let formattedTaskStart = task.taskStart;
+    let formattedEndTask = task.endTask;
+
+    if (taskStart) {
+      formattedTaskStart = moment.tz(taskStart, "America/Guatemala").toDate();
+    }
+
+    if (endTask) {
+      formattedEndTask = moment.tz(endTask, "America/Guatemala").toDate();
+    }
+
+    if (formattedTaskStart > formattedEndTask) {
+      return res.status(400).json({
+        message:
+          "La fecha de inicio de la tarea no puede ser posterior a la fecha de finalización.",
+      });
+    }
+
     // Actualizar la tarea con los nuevos campos
     task.title = title ?? task.title;
     task.description = description ?? task.description;
-    task.taskStart = taskStart ?? task.taskStart;
-    task.endTask = endTask ?? task.endTask;
+    task.taskStart = formattedTaskStart;
+    task.endTask = formattedEndTask;
     task.startTime = startTime ?? task.startTime;
     task.endTime = endTime ?? task.endTime;
 
@@ -440,7 +466,7 @@ const updateTask = async (req, res) => {
       user_id,
       user.sede_id,
       user.name,
-      `Actualizó tarea con titulo: ${task.title}`,
+      `Actualizó tarea con título: ${task.title}`,
       "Se actualizó tarea"
     );
 
@@ -455,6 +481,7 @@ const updateTask = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   createTask,
