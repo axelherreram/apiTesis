@@ -17,6 +17,11 @@ const Comments = sequelize.define(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    comment_active: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    }
   },
   {
     tableName: "comments",

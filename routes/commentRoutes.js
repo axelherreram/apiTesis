@@ -1,10 +1,14 @@
 const express = require("express");
-const { addCommentForTask, getAllCommentsForTaskAndUser } = require("../controllers/commentController");
+const {
+  addCommentForTask,
+  getAllCommentsForTaskAndUser,
+  desactivateComment,
+} = require("../controllers/commentController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 
-const adminOrStudent = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
-
+const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
+const adminOrStuden = verifyRole([1, 3]); // Permitir solo a usuarios con rol de administrador o estudiante
 const router = express.Router();
 
 /**
@@ -84,7 +88,12 @@ const router = express.Router();
  *                 error:
  *                   type: string
  */
-router.post("/comments/:taskId", authMiddleware, addCommentForTask);
+router.post(
+  "/comments/:taskId",
+  authMiddleware,
+  adminOrStuden,
+  addCommentForTask
+);
 
 /**
  * @swagger
@@ -166,6 +175,43 @@ router.post("/comments/:taskId", authMiddleware, addCommentForTask);
  *                 error:
  *                   type: string
  */
-router.get("/comments/:taskId/user/:userId", authMiddleware, getAllCommentsForTaskAndUser);
+router.get(
+  "/comments/:taskId/user/:userId",
+  authMiddleware,
+  adminOrStuden,
+  getAllCommentsForTaskAndUser
+);
+
+/**
+ * @swagger
+ * /api/comments/{commentId}/deactivate:
+ *   patch:
+ *     tags:
+ *       - Comentarios
+ *     summary: Desactivar un comentario.
+ *     description: Cambia el estado de un comentario a inactivo.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: commentId
+ *         in: path
+ *         required: true
+ *         description: ID del comentario a desactivar.
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       "200":
+ *         description: Comentario desactivado exitosamente.
+ *       "404":
+ *         description: Comentario no encontrado.
+ *       "500":
+ *         description: Error interno del servidor.
+ */
+router.patch(
+  "/comments/:commentId/deactivate",
+  authMiddleware,
+  admin,
+  desactivateComment
+);
 
 module.exports = router;
