@@ -16,11 +16,7 @@ const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
 
   try {
-    // Verificar si el usuario existe
     const userExist = await User.findByPk(user_id);
-    if (!userExist) {
-      return res.status(404).json({ message: "El usuario no existe" });
-    }
 
     // Verificar si la tarea existe
     const taskExist = await Task.findByPk(task_id);
@@ -51,15 +47,7 @@ const createTaskSubmission = async (req, res) => {
     if (!isDateValid || !isTimeValid) {
       return res.status(400).json({
         message:
-          "La tarea no puede ser entregada fuera del rango de fecha y hora permitidos",
-        debug: {
-          currentDate: currentDate.format("YYYY-MM-DD HH:mm:ss"),
-          taskStart: taskStart.format("YYYY-MM-DD HH:mm:ss"),
-          endTask: endTask.format("YYYY-MM-DD HH:mm:ss"),
-          currentTime: currentTime.format("HH:mm:ss"),
-          startTime: startTime.format("HH:mm:ss"),
-          endTime: endTime.format("HH:mm:ss"),
-        },
+          "La tarea no puede ser entregada fuera del rango de fecha permitido",
       });
     }
 
@@ -96,14 +84,6 @@ const createTaskSubmission = async (req, res) => {
 
     res.status(201).json({
       message: "Tarea de envío creada exitosamente",
-      debug: {
-        currentDate: currentDate.format("YYYY-MM-DD HH:mm:ss"),
-        taskStart: taskStart.format("YYYY-MM-DD HH:mm:ss"),
-        endTask: endTask.format("YYYY-MM-DD HH:mm:ss"),
-        currentTime: currentTime.format("HH:mm:ss"),
-        startTime: startTime.format("HH:mm:ss"),
-        endTime: endTime.format("HH:mm:ss"),
-      }
     });
   } catch (error) {
     console.error("Error al crear la tarea de envío:", error);

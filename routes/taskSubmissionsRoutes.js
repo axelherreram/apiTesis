@@ -8,6 +8,8 @@ const {
 } = require("../controllers/taskSubmissionsController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
+const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+const validateUser = require("../middlewares/validateUser");
 
 const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
 const student = verifyRole([1]); // Permitir solo a usuarios con rol de estudiante
@@ -87,8 +89,14 @@ router.get(
  *     security:
  *       - bearerAuth: []
  */
-router.post("/task-submissions", authMiddleware, student, createTaskSubmission);
-
+router.post(
+  "/task-submissions",
+  authMiddleware,
+  student,
+  obtenerUserIdDeToken,
+  validateUser,
+  createTaskSubmission
+);
 
 /**
  * @swagger
