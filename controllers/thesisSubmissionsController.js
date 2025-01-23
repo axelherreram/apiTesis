@@ -77,7 +77,7 @@ const uploadProposal = async (req, res) => {
 
         return res
           .status(400)
-          .json({ message: `La tarea con no es propuesta de tesis` });
+          .json({ message: `La tarea no es propuesta de tesis` });
       }
 
       // Validar que no exista más de una entrega para el mismo usuario y tarea
@@ -95,7 +95,7 @@ const uploadProposal = async (req, res) => {
         }
 
         return res.status(400).json({
-          message: "Ya existe una entrega de tesis para este usuario y tarea",
+          message: "Ya existe una propuesta de tesis entregada ",
         });
       }
 

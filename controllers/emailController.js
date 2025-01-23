@@ -88,7 +88,6 @@ const sendCommentEmail = async (subject, text, to, templateVariables) => {
   }
 };
 
-
 // Función para enviar correo con la nueva contraseña
 const sendEmailPasswordRecovery = async (subject, text, to, templateVariables) => {
   try {
@@ -110,7 +109,6 @@ const sendEmailPasswordRecovery = async (subject, text, to, templateVariables) =
     console.error(`Error al enviar correo: ${error.message}`);
   }
 };
-
 
 // Función para enviar correo a catedráticos con su asignación a la plataforma
 const sendEmailCatedratico = async (subject, to, templateVariables) => {
