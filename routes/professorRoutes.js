@@ -7,7 +7,7 @@ const {
   createProfessor,
 } = require("../controllers/professorController");
 const authMiddleware = require("../middlewares/authMiddleware");
-const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+const getUserIdToken = require("../middlewares/getUserIdToken");
 const verifyRole = require("../middlewares/roleMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
@@ -50,7 +50,13 @@ const admin = verifyRole([3]); // Solo Admin
  *       500:
  *         description: Error al obtener usuarios
  */
-router.get("/professors", authMiddleware, admin, extractSedeIdMiddleware, listProfessors);
+router.get(
+  "/professors",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  listProfessors
+);
 
 /**
  * @swagger
@@ -88,7 +94,13 @@ router.get("/professors", authMiddleware, admin, extractSedeIdMiddleware, listPr
  *       500:
  *         description: Error al obtener usuarios
  */
-router.get("/professors/activos", authMiddleware, admin, extractSedeIdMiddleware, listActiveProfessors);
+router.get(
+  "/professors/activos",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  listActiveProfessors
+);
 
 /**
  * @swagger
@@ -132,7 +144,13 @@ router.get("/professors/activos", authMiddleware, admin, extractSedeIdMiddleware
  *       500:
  *         description: Error en el servidor al actualizar el campo active
  */
-router.patch("/professors/:user_id/active", authMiddleware, admin, extractSedeIdMiddleware, updateProfessorStatus);
+router.patch(
+  "/professors/:user_id/active",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  updateProfessorStatus
+);
 
 /**
  * @swagger
@@ -186,7 +204,13 @@ router.patch("/professors/:user_id/active", authMiddleware, admin, extractSedeId
  *       500:
  *         description: Error en el servidor al crear el profesor.
  */
-router.post("/create/professor", authMiddleware, obtenerUserIdDeToken, admin, extractSedeIdMiddleware, createProfessor);
-
+router.post(
+  "/create/professor",
+  authMiddleware,
+  getUserIdToken,
+  admin,
+  extractSedeIdMiddleware,
+  createProfessor
+);
 
 module.exports = router;

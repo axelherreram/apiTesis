@@ -1,7 +1,7 @@
 const express = require("express");
 const { createSedeAssignment, getCoursesBySede } = require("../controllers/courseSedeAssignmentController");
 const authMiddleware = require("../middlewares/authMiddleware");
-const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+const getUserIdToken = require("../middlewares/getUserIdToken");
 const verifyRole = require("../middlewares/roleMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
@@ -58,7 +58,7 @@ const adminOrSuperadmin = verifyRole([1,3,4]);
 router.post(
   "/crearAsignacionSedeCurso",
   authMiddleware,
-  obtenerUserIdDeToken,
+  getUserIdToken,
   SuperAdmin,
   createSedeAssignment
 );
@@ -101,7 +101,7 @@ router.post(
 router.get(
   "/cursosPorSede/:sede_id/:year",
   authMiddleware, 
-  obtenerUserIdDeToken,
+  getUserIdToken,
   adminOrSuperadmin,
   extractSedeIdMiddleware,
   getCoursesBySede

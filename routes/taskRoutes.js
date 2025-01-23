@@ -9,7 +9,7 @@ const {
 } = require("../controllers/taskController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
-const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+const getUserIdToken = require("../middlewares/getUserIdToken");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
@@ -60,7 +60,7 @@ const admin = verifyRole([3]);
 router.get(
   "/tareas/:sede_id/:year",
   authMiddleware,
-  obtenerUserIdDeToken,
+  getUserIdToken,
   listTasks
 );
 
@@ -178,7 +178,7 @@ router.get(
 router.get(
   "/tareas/curso/:sede_id/:course_id/:year",
   authMiddleware,
-  obtenerUserIdDeToken,
+  getUserIdToken,
   listTasksByCourse
 );
 
@@ -239,7 +239,7 @@ router.get(
 router.put(
   "/tareas/:task_id",
   authMiddleware,
-  obtenerUserIdDeToken,
+  getUserIdToken,
   admin,
   extractSedeIdMiddleware,
   updateTask
@@ -352,7 +352,7 @@ router.put(
 router.post(
   "/tareas",
   authMiddleware,
-  obtenerUserIdDeToken,
+  getUserIdToken,
   admin,
   extractSedeIdMiddleware,
   createTask

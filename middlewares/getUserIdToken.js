@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const obtenerUserIdDeToken = (req, res, next) => {
+const getUserIdToken = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -17,4 +17,4 @@ const obtenerUserIdDeToken = (req, res, next) => {
   }
 };
 
-module.exports = obtenerUserIdDeToken;
+module.exports = getUserIdToken;

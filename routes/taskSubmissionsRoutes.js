@@ -8,7 +8,7 @@ const {
 } = require("../controllers/taskSubmissionsController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
-const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+const getUserIdToken = require("../middlewares/getUserIdToken");
 const validateUser = require("../middlewares/validateUser");
 
 const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
@@ -93,7 +93,7 @@ router.post(
   "/task-submissions",
   authMiddleware,
   student,
-  obtenerUserIdDeToken,
+  getUserIdToken,
   validateUser,
   createTaskSubmission
 );

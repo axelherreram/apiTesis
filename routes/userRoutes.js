@@ -2,7 +2,7 @@ const express = require("express");
 const userController = require("../controllers/userController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
-const obtenerUserIdDeToken = require("../middlewares/obtenerUserIdDeToken");
+const getUserIdToken = require("../middlewares/getUserIdToken");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
@@ -67,7 +67,7 @@ router.get(
   authMiddleware,
   adminOrTerna,
   extractSedeIdMiddleware,
-  obtenerUserIdDeToken,
+  getUserIdToken,
   userController.getUsersByCourse
 );
 
@@ -96,7 +96,7 @@ router.get(
 router.get(
   "/usuarios/perfil",
   authMiddleware,
-  obtenerUserIdDeToken,
+  getUserIdToken,
   userController.listuserbytoken
 );
 

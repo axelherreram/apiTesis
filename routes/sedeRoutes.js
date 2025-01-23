@@ -2,7 +2,7 @@ const express = require('express');
 const { listSede, createSede, editSede } = require('../controllers/sedeController');
 const verifyRole = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
-const obtenerUserIdDeToken = require('../middlewares/obtenerUserIdDeToken');
+const getUserIdToken = require('../middlewares/getUserIdToken');
 
 const router = express.Router();
 const adminOrTerna = verifyRole([2, 3]);
@@ -130,7 +130,7 @@ const superAdmin = verifyRole([4]);
  */
 
 router.get('/sedes', authMiddleware, listSede);
-router.post('/sedes', authMiddleware, obtenerUserIdDeToken, superAdmin, createSede);
-router.put('/sedes/:sede_id', authMiddleware, obtenerUserIdDeToken, superAdmin, editSede);
+router.post('/sedes', authMiddleware, getUserIdToken, superAdmin, createSede);
+router.put('/sedes/:sede_id', authMiddleware, getUserIdToken, superAdmin, editSede);
 
 module.exports = router;
