@@ -40,7 +40,7 @@ Maneja la subida de archivos, validando el tipo de archivo y su tamaño.
 ### `validateUser.js`
 Comprueba que el usuario tiene acceso autorizado a los recursos que solicita.
 
-### `obtenerUserIdDeToken.js`
+### `getUserIdToken.js`
 Extrae el ID del usuario autenticado del token JWT.
 
 ---
