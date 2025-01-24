@@ -14,6 +14,18 @@ const moment = require("moment-timezone");
 
 require("dotenv").config();
 
+/**
+ * The function `createTask` handles the creation of a new task with various validations and
+ * notifications in a specific educational platform.
+ * @param req - The `createTask` function you provided is an asynchronous function that handles the
+ * creation of a new task based on the data received in the request (`req`) and the authenticated user
+ * information. Here is a breakdown of the steps involved in the `createTask` function:
+ * @param res - The `res` parameter in the `createTask` function is the response object that will be
+ * used to send back the response to the client making the request. It is typically used to send HTTP
+ * responses with status codes, headers, and data back to the client. In this function, you can see
+ * @returns The `createTask` function returns a response based on the different validation steps and
+ * operations performed during the task creation process. Here are the possible return scenarios:
+ */
 const createTask = async (req, res) => {
   const {
     course_id,
@@ -196,6 +208,21 @@ const createTask = async (req, res) => {
   }
 };
 
+/**
+ * The function `listTasks` retrieves tasks associated with a specific year, location, and user,
+ * handling error cases appropriately.
+ * @param req - The `listTasks` function is an asynchronous function that takes `req` and `res` as
+ * parameters.
+ * @param res - The `res` parameter in the `listTasks` function is the response object that will be
+ * used to send back the response to the client making the request. It is typically used to send HTTP
+ * responses with status codes and data back to the client. In the provided code snippet, you can see
+ * that
+ * @returns The `listTasks` function returns either a success response with a JSON array of tasks if
+ * tasks are found for the specified sede and year, or an error response with a relevant message if
+ * there are no tasks found, the year record is not found, there are no course assignments for the
+ * specified sede and year, the user is not found, or if there is an error during the process of
+ * fetching tasks
+ */
 const listTasks = async (req, res) => {
   const { sede_id, year } = req.params;
   const user_id = req.user_id;
@@ -269,6 +296,19 @@ const listTasks = async (req, res) => {
   }
 };
 
+/**
+ * The `listTask` function retrieves task information including CourseSedeAssignment details, validates
+ * access based on sede_id, and returns the task data or appropriate error messages.
+ * @param req - The `req` parameter in the `listTask` function represents the request object in
+ * Express.js. It contains information about the HTTP request made to the server, including parameters,
+ * headers, body, and more.
+ * @param res - The `res` parameter in the `listTask` function is the response object that will be used
+ * to send back the response to the client making the request. It is typically used to set the status
+ * code, headers, and send data back to the client in the form of JSON, HTML, or
+ * @returns If the task is found and the courseSedeAssignment's sede_id matches the tokenSedeId, a JSON
+ * response with status code 200 is returned. The response includes a success message "Tarea encontrada
+ * exitosamente" and the task data along with the course_id.
+ */
 const listTask = async (req, res) => {
   const { task_id } = req.params;
   const { sede_id: tokenSedeId } = req;
@@ -311,6 +351,20 @@ const listTask = async (req, res) => {
   }
 };
 
+/**
+ * The function `listTasksByCourse` retrieves tasks associated with a specific course, location, and
+ * year, handling various validations and error cases.
+ * @param req - The function `listTasksByCourse` is an asynchronous function that takes `req` and `res`
+ * as parameters. The `req` parameter typically represents the request object, which contains
+ * information about the HTTP request made to the server. The `res` parameter represents the response
+ * object, which is used
+ * @param res - The `res` parameter in the `listTasksByCourse` function is the response object that
+ * will be used to send back the response to the client making the request. It is typically used to
+ * send HTTP responses with status codes, headers, and data back to the client. In this function, `
+ * @returns The function `listTasksByCourse` is returning either a success response with a JSON array
+ * of tasks if all the validations and database queries are successful, or an error response with a
+ * relevant message if any error occurs during the process.
+ */
 const listTasksByCourse = async (req, res) => {
   const { sede_id, course_id, year } = req.params;
   const user_id = req.user_id;
@@ -394,6 +448,21 @@ const listTasksByCourse = async (req, res) => {
   }
 };
 
+/**
+ * The function `updateTask` is an asynchronous function in JavaScript that updates a task based on the
+ * provided request parameters and body, performing various validations and logging activities along
+ * the way.
+ * @param req - The `req` parameter in the `updateTask` function represents the request object in
+ * Express.js. It contains information about the HTTP request made to the server, including request
+ * parameters, body, headers, and user authentication details.
+ * @param res - The `res` parameter in the `updateTask` function is the response object that will be
+ * used to send a response back to the client making the request. It is typically used to send HTTP
+ * responses with status codes, headers, and data back to the client. In the provided code snippet, `
+ * @returns The `updateTask` function returns a JSON response with a success message "Tarea actualizada
+ * exitosamente" if the task is successfully updated. If there are any errors during the update
+ * process, it returns a JSON response with an error message "Error al actualizar la tarea" along with
+ * the specific error message or "Error desconocido" if the error message is not available.
+ */
 const updateTask = async (req, res) => {
   const { task_id } = req.params;
   const { title, description, taskStart, endTask, startTime, endTime } = req.body;

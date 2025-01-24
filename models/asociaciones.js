@@ -10,7 +10,7 @@ const Comisiones = require("./comisiones");
 const Year = require("./year");
 const rolComision = require("./rolComision");
 const GroupComision = require("./groupComision");
-const EstudianteComision = require("./estudianteComision");
+const studentComision = require("./studentComision");
 const TypeTask = require("./typeTask");
 const Comments = require("./comments");
 const CommentVersion = require("./commentVersion");
@@ -97,19 +97,19 @@ module.exports = function associateModels() {
   GroupComision.belongsTo(Year, { foreignKey: "year_id" });
   Year.hasMany(GroupComision, { foreignKey: "year_id" });
 
-  // Relación entre EstudianteComision y User
-  EstudianteComision.belongsTo(User, { foreignKey: "user_id", as: "student" });
-  User.hasMany(EstudianteComision, {
+  // Relación entre studentComision y User
+  studentComision.belongsTo(User, { foreignKey: "user_id", as: "student" });
+  User.hasMany(studentComision, {
     foreignKey: "user_id",
     as: "studentAssignments",
   });
 
-  // Relación entre GroupComision y EstudianteComision
-  GroupComision.hasMany(EstudianteComision, {
+  // Relación entre GroupComision y studentComision
+  GroupComision.hasMany(studentComision, {
     foreignKey: "group_id",
-    as: "estudianteComisiones",
+    as: "studentComisiones",
   });
-  EstudianteComision.belongsTo(GroupComision, {
+  studentComision.belongsTo(GroupComision, {
     foreignKey: "group_id",
     as: "group",
   });

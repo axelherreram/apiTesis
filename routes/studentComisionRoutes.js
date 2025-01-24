@@ -11,7 +11,7 @@ const admin = verifyRole([3]);
 /**
  * @swagger
  * tags:
- *   - name: EstudianteComision
+ *   - name: studentComision
  *     description: Operaciones relacionadas con los estudiantes en las comisiones
  * 
  * /api/comisiones/students/{year}/{sede_id}:
@@ -19,7 +19,7 @@ const admin = verifyRole([3]);
  *     summary: Obtener estudiantes por año y sede
  *     description: Devuelve una lista de estudiantes que pertenecen a una comisión para un año y sede específicos.
  *     tags:
- *       - EstudianteComision
+ *       - studentComision
  *     parameters:
  *       - in: path
  *         name: year

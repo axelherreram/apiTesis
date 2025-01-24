@@ -7,7 +7,19 @@ const bcrypt = require("bcrypt");
 require("dotenv").config(); // Asegúrate de cargar las variables de entorno
 const { sendEmailCatedratico } = require("../controllers/emailController");
 
-// Actualizar el estado active de un usuario
+/**
+ * The function `updateProfessorStatus` updates the active status of a user, logs the activity, and
+ * returns a message based on the status change.
+ * @param req - The `req` parameter typically represents the HTTP request that comes from the client to
+ * the server. It contains information such as the request headers, body, parameters, and more. In the
+ * provided code snippet, `req` is being used to access the request body (`req.body`), request
+ * parameters (`
+ * @param res - The `res` parameter in the `updateProfessorStatus` function is the response object that
+ * will be used to send back the response to the client making the request. It is typically used to
+ * send HTTP responses with status codes, headers, and data back to the client. In this function, `res
+ * @returns The `updateProfessorStatus` function is returning different responses based on the
+ * conditions met during its execution. Here are the possible responses:
+ */
 const updateProfessorStatus = async (req, res) => {
   const { active } = req.body; // Se acepta solo el campo 'active'
   const { user_id } = req.params;
@@ -58,7 +70,19 @@ const updateProfessorStatus = async (req, res) => {
   }
 };
 
-// Listar todos los profesores
+/**
+ * The function `listProfessors` retrieves a list of professors based on a specified `sede_id` after
+ * performing validation checks.
+ * @param req - The code you provided is a function called `listProfessors` that retrieves a list of
+ * professors based on the `sede_id` parameter from the request query. Here's a breakdown of the
+ * function:
+ * @param res - The code you provided is a function called `listProfessors` that retrieves a list of
+ * professors based on the `sede_id` parameter. Here's a breakdown of the function:
+ * @returns The `listProfessors` function is returning a list of professors based on the `sede_id`
+ * provided in the request query parameter. It first checks if the `sede_id` is present in the request,
+ * then verifies if the `sede_id` extracted from the token matches the one in the request. If they
+ * don't match, it returns a 403 status with a message
+ */
 const listProfessors = async (req, res) => {
   const { sede_id } = req.query;
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
@@ -102,7 +126,19 @@ const listProfessors = async (req, res) => {
   }
 };
 
-// Listar profesores activos no asignados a comisión
+/**
+ * The function `listActiveProfessors` retrieves active professors based on specified criteria such as
+ * `sede_id` and `year`, ensuring access control and filtering out professors already assigned to
+ * committees.
+ * @param req - The `req` parameter in the `listActiveProfessors` function represents the request
+ * object in Node.js. It contains information about the HTTP request made to the server, including
+ * headers, query parameters, body content, etc.
+ * @param res - The function `listActiveProfessors` is an asynchronous function that retrieves a list
+ * of active professors based on the provided `sede_id` and `year` parameters. Here's a breakdown of
+ * the function:
+ * @returns The `listActiveProfessors` function returns a list of active professors based on the
+ * provided `sede_id` and `year` parameters. The function performs the following steps:
+ */
 const listActiveProfessors = async (req, res) => {
   const { sede_id, year } = req.query;
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
@@ -168,7 +204,19 @@ const listActiveProfessors = async (req, res) => {
   }
 };
 
-// Crear un nuevo profesor
+/**
+ * The function `createProfessor` is an asynchronous function that handles the creation of a new
+ * professor user in a system, performing various validations and operations before sending a response.
+ * @param req - req: The request object containing data sent to the server
+ * @param res - The `res` parameter in the `createProfessor` function is the response object that will
+ * be used to send back the response to the client making the request. It is typically used to set the
+ * status code, send JSON data, or handle errors when creating a new professor in this case.
+ * @returns The function `createProfessor` is returning a JSON response with a success message
+ * "Profesor creado exitosamente" and a status code of 201 (Created) if the professor creation process
+ * is successful. If there are any validation errors or exceptions caught during the process, it will
+ * return an appropriate error message with the corresponding status code (400 for validation errors,
+ * 403 for access denied, and
+ */
 const createProfessor = async (req, res) => {
   const { email, name, carnet, sede_id, year } = req.body;
   const user_id = req.user_id;

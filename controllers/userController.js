@@ -10,7 +10,19 @@ const Sede = require("../models/sede");
 const { sendEmailPassword } = require("./emailController");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 
-// Obtener usuarios asignados a un curso
+/**
+ * The function `getUsersByCourse` retrieves users assigned to a specific course for a given year and
+ * location, handling various validations and returning formatted user data along with course
+ * information.
+ * @param req - req: {
+ * @param res - The function `getUsersByCourse` is an asynchronous function that retrieves users
+ * assigned to a specific course based on the provided parameters. It handles various checks and
+ * validations before fetching the users and formatting the response.
+ * @returns The function `getUsersByCourse` returns a list of users assigned to a specific course for a
+ * given year and location. The response includes the count of users and an array of formatted user
+ * objects containing user information such as user_id, email, userName, profilePhoto, and carnet. If
+ * any errors occur during the process, an error message is returned along with a status code of 500.
+ */
 const getUsersByCourse = async (req, res) => {
   const { sede_id, course_id, year } = req.params;
   const user_id = req.user_id;
@@ -122,7 +134,21 @@ const getUsersByCourse = async (req, res) => {
   }
 };
 
-// Obtener usuario por token
+/**
+ * The function `listuserbytoken` retrieves user information based on a token and returns a formatted
+ * user object or an error message.
+ * @param req - The `req` parameter in the `listuserbytoken` function is typically an object
+ * representing the HTTP request. It contains information about the request made to the server, such as
+ * headers, body, parameters, and user authentication details. In this specific function, `req.user_id`
+ * is used to
+ * @param res - The `res` parameter in the `listuserbytoken` function is the response object that will
+ * be used to send a response back to the client making the request. It is typically used to send HTTP
+ * responses with data or error messages. In the provided code snippet, `res` is used to
+ * @returns The `listuserbytoken` function returns a JSON response with the formatted user data if the
+ * user is found, or a 404 status with a message "Usuario no encontrado" if the user is not found. If
+ * there is an error during the process, it returns a 500 status with a message "Error al obtener el
+ * usuario" and the error message.
+ */
 const listuserbytoken = async (req, res) => {
   const user_id = req.user_id;
 
@@ -158,7 +184,12 @@ const listuserbytoken = async (req, res) => {
   }
 };
 
-// Generar contraseña aleatoria
+/**
+ * The function generates a random password consisting of uppercase letters, lowercase letters,
+ * numbers, and special characters.
+ * @returns A randomly generated password consisting of a combination of uppercase letters, lowercase
+ * letters, numbers, and special characters.
+ */
 const generateRandomPassword = () => {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
@@ -169,7 +200,20 @@ const generateRandomPassword = () => {
   return password;
 };
 
-// Crear administrador
+/**
+ * The function `createAdmin` registers a new administrator user, ensuring email uniqueness, 
+ * role limitations per location, and secure password handling.
+ * @param req - The `req` parameter in the `createAdmin` function represents the HTTP request 
+ * object containing user input such as `email`, `name`, `carnet`, and `sede_id`. These values 
+ * are extracted from the request body for validation and processing.
+ * @param res - The `res` parameter in the `createAdmin` function represents the HTTP response 
+ * object used to send responses back to the client. It returns appropriate status codes and 
+ * messages based on the success or failure of the administrator creation process.
+ * @returns The `createAdmin` function returns a JSON response. If successful, it returns a 
+ * 201 status with a message confirming the administrator's creation. If validation fails 
+ * or an error occurs, it returns a relevant status code (400, 404, or 500) with an 
+ * appropriate error message.
+ */
 const createAdmin = async (req, res) => {
   const { email, name, carnet, sede_id } = req.body;
 
@@ -265,7 +309,19 @@ const createAdmin = async (req, res) => {
   }
 };
 
-// Eliminar administrador de una sede
+/**
+ * The function `removeAdmin` removes an administrator role from a user, ensuring that at 
+ * least one administrator remains per location.
+ * @param req - The `req` parameter in the `removeAdmin` function represents the HTTP request 
+ * object containing `user_id` and `sede_id` in the request body. These values are used to 
+ * identify and validate the administrator being removed.
+ * @param res - The `res` parameter in the `removeAdmin` function represents the HTTP response 
+ * object used to send responses back to the client. It returns appropriate status codes and 
+ * messages based on the success or failure of the administrator removal process.
+ * @returns The `removeAdmin` function returns a JSON response. If successful, it returns a 
+ * 200 status with a confirmation message. If validation fails or an error occurs, it returns 
+ * a relevant status code (400, 404, or 500) with an appropriate error message.
+ */
 const removeAdmin = async (req, res) => {
   const { user_id, sede_id } = req.body;
 
@@ -313,7 +369,20 @@ const removeAdmin = async (req, res) => {
   }
 };
 
-// Listar todos los administradores
+/**
+ * The function `listAllAdmins` retrieves and returns a list of all administrators, 
+ * including their details and associated locations.
+ * @param req - The `req` parameter in the `listAllAdmins` function represents the HTTP 
+ * request object. Although not directly used, it may contain authentication details or 
+ * filters in future implementations.
+ * @param res - The `res` parameter in the `listAllAdmins` function represents the HTTP 
+ * response object used to send a response back to the client. It returns the list of 
+ * administrators or an error message if no administrators are found or an internal error occurs.
+ * @returns The `listAllAdmins` function returns a JSON response. If successful, it returns 
+ * a 200 status with a list of administrators. If no administrators are found, it returns 
+ * a 404 status with a corresponding message. In case of an error, it returns a 500 status 
+ * with an error message.
+ */
 const listAllAdmins = async (req, res) => {
   try {
     const admins = await User.findAll({
@@ -365,7 +434,20 @@ const listAllAdmins = async (req, res) => {
   }
 };
 
-// Asignar administrador a una sede
+/**
+ * The function `assignAdminToSede` assigns an existing administrator to a specific 
+ * location (sede) after validating the required conditions.
+ * @param req - The `req` parameter in the `assignAdminToSede` function represents the HTTP 
+ * request object containing the `user_id` and `sede_id` in the request body.
+ * @param res - The `res` parameter in the `assignAdminToSede` function represents the HTTP 
+ * response object used to send a response back to the client, indicating success or failure.
+ * @returns The `assignAdminToSede` function returns a JSON response. If successful, it 
+ * returns a 200 status confirming the administrator was assigned. If the sede or user 
+ * does not exist, it returns a 404 status. If the maximum number of administrators is 
+ * reached, it returns a 400 status. In case of an error, it returns a 500 status with 
+ * an error message.
+ */
+
 const assignAdminToSede = async (req, res) => {
   const { user_id, sede_id } = req.body;
 

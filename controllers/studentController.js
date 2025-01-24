@@ -9,6 +9,19 @@ const { sendEmailPassword } = require("./emailController");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const Course = require("../models/course");
 
+/**
+ * The function `bulkUploadUsers` handles the bulk upload of users, validates the uploaded Excel file,
+ * processes user data, and assigns students to a course.
+ * @param req - The `req` parameter in the `bulkUploadUsers` function represents the request object in
+ * Node.js. It contains information about the HTTP request made to the server, including headers, body,
+ * parameters, and more. In this function, `req` is used to extract data such as `sede
+ * @param res - The function `bulkUploadUsers` is an asynchronous function that handles the bulk upload
+ * of users. It takes two parameters, `req` and `res`, which represent the request and response
+ * objects, respectively. The function processes the request to upload user data from an Excel file,
+ * validates the data, creates
+ * @returns The function `bulkUploadUsers` returns JSON responses based on different conditions during
+ * the bulk upload process of users from an Excel file. Here are the possible return scenarios:
+ */
 const bulkUploadUsers = async (req, res) => {
   const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
   const { sede_id, course_id } = req.body; // Extraer los valores de sede_id y course_id del cuerpo de la solicitud

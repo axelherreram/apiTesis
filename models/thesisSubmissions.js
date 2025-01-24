@@ -3,7 +3,26 @@ const { sequelize } = require("../config/database");
 const User = require("./user");
 const Task = require("./task");
 
-// Modelo para Task Submissions
+/**
+ * Model `thesisSubmissions` represents the submissions related to thesis work by students.
+ * 
+ * Fields:
+ * - `thesisSubmissions_id`: Unique identifier for the thesis submission (Primary Key, auto-increment).
+ * - `user_id`: Reference to the student submitting the thesis (`User` model).
+ * - `task_id`: Reference to the related task (`Task` model).
+ * - `file_path`: Path where the submitted file is stored.
+ * - `date`: Date of submission (Default: current timestamp, adjusted for timezone).
+ * - `approved_proposal`: Status of the thesis submission:
+ *     - `0`: Pending review
+ *     - `1`: Approved
+ *     - `2`: Requires modifications
+ *     - `3`: Rejected
+ * 
+ * Configuration:
+ * - `timestamps: false`: No automatic `createdAt` or `updatedAt` fields.
+ * - `tableName: 'thesisSubmissions'`: Database table name.
+ * - `hooks.beforeCreate`: Adjusts `date` to the correct timezone before saving.
+ */
 const thesisSubmissions = sequelize.define(
   "thesisSubmissions",
   {
@@ -54,7 +73,6 @@ const thesisSubmissions = sequelize.define(
     timestamps: false,
     hooks: {
       beforeCreate: (thesisSubmission, options) => {
-        // Ajustar la fecha a la zona horaria correcta
         const currentDate = new Date();
         thesisSubmission.date = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000);
       },

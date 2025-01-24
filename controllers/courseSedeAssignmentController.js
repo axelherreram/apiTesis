@@ -4,6 +4,20 @@ const Sede = require("../models/sede");
 const Year = require("../models/year");
 const User = require("../models/user");
 
+/**
+ * The function `createSedeAssignment` handles the creation of course assignments to different
+ * locations based on certain conditions and error handling.
+ * @param req - The function `createSedeAssignment` is an asynchronous function that handles the
+ * creation of a course assignment to a specific location (sede). It takes two parameters `req` and
+ * `res`, where `req` represents the request object containing data sent to the server, and `res`
+ * represents the
+ * @param res - The `res` parameter in the `createSedeAssignment` function is the response object that
+ * will be used to send back the response to the client making the request. It is typically used to set
+ * the status code of the response (e.g., 200 for success, 400 for bad request
+ * @returns The function `createSedeAssignment` returns a JSON response with a success message if the
+ * course assignment to a location is created successfully. If there are any validation errors or
+ * exceptions during the process, it returns an appropriate error response with a relevant message.
+ */
 const createSedeAssignment = async (req, res) => {
   const { course_id, sede_id } = req.body;
 
@@ -124,6 +138,20 @@ const createSedeAssignment = async (req, res) => {
   }
 };
 
+/**
+ * The function `getCoursesBySede` retrieves courses assigned to a specific location and year, handling
+ * errors and returning the course data accordingly.
+ * @param req - The `req` parameter in the `getCoursesBySede` function stands for the request object,
+ * which contains information about the HTTP request made to the server. It includes data such as
+ * request parameters, headers, body, and more. In this function, `req` is used to extract the
+ * @param res - The function `getCoursesBySede` is an asynchronous function that retrieves courses
+ * assigned to a specific location (sede) and year. It takes `req` and `res` as parameters, where `req`
+ * contains information about the request being made, and `res` is used to send
+ * @returns The `getCoursesBySede` function returns a list of courses assigned to a specific location
+ * (sede) and year. If successful, it returns a JSON response with the data of the courses. If there
+ * are no courses assigned to the specified location and year, it returns a message indicating that no
+ * courses were found. If there are any errors during the process, it returns a 500 status
+ */
 const getCoursesBySede = async (req, res) => {
   const { sede_id, year } = req.params;
   const { sede_id: tokenSedeId, user_id } = req; // Sede extraída del token

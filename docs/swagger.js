@@ -487,7 +487,7 @@ const swaggerOptions = {
             year: 2024,
           },
         },
-        EstudianteComision: {
+        studentComision: {
           type: "object",
           properties: {
             estudiante_comision_id: {

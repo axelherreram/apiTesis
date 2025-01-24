@@ -5,6 +5,18 @@ const upload = require("../middlewares/uploadPdf");
 const fs = require("fs");
 const { addTimeline } = require("../sql/timeline");
 
+/**
+ * The `uploadProposal` function in JavaScript handles the process of uploading a thesis proposal,
+ * validating required fields, checking for existing submissions, and saving the proposal in the
+ * database.
+ * @param req - The `req` parameter in the `uploadProposal` function stands for the request object,
+ * which contains information about the HTTP request that triggered the function. This object includes
+ * data such as request headers, parameters, body, and files uploaded as part of the request. The `req`
+ * object is typically provided
+ * @param res - The `res` parameter in the `uploadProposal` function is the response object that will
+ * be used to send back the response to the client making the request. It is typically used to send
+ * HTTP responses with status codes, headers, and data back to the client. In this function, `res`
+ */
 const uploadProposal = async (req, res) => {
   // Subir el archivo primero
   upload.single("proposal")(req, res, async (err) => {
@@ -130,9 +142,15 @@ const uploadProposal = async (req, res) => {
 };
 
 /**
- * Controlador para actualizar una entrega de tesis
- * @param {Object} req - Objeto de solicitud
- * @param {Object} res - Objeto de respuesta
+ * The function `updateProposal` handles the updating of a thesis proposal submission, including file
+ * upload, validation, database operations, and error handling.
+ * @param req - The `req` parameter in the `updateProposal` function stands for the request object,
+ * which contains information about the HTTP request that triggered the function. This object includes
+ * data such as request headers, parameters, body, query parameters, and more. In this context, `req`
+ * is used to access
+ * @param res - The `res` parameter in the `updateProposal` function is the response object that will
+ * be used to send a response back to the client making the request. It is typically used to send HTTP
+ * responses with status codes, headers, and data back to the client. In the provided code snippet, `
  */
 const updateProposal = async (req, res) => {
   // Subir el archivo primero

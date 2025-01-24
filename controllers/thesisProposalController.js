@@ -7,10 +7,18 @@ const fs = require("fs");
 const { addTimeline } = require("../sql/timeline");
 
 dotenv.config();
+
 /**
- * Controlador para actualizar el campo approved_proposal
- * @param {Object} req - Objeto de solicitud
- * @param {Object} res - Objeto de respuesta
+ * The function `updateApprovedProposal` updates the approved proposal status for a thesis submission
+ * based on certain conditions and adds an action to the timeline.
+ * @param req - The function `updateApprovedProposal` is designed to handle a PUT request to update the
+ * `approved_proposal` field of a thesis submission based on the `thesisSubmissions_id` and `user_id`
+ * provided in the request parameters. The new `approved_proposal` value is expected to be
+ * @param res - The `res` parameter in the `updateApprovedProposal` function is the response object
+ * that will be used to send back the response to the client making the request. It is typically used
+ * to set the status code, send JSON data, or handle errors in the response.
+ * @returns The function `updateApprovedProposal` returns different responses based on the conditions
+ * met during its execution. Here are the possible return scenarios:
  */
 const updateApprovedProposal = async (req, res) => {
   const { thesisSubmissions_id, user_id } = req.params;
@@ -72,6 +80,21 @@ const updateApprovedProposal = async (req, res) => {
   }
 };
 
+/**
+ * The function `getThesisSubmission` retrieves and formats thesis submission data based on a user ID,
+ * handling errors appropriately.
+ * @param req - The `req` parameter in the `getThesisSubmission` function stands for the request
+ * object, which represents the HTTP request that comes from the client to the server. It contains
+ * information about the request made by the client, such as the parameters, headers, body, and other
+ * details.
+ * @param res - The `res` parameter in the `getThesisSubmission` function is the response object that
+ * will be used to send the response back to the client making the request. It is typically used to
+ * send HTTP responses with status codes, headers, and data in the form of JSON or other formats. In
+ * @returns The `getThesisSubmission` function returns a JSON response with the thesis submission
+ * details if the submission is found based on the `user_id`. If the submission is not found, a 404
+ * status with a message indicating "Entrega de tesis no encontrada" is returned. If there is an error
+ * during the process, a 500 status with a generic error message is returned.
+ */
 const getThesisSubmission = async (req, res) => {
   const { user_id } = req.params;
 

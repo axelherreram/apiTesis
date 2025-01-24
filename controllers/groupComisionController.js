@@ -4,7 +4,21 @@ const User = require("../models/user");
 const Sede = require("../models/sede");
 const Year = require("../models/year");
 
-// Listar todos los usuarios por grupo y sede
+/**
+ * The function `listUsersByGroupAndSede` retrieves and formats user data based on group and location,
+ * handling errors and access control.
+ * @param req - The function `listUsersByGroupAndSede` is designed to handle a request and response in
+ * an Express route. It expects certain parameters in the request object, specifically `group_id` and
+ * `sede_id` from the query string, and `sede_id` from the token.
+ * @param res - The function `listUsersByGroupAndSede` is designed to handle a request to retrieve
+ * users based on a specific group and location (sede). Here's a breakdown of the main steps performed
+ * in the function:
+ * @returns The function `listUsersByGroupAndSede` is returning a list of users belonging to a specific
+ * group and location (sede). The function first checks if the `sede_id` extracted from the token
+ * matches the `sede_id` provided in the request. If they do not match, a 403 status response is sent
+ * with a message indicating lack of access.
+ */
+
 const listUsersByGroupAndSede = async (req, res) => {
   const { group_id, sede_id } = req.query;
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
@@ -66,7 +80,20 @@ const listUsersByGroupAndSede = async (req, res) => {
 };
 
 
-// Listar grupos por sede y año
+/**
+ * The function `listGroupBySedeAndYear` retrieves groups of commission filtered by location and year,
+ * handling errors and access control.
+ * @param req - The `req` parameter in the `listGroupBySedeAndYear` function represents the request
+ * object, which contains information about the HTTP request made to the server. It includes data such
+ * as request headers, query parameters, body content, and more. In this specific function, `req.query`
+ * @param res - The function `listGroupBySedeAndYear` is an asynchronous function that takes `req` and
+ * `res` as parameters. The `req` parameter is an object containing the request data, and the `res`
+ * parameter is the response object used to send a response back to the client.
+ * @returns The `listGroupBySedeAndYear` function is returning a list of group commissions filtered by
+ * the `sede_id` and `year` provided in the request query parameters. If the `sede_id` extracted from
+ * the token does not match the `sede_id` from the request, a 403 status with a message indicating lack
+ * of access is returned. If the specified year or
+ */
 const listGroupBySedeAndYear = async (req, res) => {
   const { sede_id, year } = req.query;
   const { sede_id: tokenSedeId } = req; // Sede extraída del token

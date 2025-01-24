@@ -1,3 +1,28 @@
+/**
+ * @file app.js
+ * @description Main file that initializes the Express application, configures middleware, routes, and connects to the database.
+ * 
+ * This file sets up the Express server, configures the middleware for handling requests and responses, and integrates routes for different parts of the application.
+ * It also manages the connection to the database and initializes tables, as well as setting up Swagger for API documentation.
+ * 
+ * Key Components:
+ * - **CORS** configuration to allow cross-origin requests from specific domains.
+ * - **Body Parser** to parse incoming request bodies in JSON format.
+ * - **Swagger** to provide API documentation at the `/api-docs` endpoint.
+ * - **Routes** for various entities such as authentication, users, tasks, courses, and more.
+ * - **Database Synchronization** to ensure the database is in sync with models before starting the server.
+ * 
+ * @requires express
+ * @requires body-parser
+ * @requires cors
+ * @requires path
+ * @requires dotenv
+ * @requires sequelize
+ * @requires models
+ * @requires routes
+ * @requires swagger
+ */
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const { sequelize } = require('./config/database'); 
@@ -14,7 +39,7 @@ const CourseRoutes = require('./routes/CourseRoutes');
 const StudentRoutes = require('./routes/studentRoutes');
 const typeTaskRoutes = require('./routes/typeTaskRoute');
 const CourseSedeAssignmentRoutes = require('./routes/courseSedeAssignmentRoutes');
-const YearRoutes = require('./routes/yearRoutes')
+const YearRoutes = require('./routes/yearRoutes');
 const ThesisProposalRoutes = require('./routes/thesisProposalRoutes');
 const professorRoutes = require('./routes/professorRoutes');
 const TimeLineRoutes = require('./routes/timeLineRoutes');
@@ -42,9 +67,8 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
   'http://127.0.0.1:5500',
-  'http://localhost:3000' // Swagger URL
+  'http://localhost:3000' 
 ];
-
 
 app.use(cors({
   origin: function (origin, callback) {
@@ -57,7 +81,6 @@ app.use(cors({
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
 }));
-
 
 // Servir archivos estáticos
 app.use('/public', express.static(path.join(__dirname, 'public')));
@@ -91,7 +114,6 @@ app.use('/api', CommentRoutes);
 app.use('/api', thesisSubmissionsRoutes);
 app.use('/api', TaskSubmissionRoutes);
 app.use('/api', GraphicsRoutes);
-
 
 // Sincronizar la base de datos y arrancar el servidor
 sequelize.sync({ alter: false, force: false })

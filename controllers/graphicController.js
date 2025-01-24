@@ -5,7 +5,22 @@ const TaskSubmissions = require("../models/taskSubmissions");
 const Year = require("../models/year");
 const CourseAssignment = require("../models/courseAssignment");
 
-// Función para obtener las estadísticas de las tareas
+/**
+ * The function `getTaskSubmissionStats` retrieves and calculates statistics on task submissions for a
+ * specific course, year, and location.
+ * @param req - The code snippet you provided is an asynchronous function `getTaskSubmissionStats` that
+ * retrieves statistics about task submissions based on the parameters `course_id`, `year`, and
+ * `sede_id` from the request object `req`.
+ * @param res - The `res` parameter in the `getTaskSubmissionStats` function is the response object
+ * that will be used to send the response back to the client making the request. It is typically an
+ * instance of the Express response object in Node.js applications. The response object allows you to
+ * send HTTP responses with data
+ * @returns The function `getTaskSubmissionStats` returns a JSON response containing the statistics of
+ * task submissions for a specific course, year, and location. The response includes the total number
+ * of students assigned to the course and detailed statistics for each task, such as the number of
+ * pending students and confirmed submissions. If there are any errors during the process, a 500 status
+ * response with an error message is returned.
+ */
 const getTaskSubmissionStats = async (req, res) => {
   const { course_id, year, sede_id } = req.params;
 
@@ -87,6 +102,20 @@ const getTaskSubmissionStats = async (req, res) => {
   }
 };
 
+/**
+ * The function `dataGraphics` retrieves and returns total student counts based on the provided
+ * `sede_id` and token validation.
+ * @param req - The `req` parameter in the `dataGraphics` function represents the request object in
+ * Node.js. It contains information about the HTTP request made to the server, including parameters,
+ * headers, and body data. In this specific function, `req` is used to extract the `sede_id` parameter
+ * @param res - The code snippet you provided is an asynchronous function `dataGraphics` that handles a
+ * request and response in a Node.js environment. It retrieves the `sede_id` parameter from the request
+ * and compares it with the `sede_id` stored in the token. If they do not match, it returns
+ * @returns If the `sede_id` from the token matches the `sede_id` from the request, the function will
+ * return a JSON response with the `totalStudents` and `totalStudentsSede` data. If the `sede_id`
+ * values do not match, a 403 status with a message indicating lack of access will be returned. In case
+ * of any errors during the process, a
+ */
 const dataGraphics = async (req, res) => {
   const { sede_id } = req.params;
   const { sede_id: tokenSedeId } = req;

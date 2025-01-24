@@ -6,10 +6,22 @@ const Year = require("../models/year");
 const { logActivity } = require("../sql/appLog");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const CourseAssignment = require("../models/courseAssignment");
-const EstudianteComision = require("../models/estudianteComision");
+const studentComision = require("../models/studentComision");
 const { sequelize } = require("../config/database");
 
-// creacion de grupo de comision
+/**
+ * The function `createGroupComision` creates a commission group with specific validations and
+ * assignments based on the provided data.
+ * @param req - The `req` parameter in the `createGroupComision` function represents the request
+ * object, which contains information sent to the server as part of an HTTP request. This information
+ * typically includes data submitted through a form, query parameters, request headers, and more.
+ * @param res - The `res` parameter in the `createGroupComision` function is the response object that
+ * will be used to send back the response to the client making the request. It is typically used to set
+ * the status code and send JSON data back to the client.
+ * @returns The `createGroupComision` function returns a response with status code and a JSON object
+ * containing a message based on the outcome of the function execution. Here are the possible return
+ * scenarios:
+ */
 const createGroupComision = async (req, res) => {
   const { year, sede_id: requestSedeId, groupData } = req.body;
   const { sede_id: tokenSedeId } = req;
@@ -108,7 +120,7 @@ const createGroupComision = async (req, res) => {
 
     // 9. Asignar estudiantes al grupo
     for (const estudiante of estudiantes) {
-      await EstudianteComision.create(
+      await studentComision.create(
         {
           group_id: group.group_id,
           user_id: estudiante.User.user_id,
@@ -131,7 +143,22 @@ const createGroupComision = async (req, res) => {
   }
 };
 
-// Eliminar usuario de una comisión
+/**
+ * The function `removeUserFromComision` removes a user from a commission group based on certain
+ * conditions and permissions.
+ * @param req - The `removeUserFromComision` function is designed to handle a request to remove a user
+ * from a commission group. It performs several checks and validations before proceeding with the
+ * removal. Here's a breakdown of the process:
+ * @param res - The `res` parameter in the `removeUserFromComision` function is the response object
+ * that will be used to send back the response to the client making the request. It is typically used
+ * to send HTTP responses with status codes, headers, and data back to the client. In this function,
+ * @returns The function `removeUserFromComision` is returning JSON responses based on different
+ * scenarios:
+ * 1. If the year data is not found, it returns a 404 status with a message "Año no encontrado".
+ * 2. If the group of comision is not found, it returns a 404 status with a message "Grupo de comisión
+ * no encontrado".
+ * 3. If the user tries to remove
+ */
 const removeUserFromComision = async (req, res) => {
   const { group_id, user_id } = req.params;
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
@@ -201,7 +228,19 @@ const removeUserFromComision = async (req, res) => {
   }
 };
 
-// Agregar usuario a una comisión existente
+/**
+ * The function `addUserToComision` adds a user with a specific role to a commission group while
+ * performing various validations and error handling.
+ * @param req - The `req` parameter in the `addUserToComision` function represents the HTTP request
+ * object, which contains information about the incoming request from the client, such as request
+ * headers, parameters, body, etc. It is typically provided by the Express.js framework when handling
+ * HTTP requests in a Node.js
+ * @param res - The `res` parameter in the `addUserToComision` function is the response object that
+ * will be used to send back the response to the client making the request. It is typically used to
+ * send HTTP responses with status codes, headers, and data back to the client. In the provided code
+ * @returns The function `addUserToComision` returns a response with status code and a JSON object
+ * containing a message based on different scenarios:
+ */
 const addUserToComision = async (req, res) => {
   const { group_id } = req.params;
   const { user_id, rol_comision_id } = req.body;
@@ -287,7 +326,18 @@ const addUserToComision = async (req, res) => {
   }
 };
 
-// Obtener grupos de comisión y usuarios por sede y año
+/**
+ * The function `getGroupsAndUsersBySedeAndYear` retrieves groups of commission and their users based
+ * on a specific location and year, handling error cases appropriately.
+ * @param req - The function `getGroupsAndUsersBySedeAndYear` is an asynchronous function that
+ * retrieves groups and users based on the `sede_id` (location ID) and `year` parameters from the
+ * request object (`req`). Here's a breakdown of the function:
+ * @param res - The function `getGroupsAndUsersBySedeAndYear` is an asynchronous function that
+ * retrieves groups of users based on the provided `sede_id` (location ID) and `year`. Here's a
+ * breakdown of the function:
+ * @returns The function `getGroupsAndUsersBySedeAndYear` is returning JSON responses based on the
+ * logic within the function. Here are the possible responses:
+ */
 const getGroupsAndUsersBySedeAndYear = async (req, res) => {
   const { sede_id, year } = req.params;
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
@@ -377,5 +427,5 @@ module.exports = {
   createGroupComision,
   removeUserFromComision,
   addUserToComision,
-  getGroupsAndUsersBySedeAndYear, // Función unificada
+  getGroupsAndUsersBySedeAndYear, 
 };

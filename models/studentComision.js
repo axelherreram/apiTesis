@@ -4,8 +4,21 @@ const User = require("./user");
 const Year = require("./year");
 const GroupComision = require("./groupComision");
 
-const EstudianteComision = sequelize.define(
-    "estudianteComision",
+/**
+ * Model `studentComision` represents the assignment of a student to a specific group of a commission for a particular year.
+ * 
+ * Fields:
+ * - `estudiante_comision_id`: Unique identifier for the student-group commission assignment (PK, auto-increment).
+ * - `group_id`: Foreign key referencing the `GroupComision` model, representing the commission group assigned to the student.
+ * - `user_id`: Foreign key referencing the `User` model, representing the student assigned to the commission group.
+ * - `year_id`: Foreign key referencing the `Year` model, representing the academic year of the assignment.
+ * 
+ * Configuration:
+ * - `timestamps: false`: Disables automatic `createdAt` and `updatedAt` fields.
+ * - `tableName: 'studentComision'`: Database table name (`studentComision`).
+ */
+const studentComision = sequelize.define(
+    "studentComision",
     {
         estudiante_comision_id: {
             type: DataTypes.INTEGER,
@@ -39,8 +52,8 @@ const EstudianteComision = sequelize.define(
     },
     {
         timestamps: false,
-        tableName: "estudianteComision",
+        tableName: "studentComision",
     }
 );
 
-module.exports = EstudianteComision;
+module.exports = studentComision;

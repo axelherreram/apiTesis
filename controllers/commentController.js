@@ -2,6 +2,19 @@ const Task = require("../models/task");
 const Comments = require("../models/comments");
 const CommentVersion = require("../models/commentVersion");
 
+/**
+ * The function `addCommentForTask` handles the creation of comments for a specific task, validating
+ * input data and ensuring proper error handling.
+ * @param req - The `req` parameter in the `addCommentForTask` function represents the HTTP request
+ * object, which contains information about the incoming request from the client, such as request
+ * headers, parameters, body, and more. It is commonly used to access data sent from the client to the
+ * server. In this
+ * @param res - The `res` parameter in the `addCommentForTask` function is the response object that
+ * will be used to send a response back to the client making the request. It is typically used to set
+ * the status code, send JSON data, or handle errors in the response.
+ * @returns The `addCommentForTask` function returns different responses based on the conditions met
+ * during its execution:
+ */
 const addCommentForTask = async (req, res) => {
   const { taskId } = req.params;
   const { comment, role, user_id } = req.body;
@@ -62,6 +75,22 @@ const addCommentForTask = async (req, res) => {
   }
 };
 
+/**
+ * The function `getAllCommentsForTaskAndUser` retrieves comments for a specific task and user, formats
+ * the data, and returns it in a JSON response.
+ * @param req - The `req` parameter in the `getAllCommentsForTaskAndUser` function represents the
+ * request object, which contains information about the HTTP request made to the server. This object
+ * includes properties such as `params`, `body`, `query`, `headers`, and more, depending on the type of
+ * request
+ * @param res - The `res` parameter in the `getAllCommentsForTaskAndUser` function is the response
+ * object that will be used to send back the response to the client making the request. It is typically
+ * used to send HTTP responses with status codes and data back to the client.
+ * @returns The function `getAllCommentsForTaskAndUser` is returning a list of comments for a specific
+ * task and user in a formatted structure. If comments are found for the specified task and user, the
+ * function returns a JSON response with status code 200 containing the formatted comments. If no
+ * comments are found, it returns a JSON response with status code 404 indicating that no comments were
+ * found for the task and
+ */
 const getAllCommentsForTaskAndUser = async (req, res) => {
   const { taskId, userId } = req.params;
 
@@ -104,6 +133,21 @@ const getAllCommentsForTaskAndUser = async (req, res) => {
   }
 };
 
+/**
+ * The function `desactivateComment` deactivates a comment by updating its `comment_active` field to
+ * false in the database.
+ * @param req - The `req` parameter in the `desactivateComment` function is an object representing the
+ * HTTP request. It contains information about the request made to the server, such as the request
+ * parameters, body, headers, and other details. In this function, `req.params` is used to extract the
+ * `
+ * @param res - The `res` parameter in the `desactivateComment` function is the response object that
+ * will be used to send a response back to the client making the request. It is typically used to set
+ * the status code of the response and send data back to the client in the form of JSON or other
+ * formats
+ * @returns The `desactivateComment` function is returning a JSON response with a success message when
+ * the comment deactivation is successful, or an error message with status code 404 if the comment is
+ * not found, or an error message with status code 500 if there is an internal server error.
+ */
 const desactivateComment = async (req, res) => {
   const { commentId } = req.params;
 

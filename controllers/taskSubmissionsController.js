@@ -11,7 +11,20 @@ const Course = require("../models/course");
 
 const moment = require("moment-timezone");
 
-// Crear una tarea de envío
+/**
+ * The function `createTaskSubmission` handles the submission of a task by a user, checking various
+ * conditions and creating or updating the submission accordingly.
+ * @param req - The `req` parameter in the `createTaskSubmission` function typically represents the
+ * HTTP request object, which contains information about the incoming request from the client, such as
+ * headers, parameters, body content, and more. In this specific function, `req` is used to extract the
+ * `user_id`
+ * @param res - The `res` parameter in the `createTaskSubmission` function is the response object that
+ * will be used to send back the response to the client making the request. It is typically used to
+ * send HTTP responses with status codes and data back to the client. In the provided code snippet,
+ * `res`
+ * @returns The function `createTaskSubmission` returns different JSON responses based on the
+ * conditions met during its execution. Here are the possible return values:
+ */
 const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
 
@@ -94,7 +107,20 @@ const createTaskSubmission = async (req, res) => {
   }
 };
 
-// Obtener informacion por curso
+/**
+ * The function `getCourseDetails` retrieves information about a specific course, including students
+ * assigned to the course, tasks, and task submissions, handling errors if any occur.
+ * @param req - The `req` parameter in the `getCourseDetails` function stands for the request object,
+ * which contains information about the HTTP request that triggered the function. This object typically
+ * includes details such as request headers, parameters, body, query parameters, and more.
+ * @param res - The function `getCourseDetails` is an asynchronous function that retrieves details of a
+ * course based on the provided parameters. Here's a breakdown of the function:
+ * @returns The `getCourseDetails` function is returning course details including the course name, sede
+ * name, and information about students assigned to the course along with their task submissions. The
+ * response includes the course name, sede name, and an array of student objects with their name,
+ * email, carnet, and an array of task submissions with details like title, submission completion
+ * status, and date.
+ */
 const getCourseDetails = async (req, res) => {
   const { course_id, sede_id, year } = req.params;
 
@@ -200,7 +226,21 @@ const getCourseDetails = async (req, res) => {
   }
 };
 
-// Obtener detalles del curso del estudiante
+/**
+ * The function `getStudentCourseDetails` retrieves course details and task submissions for a student
+ * based on provided parameters.
+ * @param req - The function `getStudentCourseDetails` is an asynchronous function that takes `req` and
+ * `res` as parameters. In an Express.js application, `req` represents the request object containing
+ * information about the HTTP request, and `res` represents the response object used to send the
+ * response back to the
+ * @param res - The `res` parameter in the `getStudentCourseDetails` function is the response object
+ * that will be used to send back the response to the client making the request. It is typically used
+ * to send HTTP responses with data or error messages back to the client.
+ * @returns The function `getStudentCourseDetails` returns the details of a student's course and their
+ * task submissions. If successful, it returns an object with the student's name, email, carnet, sede
+ * (campus), course name, and an array of formatted task submissions. If there are any errors during
+ * the process, it returns an error message along with the status code 500.
+ */
 const getStudentCourseDetails = async (req, res) => {
   const { user_id, course_id, sede_id, year } = req.params;
 
@@ -304,8 +344,22 @@ const getStudentCourseDetails = async (req, res) => {
     });
   }
 };
+/**
+ * The function `getAllTasksBySedeYearAndUser` retrieves tasks and their submission status for a
+ * specific user, year, and location.
+ * @param req - The function `getAllTasksBySedeYearAndUser` is designed to handle a request and
+ * retrieve tasks based on the provided parameters. Here's a breakdown of the parameters used in the
+ * function:
+ * @param res - The `res` parameter in the `getAllTasksBySedeYearAndUser` function is the response
+ * object that will be used to send back the response to the client making the request. It is typically
+ * used to send HTTP responses with data or error messages back to the client. In this function,
+ * @returns The function `getAllTasksBySedeYearAndUser` returns a list of tasks along with their
+ * submission status for a specific user, year, and location (sede). The tasks are fetched based on
+ * course assignments for the given year and location, and then matched with task submissions of the
+ * user to provide the submission status for each task. The final response includes the tasks with
+ * their submission status.
+ */
 
-// Obtener todas las tareas de una sede, año y usuario
 const getAllTasksBySedeYearAndUser = async (req, res) => {
   const { user_id, year, sede_id } = req.params;
 

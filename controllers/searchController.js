@@ -3,7 +3,19 @@ const User = require("../models/user");
 const Sede = require("../models/sede");
 const Year = require("../models/year");
 
-// Buscar estudiantes por carnet
+
+/**
+ * The function `searchStudentByCarnet` searches for students based on their carnet number, filtering
+ * by year, sede_id, and other criteria, and returns formatted student data in a response.
+ * @param req - The code snippet you provided is a function that searches for students based on the
+ * query parameters `sede_id`, `year`, and `carnet`. Here's a breakdown of the function:
+ * @param res - This code snippet defines an asynchronous function `searchStudentByCarnet` that
+ * searches for students based on the provided parameters. Here's a breakdown of the function:
+ * @returns The function `searchStudentByCarnet` is returning a JSON response with the formatted
+ * student data if students are found based on the provided parameters. If no students are found, it
+ * returns a 404 status with a message indicating that no students were found. If there is an error
+ * during the search process, it returns a 500 status with an error message.
+ */
 const searchStudentByCarnet = async (req, res) => {
   const {sede_id, year, carnet } = req.query;
   const { sede_id: tokenSedeId } = req;
@@ -76,7 +88,18 @@ const searchStudentByCarnet = async (req, res) => {
   }
 };
 
-// Buscar catedráticos por carnet
+/**
+ * The function `searchProfessorByCarnet` searches for professors based on a provided carnet number and
+ * returns formatted professor data if found.
+ * @param req - The `req` parameter in the `searchProfessorByCarnet` function represents the request
+ * object in Node.js. It contains information about the HTTP request that triggered the function, such
+ * as request headers, query parameters, body content, and more.
+ * @param res - The function `searchProfessorByCarnet` is an asynchronous function that searches for
+ * professors based on the provided carnet parameter. It performs validation checks on the carnet
+ * parameter and then queries the database to find professors matching the criteria.
+ * @returns The `searchProfessorByCarnet` function returns a JSON response based on the conditions met
+ * during the execution of the function. Here are the possible return scenarios:
+ */
 const searchProfessorByCarnet = async (req, res) => {
   const { carnet } = req.query;
   const { sede_id: tokenSedeId } = req;
@@ -139,7 +162,22 @@ const searchProfessorByCarnet = async (req, res) => {
   }
 };
 
-// Buscar estudiantes por carnet (sin validación de sede, para el decano)
+/**
+ * The function `searchStudentByCarnetWithoutSede` searches for students by their carnet number without
+ * filtering by sede_id and returns formatted student information including the sede name.
+ * @param req - The function `searchStudentByCarnetWithoutSede` is an asynchronous function that
+ * searches for students based on their carnet number without considering the sede_id filter. Here's a
+ * breakdown of the function:
+ * @param res - The function `searchStudentByCarnetWithoutSede` is an asynchronous function that
+ * searches for students based on their carnet number without considering the sede_id filter. It
+ * performs several validations on the carnet parameter and then queries the database to find students
+ * matching the criteria.
+ * @returns The function `searchStudentByCarnetWithoutSede` is returning JSON responses based on
+ * different conditions:
+ * 1. If the required parameter 'carnet' is not provided in the request query, it returns a 400 status
+ * with a message indicating that the 'carnet' parameter is mandatory.
+ * 2. If the 'carnet' parameter does not match the specified format "XXXX
+ */
 const searchStudentByCarnetWithoutSede = async (req, res) => {
   const { carnet } = req.query;
 

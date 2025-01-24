@@ -6,6 +6,25 @@ const fs = require("fs");
 const Year = require("../models/year");
 const { sendEmailCatedratico } = require("./emailController");
 
+/**
+ * The function `bulkUploadCatedratico` handles the bulk upload of teacher data from an Excel file,
+ * performs validations, creates new user records if necessary, and sends welcome emails with
+ * credentials.
+ * @param req - `req` is the request object that represents the HTTP request. It contains properties
+ * and methods for interacting with the incoming request, such as request headers, parameters, body,
+ * and files. In the provided code snippet, `req` is used to extract data from the request, such as
+ * `req.file
+ * @param res - The `res` parameter in the code snippet refers to the response object in Express.js. It
+ * is used to send a response back to the client making the HTTP request. In this function, `res` is
+ * used to send different HTTP responses based on the outcome of the bulk upload process, such as
+ * @returns The function `bulkUploadCatedratico` is returning JSON responses based on different
+ * conditions:
+ * 1. If no file is attached in the request, it returns a 400 status with a message stating "Se
+ * requiere un archivo Excel".
+ * 2. If the `sede_id` in the request does not match the `sede_id` from the token, it returns a 403
+ * status
+ */
+
 const bulkUploadCatedratico = async (req, res) => {
   const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
   const { sede_id } = req.body; // Extraer el valor de sede_id del cuerpo de la solicitud

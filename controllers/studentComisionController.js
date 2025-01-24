@@ -1,9 +1,23 @@
 const { Op } = require("sequelize");
-const EstudianteComision = require("../models/estudianteComision");
+const studentComision = require("../models/studentComision");
 const User = require("../models/user");
 const Year = require("../models/year");
 const GroupComision = require("../models/groupComision");
 
+/**
+ * The function `getStudentsComisionByYear` retrieves students associated with commission groups for a
+ * specific year and location, including their profile information and profile photo URLs.
+ * @param req - The function `getStudentsComisionByYear` is an asynchronous function that retrieves
+ * information about students based on the year and sede_id provided in the request parameters. Here's
+ * a breakdown of the function:
+ * @param res - The function `getStudentsComisionByYear` is an asynchronous function that retrieves
+ * students' information based on the year and location (sede) provided in the request parameters.
+ * Here's a breakdown of the function:
+ * @returns The function `getStudentsComisionByYear` is returning a list of users with their details
+ * such as user_id, email, name, carnet, and profile photo URL. The function fetches this data based on
+ * the provided year and sede_id parameters, ensuring that the year exists in the database, validating
+ * the access rights based on the token's sede_id, and then retrieving users associated with specific
+ */
 const getStudentsComisionByYear = async (req, res) => {
   const { year, sede_id } = req.params;
   const { sede_id: tokenSedeId } = req; 
@@ -29,8 +43,8 @@ const getStudentsComisionByYear = async (req, res) => {
       attributes: ["group_id", "year_id", "sede_id"],
       include: [
         {
-          model: EstudianteComision,
-          as: "estudianteComisiones",
+          model: studentComision,
+          as: "studentComisiones",
           attributes: ["user_id"],
         },
       ],
@@ -44,7 +58,7 @@ const getStudentsComisionByYear = async (req, res) => {
 
     // Obtener todos los user_id asociados a las comisiones de los grupos
     const userIds = groups.flatMap((group) =>
-      group.estudianteComisiones.map((estudiante) => estudiante.user_id)
+      group.studentComisiones.map((estudiante) => estudiante.user_id)
     );
 
     // Buscar los usuarios con los user_id encontrados

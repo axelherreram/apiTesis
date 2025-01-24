@@ -3,7 +3,21 @@ const { sequelize } = require("../config/database");
 const User = require("./user");
 const Task = require("./task");
 
-// Modelo para Task Submissions
+/**
+ * Model `TaskSubmissions` represents the submissions made by students for specific tasks.
+ * 
+ * Fields:
+ * - `submission_id`: Unique identifier for the submission (Primary Key, auto-increment).
+ * - `user_id`: Reference to the student who submitted the task (`User` model).
+ * - `task_id`: Reference to the task being submitted (`Task` model).
+ * - `submission_complete`: Boolean indicating whether the task was completed (Default: false).
+ * - `date`: Date of submission (Default: current timestamp, adjusted for timezone).
+ * 
+ * Configuration:
+ * - `timestamps: false`: No automatic `createdAt` or `updatedAt` fields.
+ * - `tableName: 'TaskSubmissions'`: Database table name.
+ * - `hooks.beforeCreate`: Adjusts `date` to the correct timezone before saving.
+ */
 const TaskSubmissions = sequelize.define(
   "TaskSubmissions",
   {
