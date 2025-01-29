@@ -1,15 +1,16 @@
-const express = require("express");
-const router = express.Router();
-
+const express = require('express');
 const {
   dataGraphics,
   getTaskSubmissionStats,
-} = require("../controllers/graphicController");
-const verifyRole = require("../middlewares/roleMiddleware");
-const authMiddleware = require("../middlewares/authMiddleware");
-const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
+  getTaskSubmissionStatsAdvanced,
+} = require('../controllers/graphicController');
+const authMiddleware = require('../middlewares/authMiddleware');
+const verifyRole = require('../middlewares/roleMiddleware');
+const extractSedeIdMiddleware = require('../middlewares/extractSedeIdMiddleware');
 
-const admin = verifyRole([3]);
+const router = express.Router();
+const admin = verifyRole([3, 4]);
+
 /**
  * @swagger
  * tags:
@@ -85,9 +86,39 @@ router.get(
  */
 router.get(
   "/graphics/task-stats/:course_id/:year/:sede_id",
-  getTaskSubmissionStats,
   authMiddleware,
-  admin
+  admin,
+  getTaskSubmissionStats
+);
+
+/**
+ * @swagger
+ * /api/graphics/task-stats-advanced/{sede_id}:
+ *   get:
+ *     summary: Obtener estadísticas avanzadas de las tareas
+ *     tags: [graficas de datos]
+ *     security:
+ *      - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: sede_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la sede
+ *     responses:
+ *       200:
+ *         description: Successful response
+ *       404:
+ *         description: Not found
+ *       500:
+ *         description: Internal server error
+ */
+router.get(
+  "/graphics/task-stats-advanced/:sede_id",
+  authMiddleware,
+  admin,
+  getTaskSubmissionStatsAdvanced
 );
 
 module.exports = router;

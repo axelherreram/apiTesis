@@ -4,6 +4,7 @@ const Task = require("../models/task");
 const TaskSubmissions = require("../models/taskSubmissions");
 const Year = require("../models/year");
 const CourseAssignment = require("../models/courseAssignment");
+const Course = require("../models/course");
 
 /**
  * The function `getTaskSubmissionStats` retrieves and calculates statistics on task submissions for a
@@ -147,7 +148,121 @@ const dataGraphics = async (req, res) => {
   }
 };
 
+const getTaskSubmissionStatsAdvanced = async (req, res) => {
+  const { sede_id } = req.params;
+
+  try {
+    // Obtener el año y mes actual
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // Enero es 0, por eso sumamos 1
+
+    // Determinar el course_id según el mes actual
+    const course_id = currentMonth <= 6 ? 1 : 2;
+
+    // Buscar el año en la base de datos
+    const yearRecord = await Year.findOne({
+      where: { year: currentYear },
+    });
+
+    if (!yearRecord) {
+      return res.status(404).json({ message: "No se encontró el año actual en la base de datos." });
+    }
+
+    const year_id = yearRecord.year_id;
+
+    // Obtener la asignación de cursos según la sede y el año
+    const courseSedeAssignment = await CourseSedeAssignment.findOne({
+      where: { sede_id, year_id, course_id },
+    });
+
+    if (!courseSedeAssignment) {
+      return res.status(404).json({ message: "No hay cursos asignados para este mes en la sede actual." });
+    }
+
+    // Obtener las tareas del curso asignado
+    const tasks = await Task.findAll({
+      where: { asigCourse_id: courseSedeAssignment.asigCourse_id },
+      attributes: ["task_id", "title"],
+    });
+
+    if (tasks.length === 0) {
+      return res.status(404).json({ message: "No hay tareas registradas para este curso." });
+    }
+
+    let totalSubmissions = 0;
+    let completedSubmissions = 0;
+    let pendingSubmissions = 0;
+    let submissionCounts = [];
+
+    // Obtener estadísticas de todas las tareas en paralelo con Promise.all
+    const taskStats = await Promise.all(
+      tasks.map(async (task) => {
+        const task_id = task.task_id;
+
+        // Contar total de entregas
+        const total = await TaskSubmissions.count({ where: { task_id } });
+
+        // Contar entregas completas
+        const completed = await TaskSubmissions.count({
+          where: { task_id, submission_complete: true },
+        });
+
+        const pending = total - completed; // Entregas pendientes
+
+        totalSubmissions += total;
+        completedSubmissions += completed;
+        pendingSubmissions += pending;
+
+        return {
+          task_id,
+          title: task.title,
+          totalSubmissions: total,
+        };
+      })
+    );
+
+    // Calcular promedio de entregas por tarea
+    const avgSubmissions = totalSubmissions / tasks.length || 0;
+
+    // Ordenar tareas por cantidad de entregas
+    taskStats.sort((a, b) => a.totalSubmissions - b.totalSubmissions);
+
+    const leastSubmittedTask = taskStats[0] || null;
+    const mostSubmittedTask = taskStats[taskStats.length - 1] || null;
+
+    // Calcular porcentajes de entregas completas vs. incompletas
+    const totalTasksSubmissions = completedSubmissions + pendingSubmissions;
+    const completedPercentage = totalTasksSubmissions > 0
+      ? ((completedSubmissions / totalTasksSubmissions) * 100).toFixed(2)
+      : "0.00";
+
+    const pendingPercentage = totalTasksSubmissions > 0
+      ? ((pendingSubmissions / totalTasksSubmissions) * 100).toFixed(2)
+      : "0.00";
+
+    res.status(200).json({
+      course_id, // Enviar el ID del curso determinado según el mes
+      avgSubmissionsPerTask: avgSubmissions.toFixed(2),
+      totalSubmissions,
+      completedSubmissions,
+      pendingSubmissions,
+      completionRate: `${completedPercentage}%`,
+      pendingRate: `${pendingPercentage}%`,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error al obtener estadísticas avanzadas de entregas",
+      error: error.message,
+    });
+  }
+};
+
+
+
+
 module.exports = {
   dataGraphics,
   getTaskSubmissionStats,
+  getTaskSubmissionStatsAdvanced,
 };
