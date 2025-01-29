@@ -7,6 +7,7 @@ const {
 } = require("../controllers/graphicController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
+const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const admin = verifyRole([3]);
 /**
@@ -39,7 +40,13 @@ const admin = verifyRole([3]);
  *       500:
  *         description: Internal server error
  */
-router.get("/graphics/data/:sede_id", authMiddleware, admin, dataGraphics);
+router.get(
+  "/graphics/data/:sede_id",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  dataGraphics
+);
 
 /**
  * @swagger
