@@ -97,7 +97,7 @@ const getAllCommentsForTaskAndUser = async (req, res) => {
   try {
     const comments = await Comments.findAll({
       where: { task_id: taskId, user_id: userId },
-      attributes: [],
+      attributes: ["comment_id"],
       include: [
         {
           model: CommentVersion,
