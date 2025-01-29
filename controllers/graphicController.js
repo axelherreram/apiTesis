@@ -148,6 +148,19 @@ const dataGraphics = async (req, res) => {
   }
 };
 
+/**
+ * The function `getTaskSubmissionStats` retrieves and calculates statistics on task submissions for a
+ * specific course, year, and location.
+ * 
+ * @param req - The `req` parameter is the request object containing parameters such as `course_id`,
+ * `year`, and `sede_id`, which are used to fetch the corresponding data.
+ * @param res - The `res` parameter is the response object, used to send the result of the function back to
+ * the client. It will contain a JSON response with task submission statistics or error messages.
+ * 
+ * @returns A JSON object with the total number of students in the course and detailed statistics for each task.
+ * This includes the number of confirmed submissions and pending submissions for each task.
+ * In case of an error, a 500 status with an error message will be returned.
+ */
 const getTaskSubmissionStatsAdvanced = async (req, res) => {
   const { sede_id } = req.params;
 
@@ -228,8 +241,6 @@ const getTaskSubmissionStatsAdvanced = async (req, res) => {
     // Ordenar tareas por cantidad de entregas
     taskStats.sort((a, b) => a.totalSubmissions - b.totalSubmissions);
 
-    const leastSubmittedTask = taskStats[0] || null;
-    const mostSubmittedTask = taskStats[taskStats.length - 1] || null;
 
     // Calcular porcentajes de entregas completas vs. incompletas
     const totalTasksSubmissions = completedSubmissions + pendingSubmissions;
@@ -242,7 +253,7 @@ const getTaskSubmissionStatsAdvanced = async (req, res) => {
       : "0.00";
 
     res.status(200).json({
-      course_id, // Enviar el ID del curso determinado según el mes
+      course_id, 
       avgSubmissionsPerTask: avgSubmissions.toFixed(2),
       totalSubmissions,
       completedSubmissions,
@@ -257,8 +268,6 @@ const getTaskSubmissionStatsAdvanced = async (req, res) => {
     });
   }
 };
-
-
 
 
 module.exports = {
