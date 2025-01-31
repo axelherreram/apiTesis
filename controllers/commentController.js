@@ -97,7 +97,7 @@ const getAllCommentsForTaskAndUser = async (req, res) => {
   try {
     const comments = await Comments.findAll({
       where: { task_id: taskId, user_id: userId },
-      attributes: ["comment_id"],
+      attributes: ["comment_id", "comment_active"],
       include: [
         {
           model: CommentVersion,
@@ -115,6 +115,7 @@ const getAllCommentsForTaskAndUser = async (req, res) => {
 
     const formattedComments = comments.map((comment) => ({
       comment_id: comment.comment_id,
+      comment_active: comment.comment_active,
       task_id: comment.task_id,
       user_id: comment.user_id,
       versions: comment.CommentVersions.map((version) => ({
@@ -159,6 +160,9 @@ const desactivateComment = async (req, res) => {
     if (!comment) {
       return res.status(404).json({ message: "Comentario no encontrado" });
     }
+    if(comment.comment_active = false){
+      return res.status(400).json({ message: "Comentario ya desactivado" });
+    } 
 
     await Comments.update(
       { comment_active: false },
