@@ -10,6 +10,7 @@ const Sede = require("../models/sede");
 const Course = require("../models/course");
 
 const moment = require("moment-timezone");
+const { createNotification } = require("../sql/notification");
 
 /**
  * The function `createTaskSubmission` handles the submission of a task by a user, checking various
@@ -39,7 +40,7 @@ const createTaskSubmission = async (req, res) => {
 
     // Configurar zona horaria
     const timeZone = "America/Guatemala";
-    const currentDate = moment.tz(timeZone); // Fecha y hora actual ajustada
+    const currentDate = moment.tz(timeZone);
     const currentTime = moment(currentDate.format("HH:mm:ss"), "HH:mm:ss");
 
     // Convertir fechas y horas de la tarea a la zona horaria correcta
@@ -61,6 +62,14 @@ const createTaskSubmission = async (req, res) => {
       return res.status(400).json({
         message:
           "La tarea no puede ser entregada fuera del rango de fecha permitido",
+        debug: {
+          currentDate: currentDate.format("YYYY-MM-DD HH:mm:ss"),
+          taskStart: taskStart.format("YYYY-MM-DD HH:mm:ss"),
+          endTask: endTask.format("YYYY-MM-DD HH:mm:ss"),
+          currentTime: currentTime.format("HH:mm:ss"),
+          startTime: startTime.format("HH:mm:ss"),
+          endTime: endTime.format("HH:mm:ss"),
+        },
       });
     }
 
@@ -68,6 +77,12 @@ const createTaskSubmission = async (req, res) => {
     const taskSubmissionExist = await TaskSubmission.findOne({
       where: { user_id, task_id },
     });
+
+    if (taskSubmissionExist.submission_complete) {
+      return res.status(400).json({
+        message: "La tarea ya ha sido entregada",
+      });
+    }
 
     if (taskSubmissionExist) {
       await taskSubmissionExist.update({
@@ -82,8 +97,24 @@ const createTaskSubmission = async (req, res) => {
         taskExist.task_id
       );
 
+      await createNotification(
+        `El estudiante ${userExist.name} ha confimado la entrega de la tarea: ${taskExist.title}`,
+        userExist.sede_id,
+        user_id,
+        task_id,
+        "general"
+      );
+
       return res.status(200).json({
         message: "Tarea de envío actualizada exitosamente",
+        debug: {
+          currentDate: currentDate.format("YYYY-MM-DD HH:mm:ss"),
+          taskStart: taskStart.format("YYYY-MM-DD HH:mm:ss"),
+          endTask: endTask.format("YYYY-MM-DD HH:mm:ss"),
+          currentTime: currentTime.format("HH:mm:ss"),
+          startTime: startTime.format("HH:mm:ss"),
+          endTime: endTime.format("HH:mm:ss"),
+        },
       });
     }
 
