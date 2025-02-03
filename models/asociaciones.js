@@ -16,6 +16,7 @@ const Comments = require("./comments");
 const CommentVersion = require("./commentVersion");
 const ThesisSubmission = require("./thesisSubmissions");
 const TaskSubmissions = require("./taskSubmissions");
+const Notification = require("./notification");
 
 module.exports = function associateModels() {
   // Relación entre Task y CourseSedeAssignment
@@ -117,7 +118,7 @@ module.exports = function associateModels() {
   // Relación entre Comments y CommentVersion
   Comments.hasMany(CommentVersion, { foreignKey: "comment_id" });
   CommentVersion.belongsTo(Comments, { foreignKey: "comment_id" });
-/* 
+  /* 
   // Relación entre CommentVersion y User
   CommentVersion.belongsTo(User, { foreignKey: "user_id" });
   User.hasMany(CommentVersion, { foreignKey: "user_id" });
@@ -142,19 +143,31 @@ module.exports = function associateModels() {
     as: "task",
   });
 
-    // Relación entre User y TaskSubmissions
-    User.hasMany(TaskSubmissions, { foreignKey: "user_id" });
-    TaskSubmissions.belongsTo(User, { foreignKey: "user_id" });
-  
-    // Relación entre Task y TaskSubmissions
-    Task.hasMany(TaskSubmissions, { foreignKey: "task_id" });
-    TaskSubmissions.belongsTo(Task, { foreignKey: "task_id" });
-  
-    // Relación entre User y ThesisSubmission
-    User.hasMany(ThesisSubmission, { foreignKey: "user_id" });
-    ThesisSubmission.belongsTo(User, { foreignKey: "user_id" });
-  
-    // Relación entre Task y ThesisSubmission
-    Task.hasMany(ThesisSubmission, { foreignKey: "task_id" });
-    ThesisSubmission.belongsTo(Task, { foreignKey: "task_id" });
+  // Relación entre User y TaskSubmissions
+  User.hasMany(TaskSubmissions, { foreignKey: "user_id" });
+  TaskSubmissions.belongsTo(User, { foreignKey: "user_id" });
+
+  // Relación entre Task y TaskSubmissions
+  Task.hasMany(TaskSubmissions, { foreignKey: "task_id" });
+  TaskSubmissions.belongsTo(Task, { foreignKey: "task_id" });
+
+  // Relación entre User y ThesisSubmission
+  User.hasMany(ThesisSubmission, { foreignKey: "user_id" });
+  ThesisSubmission.belongsTo(User, { foreignKey: "user_id" });
+
+  // Relación entre Task y ThesisSubmission
+  Task.hasMany(ThesisSubmission, { foreignKey: "task_id" });
+  ThesisSubmission.belongsTo(Task, { foreignKey: "task_id" });
+
+  // Relación entre Notification y User (Teacher)
+  Notification.belongsTo(User, { foreignKey: "teacher_id" });
+  User.hasMany(Notification, { foreignKey: "teacher_id" });
+
+  // Relación entre Notification y User (Student)
+  Notification.belongsTo(User, { foreignKey: "student_id" });
+  User.hasMany(Notification, { foreignKey: "student_id" });
+
+  // Relación entre Notification y Task
+  Notification.belongsTo(Task, { foreignKey: "task_id" });
+  Task.hasMany(Notification, { foreignKey: "task_id" });
 };
