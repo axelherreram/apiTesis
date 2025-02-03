@@ -1,6 +1,9 @@
 const Task = require("../models/task");
 const Comments = require("../models/comments");
 const CommentVersion = require("../models/commentVersion");
+const { createNotification } = require("../sql/notification");
+const { addTimeline } = require("../sql/timeline");
+const User = require("../models/user");
 
 /**
  * The function `addCommentForTask` handles the creation of comments for a specific task, validating
@@ -32,25 +35,27 @@ const addCommentForTask = async (req, res) => {
         .json({ message: "El rol debe ser 'student' o 'teacher'" });
     }
 
-    // Obtener la tarea asociada al taskId
-    const task = await Task.findOne({
-      where: { task_id: taskId },
-    });
+    // Obtener la tarea
+    const task = await Task.findOne({ where: { task_id: taskId } });
 
     if (!task) {
       return res.status(404).json({ message: "Tarea no encontrada" });
     }
 
-    let existingComment = await Comments.findOne({
-      where: { user_id: user_id, task_id: taskId },
+    // Verificar si el usuario existe
+    const userExist = await User.findByPk(user_id);
+
+    if (!userExist) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    // Obtener o crear comentario
+    const [existingComment, created] = await Comments.findOrCreate({
+      where: { user_id, task_id: taskId },
+      defaults: { user_id, task_id: taskId },
     });
 
-    if (!existingComment) {
-      existingComment = await Comments.create({
-        user_id: user_id,
-        task_id: taskId,
-      });
-    } else if (existingComment.comment_active === false) {
+    if (!created && existingComment.comment_active === false) {
       return res.status(400).json({
         message: "No se pueden crear más comentarios: Comentario desactivado",
       });
@@ -58,20 +63,33 @@ const addCommentForTask = async (req, res) => {
 
     // Crear una nueva versión del comentario
     await CommentVersion.create({
-      comment: comment,
-      role: role,
+      comment,
+      role,
       comment_id: existingComment.comment_id,
     });
 
+    // Notificaciones según el rol
+    const notificationMessage =
+      role === "student"
+        ? `El estudiante ${userExist.name} ha comentado en la tarea ${task.title}`
+        : `Tienes un nuevo comentario en la tarea ${task.title}`;
+
+    await createNotification(
+      notificationMessage,
+      userExist.sede_id,
+      user_id,
+      taskId,
+      role === "student" ? "general" : "student"
+    );
+
     // Respuesta exitosa
-    res.status(201).json({
-      message: "Comentario agregado exitosamente.",
-    });
+    res.status(201).json({ message: "Comentario agregado exitosamente." });
   } catch (error) {
-    console.error("Error al crear el comentario:", error.message);
-    res
-      .status(500)
-      .json({ message: "Error interno del servidor", error: error.message });
+    console.error("Error al crear el comentario:", error);
+    res.status(500).json({
+      message: "Error interno del servidor",
+      error: error.message,
+    });
   }
 };
 
@@ -160,9 +178,9 @@ const desactivateComment = async (req, res) => {
     if (!comment) {
       return res.status(404).json({ message: "Comentario no encontrado" });
     }
-    if(comment.comment_active = false){
+    if ((comment.comment_active = false)) {
       return res.status(400).json({ message: "Comentario ya desactivado" });
-    } 
+    }
 
     await Comments.update(
       { comment_active: false },
