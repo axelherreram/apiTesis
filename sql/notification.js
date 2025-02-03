@@ -1,4 +1,3 @@
-const moment = require("moment");
 const Notification = require("../models/notification");
 
 /**
@@ -10,7 +9,7 @@ const Notification = require("../models/notification");
  * @param {number} sede_id - The ID of the location where the notification is sent.
  * @param {number} [student_id] - The ID of the student receiving the notification.
  * @param {number} [task_id] - The ID of the related task.
- * @param {string} type_notification - The type of notification, either "student" or "teacher".
+ * @param {string} type_notification - The type of notification, either "student" or "general".
  *
  * @throws {Error} - If required parameters are missing or if there is an issue creating the notification.
  *
@@ -32,7 +31,7 @@ async function createNotification(
       console.error("Required parameters are missing:", {
         notification_text,
         sede_id,
-         type_notification,
+        type_notification,
       });
       return;
     }
@@ -42,7 +41,7 @@ async function createNotification(
       sede_id,
       student_id,
       task_id,
-       type_notification,
+      type_notification,
     });
   } catch (err) {
     console.error("Error creating notification:", err);

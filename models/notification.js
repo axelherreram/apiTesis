@@ -14,7 +14,7 @@ const notification = sequelize.define(
       primaryKey: true,
     },
     notification_text: {
-      type: DataTypes.STRING(120),
+      type: DataTypes.STRING,
       allowNull: false,
     },
     sede_id: {
