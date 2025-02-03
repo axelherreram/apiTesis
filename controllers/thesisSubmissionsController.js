@@ -4,6 +4,7 @@ const User = require("../models/user");
 const upload = require("../middlewares/uploadPdf");
 const fs = require("fs");
 const { addTimeline } = require("../sql/timeline");
+const { createNotification } = require("../sql/notification");
 
 /**
  * The `uploadProposal` function in JavaScript handles the process of uploading a thesis proposal,
@@ -119,6 +120,22 @@ const uploadProposal = async (req, res) => {
         date: new Date(),
       });
 
+      // 
+      await addTimeline(
+        user_id,
+        "Entrega de propuesta de tesis",
+        "Se entregó la propuesta de tesis",
+        task_id
+      );
+
+      // Crear notificación
+      await createNotification(
+        `Entrega de propuesta de tesis por ${userExist.name}`,
+        userExist.sede_id,
+        user_id,
+        task_id,
+        "general"
+      );
 
       res.status(201).json({
         message: "Propuesta de tesis entregada exitosamente",
@@ -258,7 +275,15 @@ const updateProposal = async (req, res) => {
         "Se actualizó la propuesta de tesis",
         existingSubmission.task_id
       );
-      
+
+      // Crear notificación
+      await createNotification(
+        `Entrega de propuesta de tesis actualizada por ${userExist.name}`,
+        userExist.sede_id,
+        user_id,
+        existingSubmission.task_id,
+        "general"
+      );
 
       res.status(200).json({
         message: "Entrega de tesis actualizada exitosamente",
