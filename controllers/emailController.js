@@ -1,6 +1,16 @@
 const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
+
+const transporter = nodemailer.createTransport({
+  service: "gmail", 
+  auth: {
+    user: process.env.EMAIL_USER, // Tu correo electrónico
+    pass: process.env.EMAIL_PASSWORD, // Tu contraseña o clave de aplicación
+  },
+});
+
+
 /**
  * @function loadTemplate
  * @description Loads an email template from the specified path and replaces variables within the template.
