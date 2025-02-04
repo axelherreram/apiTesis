@@ -11,6 +11,7 @@ const Course = require("../models/course");
 
 const moment = require("moment-timezone");
 const { createNotification } = require("../sql/notification");
+const { sendEmailConfirmDelivery } = require("./emailController");
 
 /**
  * The function `createTaskSubmission` handles the submission of a task by a user, checking various
@@ -103,6 +104,26 @@ const createTaskSubmission = async (req, res) => {
         user_id,
         task_id,
         "general"
+      );
+
+      // recuperar administrador/catedratico de la sede
+      const teacher = await User.findOne({
+        where: { sede_id: userExist.sede_id, rol_id: 3 },
+      });
+
+      // Enviar correo electrónico de confirmación de entrega
+      const templateVariables = {
+        catedraticoNombre: teacher.name,
+        nombreEstudiante: userExist.name,
+        capituloTitulo: taskExist.title,
+        fechaEntrega: currentDate.format("DD/MM/YYYY"),
+        estadoEntrega: "Entregado",
+      };
+   
+      await sendEmailConfirmDelivery(
+        "Confirmación de Entrega",
+        teacher.email,
+        templateVariables
       );
 
       return res.status(200).json({

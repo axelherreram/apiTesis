@@ -180,10 +180,45 @@ const sendEmailCatedratico = async (subject, to, templateVariables) => {
   }
 };
 
+/**
+ * @function sendEmailConfirmDelivery
+ * @description Envía un correo electrónico para confirmar la entrega de una tarea o capítulo.
+ * @param {string} subject - El asunto del correo electrónico.
+ * @param {string} to - La dirección de correo electrónico del destinatario.
+ * @param {Object} templateVariables - Un objeto con los valores que se reemplazarán en la plantilla.
+ * @example
+ * sendEmailConfirmDelivery(
+ *   'Confirmación de Entrega',
+ *   'catedratico@example.com',
+ *   { estudiante: 'Juan Pérez', tituloEntrega: 'Capítulo 1', fechaEntrega: '05/02/2025' }
+ * );
+ */
+const sendEmailConfirmDelivery = async (subject, to, templateVariables) => {
+  try {
+    const templatePath = path.join(__dirname, "../templates/emailDeliveryTask.html");
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}: ${info.response}`);
+  } catch (error) {
+    console.error(`Error sending email: ${error.message}`);
+  }
+};
+
+
+
 module.exports = {
   sendEmailPassword,
   sendEmailTask,
   sendCommentEmail,
   sendEmailPasswordRecovery,
-  sendEmailCatedratico
+  sendEmailCatedratico,
+  sendEmailConfirmDelivery
 };
