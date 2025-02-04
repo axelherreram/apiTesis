@@ -4,6 +4,8 @@ const CommentVersion = require("../models/commentVersion");
 const { createNotification } = require("../sql/notification");
 const { addTimeline } = require("../sql/timeline");
 const User = require("../models/user");
+const { sendCommentEmail } = require("./emailController");
+const { DATE } = require("sequelize");
 
 /**
  * The function `addCommentForTask` handles the creation of comments for a specific task, validating
@@ -23,28 +25,31 @@ const addCommentForTask = async (req, res) => {
   const { comment, role, user_id } = req.body;
 
   try {
-    if (!comment || !role || !user_id) {
-      return res
-        .status(400)
-        .json({ message: "Comment, role, and user_id are required" });
+    // Validaciones iniciales
+    if (!taskId || isNaN(taskId)) {
+      return res.status(400).json({ message: "El ID de la tarea es inválido" });
+    }
+
+    if (!comment || typeof comment !== "string" || comment.trim() === "") {
+      return res.status(400).json({ message: "El comentario no puede estar vacío" });
     }
 
     if (!["student", "teacher"].includes(role)) {
-      return res
-        .status(400)
-        .json({ message: "El rol debe ser 'student' o 'teacher'" });
+      return res.status(400).json({ message: "El rol debe ser 'student' o 'teacher'" });
+    }
+
+    if (!user_id) {
+      return res.status(400).json({ message: "El ID del usuario es requerido" });
     }
 
     // Obtener la tarea
     const task = await Task.findOne({ where: { task_id: taskId } });
-
     if (!task) {
       return res.status(404).json({ message: "Tarea no encontrada" });
     }
 
     // Verificar si el usuario existe
     const userExist = await User.findByPk(user_id);
-
     if (!userExist) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
@@ -57,7 +62,7 @@ const addCommentForTask = async (req, res) => {
 
     if (!created && existingComment.comment_active === false) {
       return res.status(400).json({
-        message: "No se pueden crear más comentarios: Comentario desactivado",
+        message: "No puedes agregar más comentarios, el comentario ha sido desactivado.",
       });
     }
 
@@ -68,12 +73,63 @@ const addCommentForTask = async (req, res) => {
       comment_id: existingComment.comment_id,
     });
 
-    // Notificaciones según el rol
+    // Notificación según el rol
     const notificationMessage =
       role === "student"
         ? `El estudiante ${userExist.name} ha comentado en la tarea ${task.title}`
         : `Tienes un nuevo comentario en la tarea ${task.title}`;
 
+    // Agregar a la línea de tiempo al estudiante si el usuario es catedrático
+    if (role === "teacher") {
+      await addTimeline(
+        user_id,
+        "Nuevo comentario",
+        "Se ha agregado un nuevo comentario a la tarea",
+        taskId
+      );
+
+      // Enviar correo al estudiante
+      if (userExist.email) {
+        const templateVariables = {
+          nombre: userExist.name,
+          entregaTitulo: task.title,
+          comentario: comment,
+          fechaComentario: new Date().toLocaleDateString("es-ES"),
+        };
+
+        await sendCommentEmail(
+          "Nuevo comentario en tarea",
+          "Se ha agregado un nuevo comentario a la tarea",
+          userExist.email,
+          templateVariables
+        );
+      }
+    } else {
+      // Buscar catedrático de la sede
+      const teacher = await User.findOne({
+        where: { sede_id: userExist.sede_id, rol_id: 3 },
+      });
+
+      if (teacher && teacher.email) {
+        const templateVariables = {
+          nombre: teacher.name,
+          entregaTitulo: task?.title || "Tarea sin título",
+          comentario: comment || "Sin comentario",
+          fechaComentario: new Date().toLocaleDateString("es-ES"),
+        };
+
+        await sendCommentEmail(
+          "Nuevo comentario en tarea",
+          "Se ha agregado un nuevo comentario a la tarea",
+          teacher.email,
+          templateVariables
+        ); 
+      } else {
+        console.warn("No se encontró un catedrático para enviar la notificación.");
+      }
+    }
+
+    // Crear notificación para la plataforma
     await createNotification(
       notificationMessage,
       userExist.sede_id,
@@ -85,13 +141,14 @@ const addCommentForTask = async (req, res) => {
     // Respuesta exitosa
     res.status(201).json({ message: "Comentario agregado exitosamente." });
   } catch (error) {
-    console.error("Error al crear el comentario:", error);
+    console.error("Error al agregar comentario:", error);
     res.status(500).json({
       message: "Error interno del servidor",
       error: error.message,
     });
   }
 };
+
 
 /**
  * The function `getAllCommentsForTaskAndUser` retrieves comments for a specific task and user, formats
