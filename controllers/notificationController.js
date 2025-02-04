@@ -1,6 +1,16 @@
 const Notification = require("../models/notification");
 
-// Obtener notificaciones por sede_id (para administrador)
+/**
+ * Get notifications by `sede_id` (for administrator).
+ * This endpoint fetches all the general type notifications for a specific `sede_id`,
+ * ordered by notification date in descending order.
+ * 
+ * @param {Object} req - The request object containing the `sede_id` in the URL params.
+ * @param {Object} res - The response object to send the notifications or error message.
+ * 
+ * @returns {Object} - A JSON object with the list of notifications or an error message.
+ * @throws {Error} - If an error occurs while fetching the notifications.
+ */
 const getNotificationsBySede = async (req, res) => {
   const { sede_id } = req.params; // Accedemos al parámetro de ruta
 
@@ -27,7 +37,17 @@ const getNotificationsBySede = async (req, res) => {
   }
 };
 
-// Obtener notificaciones por user_id (para estudiante)
+/**
+ * Get notifications by `user_id` (for student).
+ * This endpoint fetches all the student type notifications for a specific `user_id`,
+ * ordered by notification date in descending order.
+ * 
+ * @param {Object} req - The request object containing the `user_id` in the URL params.
+ * @param {Object} res - The response object to send the notifications or error message.
+ * 
+ * @returns {Object} - A JSON object with the list of notifications or an error message.
+ * @throws {Error} - If an error occurs while fetching the notifications.
+ */
 const getNotificationsByUser = async (req, res) => {
   const { user_id } = req.params; // Accedemos al parámetro de ruta
 
