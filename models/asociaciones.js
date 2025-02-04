@@ -159,9 +159,9 @@ module.exports = function associateModels() {
   Task.hasMany(ThesisSubmission, { foreignKey: "task_id" });
   ThesisSubmission.belongsTo(Task, { foreignKey: "task_id" });
 
-  // Relación entre Notification y User (Teacher)
-  Notification.belongsTo(User, { foreignKey: "teacher_id" });
-  User.hasMany(Notification, { foreignKey: "teacher_id" });
+  // Relación entre Notification y Sede
+  Notification.belongsTo(Sede, { foreignKey: "sede_id" });
+  Sede.hasMany(Notification, { foreignKey: "sede_id" });
 
   // Relación entre Notification y User (Student)
   Notification.belongsTo(User, { foreignKey: "student_id" });

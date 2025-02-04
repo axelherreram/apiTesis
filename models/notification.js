@@ -2,6 +2,7 @@ const { sequelize } = require("../config/database");
 const { DataTypes } = require("sequelize");
 const User = require("./user");
 const Task = require("./task");
+const Sede = require("./sede");
 
 const notification = sequelize.define(
   "notification",
@@ -13,15 +14,15 @@ const notification = sequelize.define(
       primaryKey: true,
     },
     notification_text: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(120),
       allowNull: false,
     },
-    teacher_id: {
+    sede_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
       references: {
-        model: User,
-        key: "user_id",
+        model: Sede,
+        key: "sede_id",
       },
     },
     student_id: {
@@ -43,14 +44,16 @@ const notification = sequelize.define(
     notification_date: {
       type: DataTypes.DATE,
       allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
-    type_notif: {
-      type: DataTypes.STRING,
+    
+    type_notification: {
+      type: DataTypes.STRING(10),
       allowNull: false,
       validate: {
         isIn: {
-          args: [["student", "teacher"]],
-          msg: "El tipo de notificación debe ser 'student' o 'teacher'.",
+          args: [["student", "general"]],
+          msg: "El tipo de notificación debe ser 'student' o 'general'.",
         },
       },
     },

@@ -7,10 +7,10 @@ const Notification = require("../models/notification");
  * This function registers a notification associated with a teacher, optionally linked to a student and a task.
  *
  * @param {string} notification_text - The content of the notification.
- * @param {number} teacher_id - The ID of the teacher creating the notification.
+ * @param {number} sede_id - The ID of the location where the notification is sent.
  * @param {number} [student_id] - The ID of the student receiving the notification.
  * @param {number} [task_id] - The ID of the related task.
- * @param {string} type_notif - The type of notification, either "student" or "teacher".
+ * @param {string} type_notification - The type of notification, either "student" or "teacher".
  *
  * @throws {Error} - If required parameters are missing or if there is an issue creating the notification.
  *
@@ -22,28 +22,27 @@ const Notification = require("../models/notification");
  */
 async function createNotification(
   notification_text,
-  teacher_id,
+  sede_id,
   student_id,
   task_id,
-  type_notif
+  type_notification
 ) {
   try {
-    if (!notification_text || !teacher_id || !type_notif) {
+    if (!notification_text || !sede_id || !type_notification) {
       console.error("Required parameters are missing:", {
         notification_text,
-        teacher_id,
-        type_notif,
+        sede_id,
+         type_notification,
       });
       return;
     }
 
     await Notification.create({
       notification_text,
-      teacher_id,
+      sede_id,
       student_id,
       task_id,
-      notification_date: moment().format("YYYY-MM-DD HH:mm:ss"),
-      type_notif,
+       type_notification,
     });
   } catch (err) {
     console.error("Error creating notification:", err);
