@@ -5,6 +5,7 @@ const upload = require("../middlewares/uploadPdf");
 const fs = require("fs");
 const { addTimeline } = require("../sql/timeline");
 const { createNotification } = require("../sql/notification");
+const { sendEmailThesisSubmission } = require("./emailController");
 
 /**
  * The `uploadProposal` function in JavaScript handles the process of uploading a thesis proposal,
@@ -120,7 +121,7 @@ const uploadProposal = async (req, res) => {
         date: new Date(),
       });
 
-      // 
+      //
       await addTimeline(
         user_id,
         "Entrega de propuesta de tesis",
@@ -136,6 +137,25 @@ const uploadProposal = async (req, res) => {
         task_id,
         "general"
       );
+
+      //obtener el profesor de la tarea
+      const userAdmin = await User.findOne({
+        where: { sede_id: userExist.sede_id, rol_id: 3 },
+      });
+
+      // Enviar correo electrónico de confirmación
+      const templateVariables = {
+        professor: userAdmin.name,
+        student: userExist.name,
+        thesisTitle: taskInfo.title,
+        submissionDate: new Date().toLocaleString(),
+      };
+
+      sendEmailThesisSubmission(
+        "Nueva entrega de propuesta de tesis",
+        userAdmin.email,
+        templateVariables
+      ); 
 
       res.status(201).json({
         message: "Propuesta de tesis entregada exitosamente",
