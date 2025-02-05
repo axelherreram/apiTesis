@@ -212,6 +212,38 @@ const sendEmailConfirmDelivery = async (subject, to, templateVariables) => {
   }
 };
 
+/**
+ * @function sendEmailThesisSubmission
+ * @description Sends an email notification to a professor about a new thesis proposal submission.
+ * @param {string} subject - The email subject.
+ * @param {string} to - The recipient's email address (professor).
+ * @param {Object} templateVariables - Key-value pairs for template placeholders.
+ * @example
+ * sendEmailThesisSubmission(
+ *   'New Thesis Proposal Submission',
+ *   'professor@example.com',
+ *   { professor: 'Dr. Smith', student: 'John Doe', thesisTitle: 'AI in Education', submissionDate: '05/02/2025', description: 'Exploring AI applications in learning environments' }
+ * );
+ */
+const sendEmailThesisSubmission = async (subject, to, templateVariables) => {
+  try {
+    const templatePath = path.join(__dirname, "../templates/emailThesisSubmission.html");
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}: ${info.response}`);
+  } catch (error) {
+    console.error(`Error sending email: ${error.message}`);
+  }
+};
+
 
 
 module.exports = {
@@ -220,5 +252,6 @@ module.exports = {
   sendCommentEmail,
   sendEmailPasswordRecovery,
   sendEmailCatedratico,
-  sendEmailConfirmDelivery
+  sendEmailConfirmDelivery,
+  sendEmailThesisSubmission,
 };
