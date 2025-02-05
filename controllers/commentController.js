@@ -94,7 +94,7 @@ const addCommentForTask = async (req, res) => {
           nombre: userExist.name,
           entregaTitulo: task.title,
           comentario: comment,
-          fechaComentario: new Date().toLocaleDateString("es-ES"),
+          fechaComentario: new Date().toLocaleString(),
         };
 
         await sendCommentEmail(

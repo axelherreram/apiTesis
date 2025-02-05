@@ -116,7 +116,7 @@ const createTaskSubmission = async (req, res) => {
         catedraticoNombre: teacher.name,
         nombreEstudiante: userExist.name,
         capituloTitulo: taskExist.title,
-        fechaEntrega: currentDate.format("DD/MM/YYYY"),
+        fechaEntrega: new Date().toLocaleString(),
         estadoEntrega: "Entregado",
       };
    

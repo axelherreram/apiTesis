@@ -173,7 +173,7 @@ const createTask = async (req, res) => {
           nombre: userEmail.name,
           titulo: title,
           descripcion: description,
-          fecha: moment.tz(endTask, "America/Guatemala").format("DD/MM/YYYY"),
+          fecha: new Date().toLocaleString(),
           autor: user.name,
         };
 
