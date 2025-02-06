@@ -162,6 +162,10 @@ const listuserbytoken = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
+    const sede = await Sede.findByPk(user.sede_id);
+
+
+
     const formattedUser = {
       user_id: user.user_id,
       email: user.email,
@@ -171,6 +175,7 @@ const listuserbytoken = async (req, res) => {
         : null,
       carnet: user.carnet,
       sede: user.sede_id,
+      NombreSede: sede.nameSede,
       registrationYear: user.registrationYear,
       roleName: user.rol_id ? user.role.name : null,
     };

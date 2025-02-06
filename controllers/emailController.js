@@ -190,7 +190,7 @@ const sendEmailCatedratico = async (subject, to, templateVariables) => {
  * sendEmailConfirmDelivery(
  *   'Confirmación de Entrega',
  *   'catedratico@example.com',
- *   { estudiante: 'Juan Pérez', tituloEntrega: 'Capítulo 1', fechaEntrega: '05/02/2025' }
+ *   { estudiante: 'Juan Pérez', tituloEntrega: 'Capítulo 1', deliveryDate: '05/02/2025' }
  * );
  */
 const sendEmailConfirmDelivery = async (subject, to, templateVariables) => {

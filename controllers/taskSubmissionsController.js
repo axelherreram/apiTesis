@@ -114,10 +114,10 @@ const createTaskSubmission = async (req, res) => {
       // Enviar correo electrónico de confirmación de entrega
       const templateVariables = {
         catedraticoNombre: teacher.name,
-        nombreEstudiante: userExist.name,
-        capituloTitulo: taskExist.title,
-        fechaEntrega: new Date().toLocaleString(),
-        estadoEntrega: "Entregado",
+        studentName: userExist.name,
+        chapterTitle: taskExist.title,
+        deliveryDate: new Date().toLocaleString(),
+        stateDelivery: "Entregado",
       };
    
       await sendEmailConfirmDelivery(
