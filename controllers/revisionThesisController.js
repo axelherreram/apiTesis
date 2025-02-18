@@ -12,13 +12,17 @@ const uploadRevisionThesis = async (req, res) => {
   let approval_letter_dir = null;
   let thesis_dir = null;
   try {
-    const { user_id, sede_id } = req.body;
+    const { carnet, sede_id } = req.body;
 
     // Verificar si ambos archivos fueron subidos
     if (!req.files || !req.files["approval_letter"] || !req.files["thesis"]) {
-      return res.status(400).json({
-        message: "Se requieren ambos archivos (carta de aprobación y tesis)",
-      });
+      throw new Error("Se requieren ambos archivos (carta de aprobación y tesis)",);
+    }
+    if (carnet) {
+      const carnetRegex = /^\d{4}-\d{2}-\d{4,}$/;
+      if (!carnetRegex.test(carnet)) {
+        throw new Error("Carnet inválido, ingrese carnet completo" + carnet);
+      }
     }
 
     // Desestructurar los archivos subidos
@@ -29,10 +33,13 @@ const uploadRevisionThesis = async (req, res) => {
     thesis_dir = `/uploads/revisionthesis/${thesis[0].filename}`;
 
     // Validar que el usuario exista
-    const userInfo = await User.findByPk(user_id);
+    const userInfo = await User.findOne({
+      where: { carnet },
+    });
     if (!userInfo) {
       throw new Error("Usuario no encontrado");
     }
+    const user_id = userInfo.user_id;
 
     // Validar que el usuario sea un estudiante (rol_id === 1)
     if (userInfo.rol_id !== 1) {
@@ -52,7 +59,7 @@ const uploadRevisionThesis = async (req, res) => {
 
     if (userRevision && userRevision.active_process) {
       throw new Error(
-        `El estudiante ya tiene un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
+        `El estudiante ya tiene cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
       );
     }
 
@@ -101,80 +108,23 @@ const uploadRevisionThesis = async (req, res) => {
   }
 };
 
-const getPendingRevisions = async (req, res) => {
-  try {
-    const { order = "asc", carnet, name } = req.query;
-
-    const orderDirection = order === "desc" ? "DESC" : "ASC";
-
-    const userWhereClause = {};
-    if (carnet) userWhereClause.carnet = carnet;
-    if (name) userWhereClause.name = { [Op.like]: `%${name}%` };
-
-    const pendingRevisions = await RevisionThesis.findAll({
-      attributes: ["revision_thesis_id", "date_revision"],
-      where: { active_process: true },
-      include: [
-        {
-          model: ApprovalThesis,
-          where: { status: "pending" },
-          attributes: ["status"],
-        },
-        {
-          model: User,
-          attributes: ["user_id","name", "carnet"],
-          where: userWhereClause,
-        },
-        {
-          model: AssignedReview,
-          attributes: [], 
-          required: false, 
-        },
-      ],
-      where: {
-        "$AssignedReviews.assigned_review_id$": null, 
-      },
-      order: [["date_revision", orderDirection]],
-    });
-
-    if (pendingRevisions.length === 0) {
-      return res.status(404).json({
-        message: "No hay revisiones de tesis pendientes sin asignar",
-      });
-    }
-
-
-    res.status(200).json({
-      message: "Revisiones de tesis pendientes sin asignar obtenidas con éxito",
-      orden: orderDirection,
-      data: pendingRevisions,
-    });
-  } catch (error) {
-    console.error("Error al obtener las revisiones pendientes:", error);
-    res.status(500).json({
-      message: "Error al obtener las revisiones pendientes",
-      error: error.message,
-    });
-  }
-};
-
 const getRevisionsByUserId = async (req, res) => {
   try {
     const { user_id } = req.params;
 
     // Obtener todas las revisiones del estudiante con active_process: true
     const revisions = await RevisionThesis.findAll({
-      where: { 
-        user_id, 
-        active_process: true, 
-      }, 
-      attributes: ["revision_thesis_id", "thesis_dir", "date_revision", "active_process"],
+      where: {
+        user_id,
+        active_process: true,
+      },
+      attributes: [
+        "revision_thesis_id",
+        "thesis_dir",
+        "date_revision",
+        "active_process",
+      ],
       include: [
-        {
-          model: ApprovalThesis,
-          where: { status: "pending" }, // Solo revisiones con estado "pending"
-          attributes: [],
-        },
         {
           model: User,
           attributes: ["name", "carnet", "email", "profilePhoto"],
@@ -188,13 +138,19 @@ const getRevisionsByUserId = async (req, res) => {
               model: Year,
               as: "year",
               attributes: ["year"],
-            }
+            },
           ],
         },
         {
           model: AssignedReview,
           attributes: ["assigned_review_id"],
           required: false, // No es obligatorio que haya asignaciones
+          include: [
+            {
+              model: User,
+              attributes: ["name", "email"], // Información del revisor asignado
+            },
+          ],
         },
       ],
     });
@@ -206,30 +162,23 @@ const getRevisionsByUserId = async (req, res) => {
       });
     }
 
-    // Filtrar revisiones que no tengan un revisor asignado
-    const filteredRevisions = revisions.filter((revision) => {
-      // Verificar que no haya registros en AssignedReview
-      return revision.AssignedReviews.length === 0;
-    });
-
-    // Si no hay revisiones que cumplan con los filtros
-    if (filteredRevisions.length === 0) {
-      return res.status(404).json({
-        message: "No se encontraron revisiones pendientes sin asignar para el estudiante",
-      });
-    }
-
     // Mapear los datos para agregar el baseURL a thesis_dir
-    const mappedRevisions = filteredRevisions.map((revision) => ({
+    const mappedRevisions = revisions.map((revision) => ({
       ...revision.toJSON(), // Convertir a objeto plano
       thesis_dir: `${process.env.BASE_URL || "http://localhost:3000"}${
         revision.thesis_dir
       }`,
+      assigned_reviewer: revision.AssignedReviews.length
+        ? revision.AssignedReviews.map((assignedReview) => ({
+            reviewer_name: assignedReview.User.name,
+            reviewer_email: assignedReview.User.email,
+          }))
+        : null, // Si no hay revisor asignado, asignamos null
     }));
 
     // Respuesta exitosa
     res.status(200).json({
-      message: "Revisiones pendientes sin asignar del estudiante obtenidas con éxito",
+      message: "Revisiones del estudiante obtenidas con éxito",
       data: mappedRevisions,
     });
   } catch (error) {
@@ -241,4 +190,165 @@ const getRevisionsByUserId = async (req, res) => {
   }
 };
 
-module.exports = { uploadRevisionThesis, getPendingRevisions, getRevisionsByUserId };
+const getPendingRevisions = async (req, res) => {
+  try {
+    const { order = "asc", carnet } = req.query;
+
+    const orderDirection = order === "desc" ? "DESC" : "ASC";
+
+    const userWhereClause = {};
+    if (carnet) {
+      const carnetRegex = /^\d{4}-\d{2}-\d{2,}$/;
+      if (!carnetRegex.test(carnet)) {
+        return res.status(400).json({ message: "Carnet inválido" });
+      }
+
+      const carnetParts = carnet.split("-");
+      if (carnetParts[2].length < 2) {
+        return res
+          .status(400)
+          .json({ message: "Debe ingresar al menos 2 dígitos del carnet" });
+      }
+
+      userWhereClause.carnet = { [Op.like]: `%${carnet}%` };
+    }
+
+    const pendingRevisions = await RevisionThesis.findAll({
+      attributes: ["revision_thesis_id", "date_revision"],
+      where: { active_process: true },
+      include: [
+        {
+          model: ApprovalThesis,
+          where: { status: "pending" },
+          attributes: ["status"],
+        },
+        {
+          model: User,
+          attributes: ["user_id", "name", "carnet"],
+          where: userWhereClause,
+        },
+        {
+          model: AssignedReview,
+          attributes: [],
+          required: false,
+        },
+      ],
+      where: {
+        "$AssignedReviews.assigned_review_id$": null,
+      },
+      order: [["date_revision", orderDirection]],
+    });
+
+    if (pendingRevisions.length === 0) {
+      return res.status(404).json({
+        message: "No hay revisiones de tesis pendientes sin asignar",
+      });
+    }
+
+    // Convertir el estado "pending" a "pendiente"
+    const formattedRevisions = pendingRevisions.map((revision) => ({
+      ...revision.toJSON(),
+      ApprovalThesis: {
+        ...revision.ApprovalThesis,
+        status: "pendiente",
+      },
+    }));
+
+    res.status(200).json({
+      message: "Revisiones de tesis pendientes sin asignar obtenidas con éxito",
+      orden: orderDirection,
+      data: formattedRevisions,
+    });
+  } catch (error) {
+    console.error("Error al obtener las revisiones pendientes:", error);
+    res.status(500).json({
+      message: "Error al obtener las revisiones pendientes",
+      error: error.message,
+    });
+  }
+};
+
+const getRevisionsInReview = async (req, res) => {
+  try {
+    const { order = "asc", carnet } = req.query;
+
+    const orderDirection = order === "desc" ? "DESC" : "ASC";
+
+    const userWhereClause = {};
+    if (carnet) {
+      const carnetRegex = /^\d{4}-\d{2}-\d{2,}$/;
+      if (!carnetRegex.test(carnet)) {
+        return res.status(400).json({ message: "Carnet inválido" });
+      }
+
+      const carnetParts = carnet.split("-");
+      if (carnetParts[2].length < 2) {
+        return res
+          .status(400)
+          .json({ message: "Debe ingresar al menos 2 dígitos del carnet" });
+      }
+
+      userWhereClause.carnet = { [Op.like]: `%${carnet}%` };
+    }
+
+    const revisionsInReview = await RevisionThesis.findAll({
+      attributes: ["revision_thesis_id", "date_revision"],
+      where: { active_process: true },
+      include: [
+        {
+          model: ApprovalThesis,
+          where: { status: "in revision" },
+          attributes: ["status"],
+        },
+        {
+          model: User,
+          attributes: ["user_id", "name", "carnet"],
+          where: userWhereClause,
+        },
+        {
+          model: AssignedReview,
+          attributes: ["assigned_review_id", "user_id"],
+          required: true,
+        },
+      ],
+      order: [["date_revision", orderDirection]],
+    });
+
+    if (revisionsInReview.length === 0) {
+      return res
+        .status(404)
+        .json({
+          message: "No hay revisiones en revisión con revisor asignado",
+        });
+    }
+
+    // Convertir el estado "in revision" a "en revisión"
+    const formattedRevisions = revisionsInReview.map((revision) => ({
+      ...revision.toJSON(),
+      ApprovalThesis: {
+        ...revision.ApprovalThesis,
+        status: "en revisión",
+      },
+    }));
+
+    res.status(200).json({
+      message:
+        "Revisiones en revisión con revisor asignado obtenidas con éxito",
+      orden: orderDirection,
+      data: formattedRevisions,
+    });
+  } catch (error) {
+    console.error("Error al obtener las revisiones en revisión:", error);
+    res.status(500).json({
+      message: "Error al obtener las revisiones en revisión",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = {
+  uploadRevisionThesis,
+  getPendingRevisions,
+  getRevisionsByUserId,
+  getRevisionsInReview,
+};
