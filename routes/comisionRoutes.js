@@ -254,7 +254,7 @@ router.post(
  *                               example: Profesor
  *                             profilePhoto:
  *                               type: string
- *                               example: "http://localhost:3000/public/fotoPerfil/juan.jpg"
+ *                               example: "http://localhost:3000/public/profilephoto/juan.jpg"
  *       404:
  *         description: No se encontraron grupos de comisión
  *       500:
