@@ -17,6 +17,9 @@ const CommentVersion = require("./commentVersion");
 const ThesisSubmission = require("./thesisSubmissions");
 const TaskSubmissions = require("./taskSubmissions");
 const Notification = require("./notification");
+const RevisionThesis = require("./revisionThesis");
+const ApprovalThesis = require("./approvalThesis");
+const AssignedReview = require("./assignedReviewthesis");
 
 module.exports = function associateModels() {
   // Relación entre Task y CourseSedeAssignment
@@ -170,4 +173,32 @@ module.exports = function associateModels() {
   // Relación entre Notification y Task
   Notification.belongsTo(Task, { foreignKey: "task_id" });
   Task.hasMany(Notification, { foreignKey: "task_id" });
+
+  // Relación entre RevisionThesis y User
+  RevisionThesis.belongsTo(User, { foreignKey: "user_id" });
+  User.hasMany(RevisionThesis, { foreignKey: "user_id" });
+
+  // Relación entre RevisionThesis y Sede
+  RevisionThesis.belongsTo(Sede, { foreignKey: "sede_id" });
+  Sede.hasMany(RevisionThesis, { foreignKey: "sede_id" });
+
+  // Relación entre ApprovalThesis y RevisionThesis
+  ApprovalThesis.belongsTo(RevisionThesis, {
+    foreignKey: "revision_thesis_id",
+  });
+  RevisionThesis.hasMany(ApprovalThesis, { foreignKey: "revision_thesis_id" });
+
+  // Relación entre ApprovalThesis y User
+  ApprovalThesis.belongsTo(User, { foreignKey: "user_id" });
+  User.hasMany(ApprovalThesis, { foreignKey: "user_id" });
+
+  // Relación entre AssignedReview y User
+  AssignedReview.belongsTo(User, { foreignKey: "user_id" });
+  User.hasMany(AssignedReview, { foreignKey: "user_id" });
+
+  // Relación entre AssignedReview y RevisionThesis
+  AssignedReview.belongsTo(RevisionThesis, {
+    foreignKey: "revision_thesis_id",
+  });
+  RevisionThesis.hasMany(AssignedReview, { foreignKey: "revision_thesis_id" });
 };
