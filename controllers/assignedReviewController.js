@@ -1,3 +1,4 @@
+const ApprovalThesis = require("../models/approvalThesis");
 const AssignedReview = require("../models/assignedReviewthesis");
 const RevisionThesis = require("../models/revisionThesis");
 const User = require("../models/user");
@@ -57,10 +58,15 @@ const createAssignedReview = async (req, res) => {
       user_id,
     });
 
+    // cambiar el estado de la revisión a "en revisión"
+    await ApprovalThesis.update(
+      { status: "in revision" },
+      { where: { revision_thesis_id } }
+    );
+
     // Respuesta exitosa
     res.status(201).json({
       message: "Revisión asignada con éxito",
-      details: `La revisión de tesis con ID ${revision_thesis_id} ha sido asignada al revisor con ID ${user_id}.`,
     });
   } catch (error) {
     console.error("Error al asignar la revisión:", error);

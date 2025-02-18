@@ -22,7 +22,7 @@ const initializeTables = async () => {
     await Roles.findOrCreate({ where: { name: "Administrador" } });
     await Roles.findOrCreate({ where: { name: "SuperAdmin" } });
     await Roles.findOrCreate({ where: { name: "Decano" } });
-    await Roles.findOrCreate({ where: { name: "Cordinadorthesis" } });
+    await Roles.findOrCreate({ where: { name: "Cordinador de tesis" } });
     await Roles.findOrCreate({ where: { name: "Revisor" } });
 
     await Sede.findOrCreate({ where: { nameSede: "Guastatoya" } });

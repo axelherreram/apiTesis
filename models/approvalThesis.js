@@ -36,7 +36,7 @@ const ApprovalThesis = sequelize.define(
       allowNull: true,
     },
     status: {
-      type: DataTypes.ENUM("pending", "approved", "rejected"),
+      type: DataTypes.ENUM("pending", "approved", "rejected", "in revision"),
       defaultValue: "pending",
     },
   },
