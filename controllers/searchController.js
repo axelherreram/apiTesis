@@ -72,7 +72,7 @@ const searchStudentByCarnet = async (req, res) => {
       email: student.email,
       userName: student.name,
       profilePhoto: student.profilePhoto
-        ? `${process.env.BASE_URL}/public/fotoPerfil/${student.profilePhoto}`
+        ? `${process.env.BASE_URL}/public/profilephoto/${student.profilePhoto}`
         : null,
       carnet: student.carnet,
       sede: student.sede_id,
@@ -146,7 +146,7 @@ const searchProfessorByCarnet = async (req, res) => {
       email: professor.email,
       userName: professor.name,
       profilePhoto: professor.profilePhoto
-        ? `${process.env.BASE_URL}/public/fotoPerfil/${professor.profilePhoto}`
+        ? `${process.env.BASE_URL}/public/profilephoto/${professor.profilePhoto}`
         : null,
       carnet: professor.carnet,
       active: professor.active,
@@ -229,7 +229,7 @@ const searchStudentByCarnetWithoutSede = async (req, res) => {
           email: student.email,
           userName: student.name,
           profilePhoto: student.profilePhoto
-            ? `${process.env.BASE_URL}/public/fotoPerfil/${student.profilePhoto}`
+            ? `${process.env.BASE_URL}/public/profilephoto/${student.profilePhoto}`
             : null,
           carnet: student.carnet,
           Sede: sede ? sede.nameSede : null,

@@ -90,7 +90,7 @@ const getUsersByCourse = async (req, res) => {
         email: user.email,
         userName: user.name,
         profilePhoto: user.profilePhoto
-          ? `${process.env.BASE_URL}/public/fotoPerfil/${user.profilePhoto}`
+          ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
           : null,
         carnet: user.carnet,
       };
@@ -161,17 +161,14 @@ const listuserbytoken = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
-
     const sede = await Sede.findByPk(user.sede_id);
-
-
 
     const formattedUser = {
       user_id: user.user_id,
       email: user.email,
       userName: user.name,
       profilePhoto: user.profilePhoto
-        ? `${process.env.BASE_URL}/public/fotoPerfil/${user.profilePhoto}`
+        ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
         : null,
       carnet: user.carnet,
       sede: user.sede_id,
@@ -422,7 +419,7 @@ const listAllAdmins = async (req, res) => {
           }
         : null, // Sede del administrador
       profilePhoto: admin.profilePhoto
-        ? `${process.env.BASE_URL}/public/fotoPerfil/${admin.profilePhoto}`
+        ? `${process.env.BASE_URL}/public/profilephoto/${admin.profilePhoto}`
         : null,
     }));
 

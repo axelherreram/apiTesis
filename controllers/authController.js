@@ -278,7 +278,7 @@ const updateProfilePhoto = async (req, res) => {
     if (user.profilePhoto) {
       const oldImagePath = path.join(
         __dirname,
-        "../public/fotoPerfil",
+        "../public/profilephoto",
         user.profilePhoto
       );
 

@@ -82,7 +82,7 @@ const getStudentsComisionByYear = async (req, res) => {
       name: user.name,
       carnet: user.carnet,
       profilePhoto: user.profilePhoto
-        ? `${process.env.BASE_URL}/public/fotoPerfil/${user.profilePhoto}`
+        ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
         : null,
     }));
 

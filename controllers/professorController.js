@@ -113,7 +113,7 @@ const listProfessors = async (req, res) => {
       userName: user.name,
       professorCode: user.carnet,
       profilePhoto: user.profilePhoto
-        ? `${process.env.BASE_URL}/public/fotoPerfil/${user.profilePhoto}`
+        ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
         : null,
       active: user.active,
     }));
@@ -191,7 +191,7 @@ const listActiveProfessors = async (req, res) => {
       email: user.email,
       userName: user.name,
       profilePhoto: user.profilePhoto
-        ? `${process.env.BASE_URL}/public/fotoPerfil/${user.profilePhoto}`
+        ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
         : null,
       active: user.active,
     }));

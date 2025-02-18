@@ -3,11 +3,11 @@
  * 
  * This middleware uses `multer` to handle the upload of image files, specifically images with
  * the MIME types 'image/jpeg', 'image/jpg', and 'image/png'. It saves the uploaded files in 
- * the 'public/fotoPerfil' directory and names them based on the current timestamp followed by 
+ * the 'public/profilephoto' directory and names them based on the current timestamp followed by 
  * the original file name.
  * 
  * The middleware performs the following tasks:
- * 1. Configures the storage for the uploaded files, saving them to the 'fotoPerfil' directory.
+ * 1. Configures the storage for the uploaded files, saving them to the 'profilephoto' directory.
  * 2. Filters the uploaded files to ensure that only JPG and PNG images are allowed.
  * 3. Limits the file size to a maximum of 5MB.
  * 4. Provides error handling for Multer errors and invalid file types.
@@ -26,10 +26,10 @@
 const multer = require("multer");
 const path = require("path");
 
-// Configuring multer to store uploaded files in the 'fotoPerfil' folder
+// Configuring multer to store uploaded files in the 'profilephoto' folder
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, path.join(__dirname, "../public/fotoPerfil"));
+    cb(null, path.join(__dirname, "../public/profilephoto"));
   },
   filename: function (req, file, cb) {
     cb(null, `${Date.now()}-${file.originalname}`);

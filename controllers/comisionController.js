@@ -407,7 +407,7 @@ const getGroupsAndUsersBySedeAndYear = async (req, res) => {
             carnet: comision.User.carnet,
             rol: comision.rolComision.rolComisionName, // Rol asociado al usuario
             profilePhoto: comision.User.profilePhoto
-              ? `${process.env.BASE_URL}/public/fotoPerfil/${comision.User.profilePhoto}`
+              ? `${process.env.BASE_URL}/public/profilephoto/${comision.User.profilePhoto}`
               : null, // Ruta de la foto de perfil si existe
           };
         }),
