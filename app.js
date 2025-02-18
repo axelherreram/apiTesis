@@ -51,9 +51,12 @@ const CommentRoutes = require('./routes/commentRoutes');
 const thesisSubmissionsRoutes = require('./routes/thesisSubmissionsRoutes'); 
 const TaskSubmissionRoutes = require('./routes/taskSubmissionsRoutes'); 
 const GraphicsRoutes = require('./routes/graphicRoutes'); 
-const revisoresThesisRoutes = require('./routes/revisoresThesisRoutes');
-
 const notificationRoutes = require('./routes/notificationRoutes');
+
+const revisoresThesisRoutes = require('./routes/revisoresThesisRoutes');
+const revisionThesisRoutes = require('./routes/revisionThesisRoutes');
+const assignedReviewRoutes = require('./routes/assignedReviewRoutes');
+
 
 const path = require('path');
 const cors = require('cors');
@@ -119,6 +122,9 @@ app.use('/api', TaskSubmissionRoutes);
 app.use('/api', GraphicsRoutes);
 app.use('/api', notificationRoutes);
 app.use('/api', revisoresThesisRoutes);
+app.use('/api', revisionThesisRoutes);
+app.use('/api', assignedReviewRoutes);
+
 
 // Sincronizar la base de datos y arrancar el servidor
 sequelize.sync({ alter: false, force: false })
