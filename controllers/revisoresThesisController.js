@@ -2,7 +2,7 @@ const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const Roles = require("../models/roles");
-const { title } = require("process");
+const { Op } = require("sequelize");
 
 // Función para generar una contraseña aleatoria
 const generateRandomPassword = () => {
@@ -73,7 +73,7 @@ const createRevisor = async (req, res) => {
 const getRevisores = async (req, res) => {
   try {
     const revisores = await User.findAll({
-      where: { rol_id: 7 },
+      where: { rol_id: { [Op.in]: [6, 7] } },
       include: [{ model: Roles, as: "role", attributes: ["name"] }],
     });
 
