@@ -17,10 +17,10 @@ const createAssignedReview = async (req, res) => {
     }
 
     // Validar que el usuario sea un revisor (rol_id === 7)
-    if (infoUser.rol_id !== 7) {
+    if (infoUser.rol_id !== 7 && infoUser.rol_id !== 6) {
       return res.status(400).json({
-        message: "El usuario no es un revisor",
-        details: `El usuario con ID ${user_id} no tiene el rol de revisor (rol_id = 7). Solo los revisores pueden ser asignados a revisiones de tesis.`,
+        message: "El usuario no es un revisor o cordinador",
+        details: `El usuario no tiene el rol de revisor o cordinador. Solo los revisores pueden ser asignados a revisiones de tesis.`,
       });
     }
 
