@@ -165,7 +165,7 @@ const getRevisionsByUserId = async (req, res) => {
     // Mapear los datos para agregar el baseURL a thesis_dir
     const mappedRevisions = revisions.map((revision) => ({
       ...revision.toJSON(), // Convertir a objeto plano
-      thesis_dir: `${process.env.BASE_URL || "http://localhost:3000"}${
+      thesis_dir: `${process.env.BASE_URL+"/public" || "http://localhost:3000/public"}${
         revision.thesis_dir
       }`,
       assigned_reviewer: revision.AssignedReviews.length
