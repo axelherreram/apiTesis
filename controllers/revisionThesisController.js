@@ -73,7 +73,7 @@ const uploadRevisionThesis = async (req, res) => {
 
     if (userRevision.active_process) {
       throw new Error(
-        `El estudiante ya tiene cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
+        `El estudiante ya cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
       );
     }
 
