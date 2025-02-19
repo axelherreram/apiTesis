@@ -1,6 +1,6 @@
 const { DataTypes } = require("sequelize");
-const sequelize = require("../config/database");
-const AssignedReview = require("nodemailer/lib/shared");
+const {sequelize} = require("../config/database");
+const AssignedReview = require("./assignedReviewthesis");
 
 const commentsRevision = sequelize.define(
   "commentsRevision",

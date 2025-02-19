@@ -34,7 +34,7 @@ const RevisionThesis = sequelize.define(
     date_revision: {
       type: DataTypes.DATE,
       allowNull: true,
-      defaultValue: moment.now(),
+      defaultValue: DataTypes.NOW,
     },
     approval_letter_dir: {
       type: DataTypes.STRING(255),

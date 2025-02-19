@@ -4,6 +4,7 @@ const {
   getPendingRevisions,
   getRevisionsByUserId,
   getRevisionsInReview, // Nuevo controlador
+  getInforRevisionsByUserId
 } = require("../controllers/revisionThesisController");
 const uploadFilesMiddleware = require("../middlewares/revisionFilesMiddleware");
 
@@ -249,4 +250,53 @@ router.get("/revision-thesis/in-review", getRevisionsInReview);
  */
 router.get("/revision-thesis/user/:user_id", getRevisionsByUserId);
 
+/**
+ * @swagger
+ * /api/revision-thesis/info/{user_id}:
+ *   get:
+ *     summary: Obtener información de las revisiones de tesis de un estudiante
+ *     description: Obtiene información de las revisiones de tesis de un estudiante específico.
+ *     tags:
+ *       - Revisión de Tesis
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         type: integer
+ *         required: true
+ *         description: ID del usuario (estudiante) para obtener sus revisiones.
+ *     responses:
+ *       200:
+ *         description: Información de las revisiones de tesis del estudiante.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Información de las revisiones de tesis del estudiante obtenida con éxito
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       revision_thesis_id:
+ *                         type: integer
+ *                         example: 1
+ *                       thesis_dir:
+ *                         type: string
+ *                         example: http://localhost:3000/path/to/thesis.pdf
+ *                       date_revision:
+ *                         type: string
+ *                         format: date
+ *                         example: 2023-10-01
+ *                       status:
+ *                         type: string
+ *                         example: pending
+ *       404:
+ *         description: No se encontraron revisiones para el estudiante.
+ *       500:
+ *         description: Error al obtener la información de las revisiones del estudiante.
+ */
+router.get("/revision-thesis/info/:user_id", getInforRevisionsByUserId);
 module.exports = router;

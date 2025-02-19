@@ -7,6 +7,7 @@ const ApprovalThesis = require("../models/approvalThesis");
 const { Op } = require("sequelize");
 const AssignedReview = require("../models/assignedReviewthesis");
 const Year = require("../models/year");
+const CommentsRevision = require("../models/commentsRevisionThesis");
 
 const uploadRevisionThesis = async (req, res) => {
   let approval_letter_dir = null;
@@ -16,7 +17,9 @@ const uploadRevisionThesis = async (req, res) => {
 
     // Verificar si ambos archivos fueron subidos
     if (!req.files || !req.files["approval_letter"] || !req.files["thesis"]) {
-      throw new Error("Se requieren ambos archivos (carta de aprobación y tesis)",);
+      throw new Error(
+        "Se requieren ambos archivos (carta de aprobación y tesis)"
+      );
     }
     if (carnet) {
       const carnetRegex = /^\d{4}-\d{2}-\d{4,}$/;
@@ -53,11 +56,22 @@ const uploadRevisionThesis = async (req, res) => {
     }
 
     // Verificar si el usuario ya tiene una revisión activa
-    const userRevision = await RevisionThesis.findOne({
+    const userRevision = await RevisionThesis.findAll({
       where: { user_id },
     });
 
-    if (userRevision && userRevision.active_process) {
+    if (userRevision) {
+      const approval = await ApprovalThesis.findOne({
+        where: { revision_thesis_id: userRevision.revision_thesis_id },
+      });
+      if (approval.status === "approved") {
+        throw new Error(
+          `El estudiante no puede mandar solicitud por que ya se aprobo su tesis`
+        );
+      }
+    }
+
+    if (userRevision.active_process) {
       throw new Error(
         `El estudiante ya tiene cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
       );
@@ -165,9 +179,9 @@ const getRevisionsByUserId = async (req, res) => {
     // Mapear los datos para agregar el baseURL a thesis_dir
     const mappedRevisions = revisions.map((revision) => ({
       ...revision.toJSON(), // Convertir a objeto plano
-      thesis_dir: `${process.env.BASE_URL+"/public" || "http://localhost:3000/public"}${
-        revision.thesis_dir
-      }`,
+      thesis_dir: `${
+        process.env.BASE_URL + "/public" || "http://localhost:3000/public"
+      }${revision.thesis_dir}`,
       assigned_reviewer: revision.AssignedReviews.length
         ? revision.AssignedReviews.map((assignedReview) => ({
             reviewer_name: assignedReview.User.name,
@@ -315,11 +329,9 @@ const getRevisionsInReview = async (req, res) => {
     });
 
     if (revisionsInReview.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "No hay revisiones en revisión con revisor asignado",
-        });
+      return res.status(404).json({
+        message: "No hay revisiones en revisión con revisor asignado",
+      });
     }
 
     // Convertir el estado "in revision" a "en revisión"
@@ -346,9 +358,67 @@ const getRevisionsInReview = async (req, res) => {
   }
 };
 
+const getInforRevisionsByUserId = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const user = await User.findByPk(user_id);
+    if (!user) {
+      return res.status(404).json({
+        message: "Usuario no encontrado",
+      });
+    }
+    // Obtener todas las revisiones solicitadas por el usuario
+    const revisions = await RevisionThesis.findAll({
+      where: { user_id },
+      attributes: ["revision_thesis_id", "active_process"], // Estado de la revisión
+      include: [
+        {
+          model: AssignedReview,
+          attributes: ["assigned_review_id"],
+          required: false, // No es obligatorio que haya asignaciones
+          include: [
+            {
+              model: User,
+              attributes: ["user_id", "name", "email"], // Información del revisor asignado
+            },
+            {
+              model: CommentsRevision,
+              attributes: ["title", "comment", "date_comment"], // Comentarios del revisor asignado
+            },
+          ],
+        },
+        {
+          model: ApprovalThesis,
+          attributes: ["status", "date_approved", "approved"], // Datos de aprobación
+          required: false,
+        },
+      ],
+    });
+
+    // Si no hay revisiones para el usuario
+    if (revisions.length === 0) {
+      return res.status(404).json({
+        message: "No se encontraron revisiones para el usuario",
+      });
+    }
+    // Responder con éxito
+    res.status(200).json({
+      message: "Revisiones obtenidas con éxito",
+      data: revisions,
+    });
+  } catch (error) {
+    console.error("Error al obtener la información de revisiones:", error);
+    res.status(500).json({
+      message: "Error al obtener la información de revisiones",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   uploadRevisionThesis,
   getPendingRevisions,
   getRevisionsByUserId,
   getRevisionsInReview,
+  getInforRevisionsByUserId,
 };

@@ -20,6 +20,7 @@ const Notification = require("./notification");
 const RevisionThesis = require("./revisionThesis");
 const ApprovalThesis = require("./approvalThesis");
 const AssignedReview = require("./assignedReviewthesis");
+const CommentsRevision = require("./commentsRevisionThesis");
 
 module.exports = function associateModels() {
   // Relación entre Task y CourseSedeAssignment
@@ -201,4 +202,12 @@ module.exports = function associateModels() {
     foreignKey: "revision_thesis_id",
   });
   RevisionThesis.hasMany(AssignedReview, { foreignKey: "revision_thesis_id" });
+
+  // Relación entre CommentsRevision y AssignedReview
+  CommentsRevision.belongsTo(AssignedReview, {
+    foreignKey: "assigned_review_id",
+  });
+  AssignedReview.hasMany(CommentsRevision, {
+    foreignKey: "assigned_review_id",
+  });
 };
