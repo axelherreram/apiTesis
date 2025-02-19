@@ -33,12 +33,12 @@ const updateProfessorStatus = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Validar que el usuario pertenezca a la misma sede que el token
+/*     // Validar que el usuario pertenezca a la misma sede que el token
     if (parseInt(user.sede_id, 10) !== parseInt(tokenSedeId, 10)) {
       return res
         .status(403)
         .json({ message: "No tienes acceso a este usuario en esta sede" });
-    }
+    } */
     if (user.rol_id !== 2 || user.rol_id !== 7) {
       return res
         .status(403)

@@ -1,6 +1,13 @@
 const { Router } = require("express");
 const router = Router();
-const { createAssignedReview } = require("../controllers/assignedReviewController");
+const {
+  createAssignedReview,
+} = require("../controllers/assignedReviewController");
+const verifyRole = require("../middlewares/roleMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
+
+// Middleware para verificar el rol de coordinador de tesis
+const cordThesis = verifyRole([6]);
 
 /**
  * @swagger
@@ -10,6 +17,8 @@ const { createAssignedReview } = require("../controllers/assignedReviewControlle
  *     description: Asigna una revisión de tesis a un revisor específico. El usuario debe tener el rol de revisor (rol_id === 7) y la revisión debe estar activa (active_process === true).
  *     tags:
  *       - Asignación de Revisiones
+ *     security:
+ *       - bearerAuth: []  
  *     requestBody:
  *       required: true
  *       content:
@@ -38,6 +47,11 @@ const { createAssignedReview } = require("../controllers/assignedReviewControlle
  *       500:
  *         description: Error interno del servidor.
  */
-router.post("/assigned-review", createAssignedReview); // Quita el prefijo /api
+router.post(
+  "/assigned-review",
+  authMiddleware,
+  cordThesis,
+  createAssignedReview
+);
 
 module.exports = router;
