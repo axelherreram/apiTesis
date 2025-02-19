@@ -12,7 +12,7 @@ const verifyRole = require("../middlewares/roleMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const admin = verifyRole([3]); // Solo Admin
-
+const adminOrDecan = verifyRole([3, 6]); // Admin o Decano
 /**
  * @swagger
  * tags:
@@ -147,7 +147,7 @@ router.get(
 router.patch(
   "/professors/:user_id/active",
   authMiddleware,
-  admin,
+  adminOrDecan,
   extractSedeIdMiddleware,
   updateProfessorStatus
 );
