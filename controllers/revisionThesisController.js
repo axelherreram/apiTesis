@@ -66,7 +66,7 @@ const uploadRevisionThesis = async (req, res) => {
             `El estudiante ya cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
           );
       }
-  
+ /*  
       const approval = await ApprovalThesis.findOne({
           where: { revision_thesis_id: userRevision.revision_thesis_id },
       });
@@ -75,7 +75,7 @@ const uploadRevisionThesis = async (req, res) => {
           throw new Error(
             `El estudiante no puede mandar solicitud porque ya se aprobó su tesis`
           );
-      }
+      } */
   }
   
 

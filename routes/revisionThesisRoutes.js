@@ -7,8 +7,14 @@ const {
   getInforRevisionsByUserId
 } = require("../controllers/revisionThesisController");
 const uploadFilesMiddleware = require("../middlewares/revisionFilesMiddleware");
+const verifyRole = require("../middlewares/roleMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = Router();
+
+// Middleware para verificar el rol de coordinador de tesis
+const cordThesis = verifyRole([6]);
+const admin = verifyRole([1]);
 
 /**
  * @swagger
