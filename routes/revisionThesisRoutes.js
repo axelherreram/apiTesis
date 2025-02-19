@@ -8,8 +8,6 @@ const {
 } = require("../controllers/revisionThesisController");
 const uploadFilesMiddleware = require("../middlewares/revisionFilesMiddleware");
 
-
-
 const router = Router();
 
 /**
@@ -20,6 +18,8 @@ const router = Router();
  *     description: Permite a un estudiante subir su revisión de tesis junto con la carta de aprobación.
  *     tags:
  *       - Revisión de Tesis
+ *     security:
+ *       - bearerAuth: [] 
  *     requestBody:
  *       required: true
  *       content:
@@ -57,6 +57,7 @@ const router = Router();
  */
 router.post("/revision-thesis", uploadFilesMiddleware, uploadRevisionThesis);
 
+
 /**
  * @swagger
  * /api/revision-thesis/pending:
@@ -65,6 +66,8 @@ router.post("/revision-thesis", uploadFilesMiddleware, uploadRevisionThesis);
  *     description: Obtiene una lista de revisiones de tesis pendientes que no han sido asignadas a un revisor.
  *     tags:
  *       - Revisión de Tesis
+ *     security:
+ *       - bearerAuth: [] 
  *     parameters:
  *       - in: query
  *         name: order
@@ -122,6 +125,7 @@ router.post("/revision-thesis", uploadFilesMiddleware, uploadRevisionThesis);
  *         description: Error al obtener las revisiones pendientes.
  */
 router.get("/revision-thesis/pending", getPendingRevisions);
+
 /**
  * @swagger
  * /api/revision-thesis/in-review:
@@ -130,6 +134,8 @@ router.get("/revision-thesis/pending", getPendingRevisions);
  *     description: Obtiene una lista de revisiones de tesis que están en estado "in revision" y tienen un revisor asignado.
  *     tags:
  *       - Revisión de Tesis
+ *     security:
+ *       - bearerAuth: [] 
  *     parameters:
  *       - in: query
  *         name: order
@@ -202,6 +208,8 @@ router.get("/revision-thesis/in-review", getRevisionsInReview);
  *     description: Obtiene las revisiones de tesis pendientes sin asignar de un estudiante específico.
  *     tags:
  *       - Revisión de Tesis
+ *     security:
+ *       - bearerAuth: [] 
  *     parameters:
  *       - in: path
  *         name: user_id
@@ -258,6 +266,8 @@ router.get("/revision-thesis/user/:user_id", getRevisionsByUserId);
  *     description: Obtiene información de las revisiones de tesis de un estudiante específico.
  *     tags:
  *       - Revisión de Tesis
+ *     security:
+ *       - bearerAuth: [] 
  *     parameters:
  *       - in: path
  *         name: user_id

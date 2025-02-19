@@ -61,21 +61,23 @@ const uploadRevisionThesis = async (req, res) => {
     });
 
     if (userRevision) {
-      const approval = await ApprovalThesis.findOne({
-        where: { revision_thesis_id: userRevision.revision_thesis_id },
-      });
-      if (approval.status === "approved") {
-        throw new Error(
-          `El estudiante no puede mandar solicitud por que ya se aprobo su tesis`
-        );
+      if (userRevision.active_process) {
+          throw new Error(
+            `El estudiante ya cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
+          );
       }
-    }
-
-    if (userRevision.active_process) {
-      throw new Error(
-        `El estudiante ya cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
-      );
-    }
+  
+      const approval = await ApprovalThesis.findOne({
+          where: { revision_thesis_id: userRevision.revision_thesis_id },
+      });
+  
+      if (approval && approval.status === "approved") {
+          throw new Error(
+            `El estudiante no puede mandar solicitud porque ya se aprobó su tesis`
+          );
+      }
+  }
+  
 
     // Crear la nueva revisión de tesis
     const newRevision = await RevisionThesis.create({
