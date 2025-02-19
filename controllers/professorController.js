@@ -39,7 +39,7 @@ const updateProfessorStatus = async (req, res) => {
         .status(403)
         .json({ message: "No tienes acceso a este usuario en esta sede" });
     }
-    if (user.rol_id !== 2) {
+    if (user.rol_id !== 2 || user.rol_id !== 7) {
       return res
         .status(403)
         .json({ message: "No puedes desactivar este usuario" });
