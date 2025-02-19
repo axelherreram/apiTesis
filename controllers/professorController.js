@@ -104,7 +104,14 @@ const listProfessors = async (req, res) => {
         rol_id: 2,
         sede_id: sede_id,
       },
-      attributes: ["user_id", "email", "name", "carnet","profilePhoto", "active"],
+      attributes: [
+        "user_id",
+        "email",
+        "name",
+        "carnet",
+        "profilePhoto",
+        "active",
+      ],
     });
 
     const formattedUsers = users.map((user) => ({
@@ -227,6 +234,17 @@ const createProfessor = async (req, res) => {
       return res.status(400).json({
         message: "Todos los campos son obligatorios",
       });
+    }
+
+    // Validar formato del código (carnet)
+    if (carnet) {
+      const carnetRegex = /^\d{4}-\d{2}-\d{4,6}$/; // Ejemplo válido: 2024-01-1234
+      if (!carnetRegex.test(carnet)) {
+        return res.status(400).json({
+          title: "Error",
+          message: "Carnet inválido, ingrese codigo completo",
+        });
+      }
     }
 
     const currentYear = new Date().getFullYear();

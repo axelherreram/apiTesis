@@ -19,6 +19,25 @@ const createRevisor = async (req, res) => {
   try {
     const { email, name, codigo } = req.body;
 
+    // Validar que no exista un usuario con el mismo correo
+    const userexist = await User.findOne({ where: { email } });
+    if (userexist) {
+      return res.status(400).json({
+        title: "Error",
+        message: "Ya existe un usuario con este correo",
+      });
+    }
+    // Validar formato del código (carnet)
+    if (codigo) {
+      const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/; // Ejemplo válido: 2024-01-1234
+      if (!carnetRegex.test(codigo)) {
+        return res.status(400).json({
+          title: "Error",
+          message: "Carnet inválido, ingrese codigo completo",
+        });
+      }
+    }
+
     // Validar el dominio del correo
     if (!isValidEmail(email)) {
       return res.status(400).json({
