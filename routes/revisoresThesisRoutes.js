@@ -3,9 +3,13 @@ const {
   createRevisor,
   getRevisores,
 } = require("../controllers/revisoresThesisController");
+const verifyRole = require("../middlewares/roleMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const router = Router();
 
+// Middleware para verificar el rol de coordinador de tesis
+const cordThesis = verifyRole([6]);
 /**
  * @swagger
  * /api/reviewers:
@@ -13,6 +17,8 @@ const router = Router();
  *     summary: Crea un nuevo revisor con una contraseña aleatoria.
  *     tags:
  *       - Revisores
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -51,7 +57,7 @@ const router = Router();
  *       500:
  *         description: Error al crear el revisor
  */
-router.get("/reviewers", getRevisores);
+router.get("/reviewers", authMiddleware, cordThesis, getRevisores);
 
 /**
  * @swagger
@@ -60,6 +66,8 @@ router.get("/reviewers", getRevisores);
  *     summary: Obtiene la lista de revisores registrados en el sistema.
  *     tags:
  *       - Revisores
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Lista de revisores obtenida con éxito.
@@ -91,7 +99,6 @@ router.get("/reviewers", getRevisores);
  *       500:
  *         description: Error al obtener los revisores.
  */
-router.post("/reviewers", createRevisor);
+router.post("/reviewers", authMiddleware, cordThesis, createRevisor);
 
-module.exports = router;    
-
+module.exports = router;

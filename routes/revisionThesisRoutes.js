@@ -4,7 +4,7 @@ const {
   getPendingRevisions,
   getRevisionsByUserId,
   getRevisionsInReview, // Nuevo controlador
-  getInforRevisionsByUserId
+  getInforRevisionsByUserId,
 } = require("../controllers/revisionThesisController");
 const uploadFilesMiddleware = require("../middlewares/revisionFilesMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
@@ -14,7 +14,7 @@ const router = Router();
 
 // Middleware para verificar el rol de coordinador de tesis
 const cordThesis = verifyRole([6]);
-const admin = verifyRole([1]);
+const admin = verifyRole([3]);
 
 /**
  * @swagger
@@ -25,7 +25,7 @@ const admin = verifyRole([1]);
  *     tags:
  *       - Revisión de Tesis
  *     security:
- *       - bearerAuth: [] 
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -61,8 +61,13 @@ const admin = verifyRole([1]);
  *       500:
  *         description: Error al subir la revisión de tesis.
  */
-router.post("/revision-thesis", uploadFilesMiddleware, uploadRevisionThesis);
-
+router.post(
+  "/revision-thesis",
+  authMiddleware,
+  admin,
+  uploadFilesMiddleware,
+  uploadRevisionThesis
+);
 
 /**
  * @swagger
@@ -73,7 +78,7 @@ router.post("/revision-thesis", uploadFilesMiddleware, uploadRevisionThesis);
  *     tags:
  *       - Revisión de Tesis
  *     security:
- *       - bearerAuth: [] 
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: order
@@ -130,7 +135,12 @@ router.post("/revision-thesis", uploadFilesMiddleware, uploadRevisionThesis);
  *       500:
  *         description: Error al obtener las revisiones pendientes.
  */
-router.get("/revision-thesis/pending", getPendingRevisions);
+router.get(
+  "/revision-thesis/pending",
+  authMiddleware,
+  cordThesis,
+  getPendingRevisions
+);
 
 /**
  * @swagger
@@ -141,7 +151,7 @@ router.get("/revision-thesis/pending", getPendingRevisions);
  *     tags:
  *       - Revisión de Tesis
  *     security:
- *       - bearerAuth: [] 
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: order
@@ -204,7 +214,12 @@ router.get("/revision-thesis/pending", getPendingRevisions);
  *       500:
  *         description: Error al obtener las revisiones en revisión.
  */
-router.get("/revision-thesis/in-review", getRevisionsInReview);
+router.get(
+  "/revision-thesis/in-review",
+  authMiddleware,
+  cordThesis,
+  getRevisionsInReview
+);
 
 /**
  * @swagger
@@ -215,7 +230,7 @@ router.get("/revision-thesis/in-review", getRevisionsInReview);
  *     tags:
  *       - Revisión de Tesis
  *     security:
- *       - bearerAuth: [] 
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: user_id
@@ -262,7 +277,12 @@ router.get("/revision-thesis/in-review", getRevisionsInReview);
  *       500:
  *         description: Error al obtener las revisiones del estudiante.
  */
-router.get("/revision-thesis/user/:user_id", getRevisionsByUserId);
+router.get(
+  "/revision-thesis/user/:user_id",
+  authMiddleware,
+  cordThesis,
+  getRevisionsByUserId
+);
 
 /**
  * @swagger
@@ -273,7 +293,7 @@ router.get("/revision-thesis/user/:user_id", getRevisionsByUserId);
  *     tags:
  *       - Revisión de Tesis
  *     security:
- *       - bearerAuth: [] 
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: user_id
@@ -314,5 +334,10 @@ router.get("/revision-thesis/user/:user_id", getRevisionsByUserId);
  *       500:
  *         description: Error al obtener la información de las revisiones del estudiante.
  */
-router.get("/revision-thesis/info/:user_id", getInforRevisionsByUserId);
+router.get(
+  "/revision-thesis/info/:user_id",
+  authMiddleware,
+  cordThesis,
+  getInforRevisionsByUserId
+);
 module.exports = router;
