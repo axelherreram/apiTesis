@@ -56,7 +56,7 @@ const notificationRoutes = require('./routes/notificationRoutes');
 const revisoresThesisRoutes = require('./routes/revisoresThesisRoutes');
 const revisionThesisRoutes = require('./routes/revisionThesisRoutes');
 const assignedReviewRoutes = require('./routes/assignedReviewRoutes');
-
+const graphicThesisRoutes = require('./routes/graphicThesisRoutes');
 
 const path = require('path');
 const cors = require('cors');
@@ -124,6 +124,7 @@ app.use('/api', notificationRoutes);
 app.use('/api', revisoresThesisRoutes);
 app.use('/api', revisionThesisRoutes);
 app.use('/api', assignedReviewRoutes);
+app.use('/api', graphicThesisRoutes);
 
 
 // Sincronizar la base de datos y arrancar el servidor
