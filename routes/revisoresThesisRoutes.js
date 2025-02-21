@@ -151,5 +151,6 @@ router.post("/reviewers", authMiddleware, cordThesis, createRevisor);
  *       500:
  *         description: Error al editar el revisor
  */
-router.put("/reviewers/:id", authMiddleware, cordThesis, editRevisor);
+router.put("/reviewers/:user_id", authMiddleware, cordThesis, editRevisor);
+
 module.exports = router;

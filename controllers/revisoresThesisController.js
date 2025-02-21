@@ -111,6 +111,9 @@ const editRevisor = async (req, res) => {
       return res.status(404).json({ message: "Revisor no encontrado" });
     }
 
+    if (revisor.rol_id !== 7) {
+      return res.status(400).json({ message: "El usuario no es revisor" });
+    }
     // Validar formato del código (carnet)
     if (codigo) {
       const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/;
@@ -148,4 +151,3 @@ const editRevisor = async (req, res) => {
 };
 
 module.exports = { createRevisor, getRevisores, editRevisor };
-
