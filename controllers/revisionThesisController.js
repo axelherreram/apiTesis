@@ -417,10 +417,98 @@ const getInforRevisionsByUserId = async (req, res) => {
   }
 };
 
+const getApprovedRevisions = async (req, res) => {
+  try {
+    const { order = "asc", carnet } = req.query;
+
+    const orderDirection = order === "desc" ? "DESC" : "ASC";
+
+    const userWhereClause = {};
+    if (carnet) {
+      // Validar el formato del carnet
+      const carnetRegex = /^\d{4}-\d{2}-\d{2,}$/;
+      if (!carnetRegex.test(carnet)) {
+        return res.status(400).json({ message: "Carnet inválido" });
+      }
+
+      // Validar que se ingresen al menos 2 dígitos del carnet
+      const carnetParts = carnet.split("-");
+      if (carnetParts[2].length < 2) {
+        return res
+          .status(400)
+          .json({ message: "Debe ingresar al menos 2 dígitos del carnet" });
+      }
+
+      // Agregar el carnet al filtro de búsqueda
+      userWhereClause.carnet = { [Op.like]: `%${carnet}%` };
+    }
+
+    // Obtener revisiones aprobadas
+    const approvedRevisions = await RevisionThesis.findAll({
+      attributes: ["revision_thesis_id", "date_revision", "thesis_dir"],
+      where: { active_process: true }, // Solo revisiones activas
+      include: [
+        {
+          model: ApprovalThesis,
+          where: { status: "approved" }, // Solo revisiones aprobadas
+          attributes: ["status", "date_approved"],
+        },
+        {
+          model: User,
+          attributes: ["user_id", "name", "carnet"],
+          where: userWhereClause,
+        },
+        {
+          model: Sede,
+          attributes: ["nameSede"], // Incluir información de la sede
+        },
+      ],
+      order: [["date_revision", orderDirection]], // Ordenar por fecha de revisión
+    });
+
+    // Si no hay revisiones aprobadas
+    if (approvedRevisions.length === 0) {
+      return res.status(404).json({
+        message: "No hay revisiones de tesis aprobadas",
+      });
+    }
+
+    // Formatear las revisiones aprobadas
+    const formattedRevisions = approvedRevisions.map((revision) => {
+      const revisionData = revision.toJSON();
+      return {
+        ...revisionData,
+        thesis_dir: `${
+          process.env.BASE_URL + "/public" || "http://localhost:3000/public"
+        }${revisionData.thesis_dir}`, // Agregar baseURL a la ruta del archivo
+        ApprovalThesis: revisionData.ApprovalThesis
+          ? {
+              ...revisionData.ApprovalThesis,
+              status: "aprobada", // Traducir el estado a español
+            }
+          : null, // Si no hay ApprovalThesis, asignar null
+      };
+    });
+
+    // Respuesta exitosa
+    res.status(200).json({
+      message: "Revisiones de tesis aprobadas obtenidas con éxito",
+      orden: orderDirection,
+      data: formattedRevisions,
+    });
+  } catch (error) {
+    console.error("Error al obtener las revisiones aprobadas:", error);
+    res.status(500).json({
+      message: "Error al obtener las revisiones aprobadas",
+      error: error.message,
+    });
+  }
+};
 module.exports = {
   uploadRevisionThesis,
   getPendingRevisions,
   getRevisionsByUserId,
   getRevisionsInReview,
   getInforRevisionsByUserId,
+  getApprovedRevisions,
 };

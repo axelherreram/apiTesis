@@ -5,6 +5,7 @@ const {
   getRevisionsByUserId,
   getRevisionsInReview, // Nuevo controlador
   getInforRevisionsByUserId,
+  getApprovedRevisions,
 } = require("../controllers/revisionThesisController");
 const uploadFilesMiddleware = require("../middlewares/revisionFilesMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
@@ -340,4 +341,84 @@ router.get(
   cordThesis,
   getInforRevisionsByUserId
 );
+
+/**
+ * @swagger
+ * /api/revision-thesis/approved:
+ *   get:
+ *     summary: Obtener revisiones de tesis aprobadas
+ *     description: Obtiene una lista de revisiones de tesis que han sido aprobadas.
+ *     tags:
+ *       - Revisión de Tesis
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: order
+ *         type: string
+ *         description: Orden de los resultados (asc o desc).
+ *         default: asc
+ *       - in: query
+ *         name: carnet
+ *         type: string
+ *         description: Carnet del estudiante para filtrar las revisiones.
+ *     responses:
+ *       200:
+ *         description: Lista de revisiones de tesis aprobadas.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Revisiones de tesis aprobadas obtenidas con éxito
+ *                 orden:
+ *                   type: string
+ *                   example: asc
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       revision_thesis_id:
+ *                         type: integer
+ *                         example: 1
+ *                       date_revision:
+ *                         type: string
+ *                         format: date
+ *                         example: 2023-10-01
+ *                       thesis_dir:
+ *                         type: string
+ *                         example: http://localhost:3000/public/uploads/revisionthesis/thesis.pdf
+ *                       status:
+ *                         type: string
+ *                         example: aprobada
+ *                       user:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                             example: Juan Pérez
+ *                           carnet:
+ *                             type: string
+ *                             example: 1890-21-9415
+ *                       sede:
+ *                         type: object
+ *                         properties:
+ *                           nameSede:
+ *                             type: string
+ *                             example: Sede Central
+ *       404:
+ *         description: No hay revisiones de tesis aprobadas.
+ *       500:
+ *         description: Error al obtener las revisiones aprobadas.
+ */
+router.get(
+  "/revision-thesis/approved",
+  authMiddleware,
+  cordThesis,
+  getApprovedRevisions
+);
+
 module.exports = router;
