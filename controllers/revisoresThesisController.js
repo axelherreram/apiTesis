@@ -136,7 +136,6 @@ const editRevisor = async (req, res) => {
     revisor.email = email || revisor.email;
     revisor.name = name || revisor.name;
     revisor.carnet = codigo || revisor.carnet;
-    revisor.active = active !== undefined ? active : revisor.active;
 
     await revisor.save();
 
