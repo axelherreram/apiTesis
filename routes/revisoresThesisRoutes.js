@@ -2,6 +2,7 @@ const { Router } = require("express");
 const {
   createRevisor,
   getRevisores,
+  editRevisor
 } = require("../controllers/revisoresThesisController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -101,4 +102,54 @@ router.get("/reviewers", authMiddleware, cordThesis, getRevisores);
  */
 router.post("/reviewers", authMiddleware, cordThesis, createRevisor);
 
+/**
+ * @swagger
+ * /api/reviewers/{user_id}:
+ *   put:
+ *     summary: Edita la información de un revisor existente.
+ *     tags:
+ *       - Revisores
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del revisor a editar
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Correo del revisor
+ *               name:
+ *                 type: string
+ *                 description: Nombre del revisor
+ *               codigo:
+ *                 type: string
+ *                 description: Código o carnet del revisor
+ *     responses:
+ *       200:
+ *         description: Revisor editado con éxito
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Revisor editado con éxito"
+ *       404:
+ *         description: Revisor no encontrado
+ *       500:
+ *         description: Error al editar el revisor
+ */
+router.put("/reviewers/:id", authMiddleware, cordThesis, editRevisor);
 module.exports = router;

@@ -100,4 +100,52 @@ const getRevisores = async (req, res) => {
   }
 };
 
-module.exports = { createRevisor, getRevisores };
+// Función para editar un revisor
+const editRevisor = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { email, name, codigo } = req.body;
+
+    const revisor = await User.findByPk(user_id);
+    if (!revisor) {
+      return res.status(404).json({ message: "Revisor no encontrado" });
+    }
+
+    // Validar formato del código (carnet)
+    if (codigo) {
+      const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/;
+      if (!carnetRegex.test(codigo)) {
+        return res.status(400).json({
+          title: "Error",
+          message: "Carnet inválido, ingrese codigo completo",
+        });
+      }
+    }
+
+    // Validar el dominio del correo
+    if (email && !isValidEmail(email)) {
+      return res.status(400).json({
+        title: "Error",
+        message: "El correo debe pertenecer a universidad",
+      });
+    }
+
+    revisor.email = email || revisor.email;
+    revisor.name = name || revisor.name;
+    revisor.carnet = codigo || revisor.carnet;
+    revisor.active = active !== undefined ? active : revisor.active;
+
+    await revisor.save();
+
+    res.status(200).json({ message: "Revisor actualizado con éxito" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error al actualizar el revisor",
+      error: error.message,
+    });
+  }
+};
+
+module.exports = { createRevisor, getRevisores, editRevisor };
+
