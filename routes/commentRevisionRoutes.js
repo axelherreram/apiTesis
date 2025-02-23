@@ -2,9 +2,11 @@ const express = require("express");
 const {
   createCommentRevision,
 } = require("../controllers/commentRevisionController");
-
+const authMiddleware = require("../middlewares/authMiddleware");
+const verifyRole = require("../middlewares/roleMiddleware");
 const router = express.Router();
 
+const cordThesis = verifyRole([6, 7]);
 /**
  * @swagger
  * /api/comment-revision:
@@ -13,6 +15,8 @@ const router = express.Router();
  *     description: Permite a un usuario agregar un comentario sobre la revisión de una tesis, actualizando el estado de aprobación y desactivando el proceso de revisión.
  *     tags:
  *       - Comentarios de Revisión de Tesis
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -97,7 +101,11 @@ const router = express.Router();
  *                   example: "Error al crear el comentario"
  */
 
-router.post("/comment-revision",  createCommentRevision);
-
+router.post(
+  "/comment-revision",
+  authMiddleware,
+  cordThesis,
+  createCommentRevision
+);
 
 module.exports = router;
