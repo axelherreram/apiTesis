@@ -53,10 +53,11 @@ const TaskSubmissionRoutes = require('./routes/taskSubmissionsRoutes');
 const GraphicsRoutes = require('./routes/graphicRoutes'); 
 const notificationRoutes = require('./routes/notificationRoutes');
 
-const revisoresThesisRoutes = require('./routes/revisoresThesisRoutes');
-const revisionThesisRoutes = require('./routes/revisionThesisRoutes');
-const assignedReviewRoutes = require('./routes/assignedReviewRoutes');
-const graphicThesisRoutes = require('./routes/graphicThesisRoutes');
+const RevisoresThesisRoutes = require('./routes/revisoresThesisRoutes');
+const RevisionThesisRoutes = require('./routes/revisionThesisRoutes');
+const AssignedReviewRoutes = require('./routes/assignedReviewRoutes');
+const GraphicThesisRoutes = require('./routes/graphicThesisRoutes');
+const CommentRevision = require('./routes/commentRevisionRoutes');
 
 const path = require('path');
 const cors = require('cors');
@@ -121,11 +122,11 @@ app.use('/api', thesisSubmissionsRoutes);
 app.use('/api', TaskSubmissionRoutes);
 app.use('/api', GraphicsRoutes);
 app.use('/api', notificationRoutes);
-app.use('/api', revisoresThesisRoutes);
-app.use('/api', revisionThesisRoutes);
-app.use('/api', assignedReviewRoutes);
-app.use('/api', graphicThesisRoutes);
-
+app.use('/api', RevisoresThesisRoutes);
+app.use('/api', RevisionThesisRoutes);
+app.use('/api', AssignedReviewRoutes);
+app.use('/api', GraphicThesisRoutes);
+app.use('/api', CommentRevision);
 
 // Sincronizar la base de datos y arrancar el servidor
 sequelize.sync({ alter: false, force: false })

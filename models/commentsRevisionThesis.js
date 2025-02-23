@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
-const {sequelize} = require("../config/database");
+const { sequelize } = require("../config/database");
 const AssignedReview = require("./assignedReviewthesis");
+const RevisionThesis = require("./revisionThesis");
 
 const commentsRevision = sequelize.define(
   "commentsRevision",
@@ -29,6 +30,7 @@ const commentsRevision = sequelize.define(
     date_comment: {
       type: DataTypes.DATE,
       allowNull: true,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
