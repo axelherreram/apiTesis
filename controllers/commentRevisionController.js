@@ -3,6 +3,7 @@ const CommentRevision = require("../models/commentsRevisionThesis");
 const RevisionThesis = require("../models/revisionThesis");
 const AssignedReview = require("../models/assignedReviewthesis");
 const ApprovalThesis = require("../models/approvalThesis");
+const moment = require("moment-timezone");
 
 const createCommentRevision = async (req, res) => {
   const transaction = await sequelize.transaction(); // Iniciar una transacción
@@ -10,19 +11,22 @@ const createCommentRevision = async (req, res) => {
     const { assigned_review_id, title, comment, status } = req.body;
 
     // Validar que se proporcionen todos los campos requeridos
-    if (!assigned_review_id || !title || !comment || !status) {
+    if (!assigned_review_id || !title || !comment || status === undefined) {
       return res.status(400).json({
         message:
-          "Todos los campos son requeridos: assigned_review_id, title, comment, state",
+          "Todos los campos son requeridos: assigned_review_id, title, comment, status",
       });
     }
 
-    // Validar que el estado sea válido
-    if (status !== "approved" && status !== "rejected") {
+    // Validar que el estado sea 0 o 1
+    if (status !== 0 && status !== 1) {
       return res.status(400).json({
-        message: "Estado inválido. Los estados válidos son: approved, rejected",
+        message: "El estado debe ser 0 (rechazado) o 1 (aprobado)",
       });
     }
+
+    // Convertir el estado a booleano
+    const isApproved = status === 1; // 1 = true (aprobado), 0 = false (rechazado)
 
     // Validar que la revisión asignada exista
     const assignedReview = await AssignedReview.findByPk(assigned_review_id, {
@@ -35,11 +39,24 @@ const createCommentRevision = async (req, res) => {
       });
     }
 
-    // obtener el id de la tesis de revisión
+    // Obtener el ID de la tesis de revisión
     const revision_thesis_id = assignedReview.revision_thesis_id;
 
+    /*     // Validar que no exista ya un comentario para esta revisión asignada
+    const existingComment = await CommentRevision.findOne({
+      where: { assigned_review_id },
+      transaction,
+    });
+
+    if (existingComment) {
+      await transaction.rollback();
+      return res.status(409).json({
+        message: "Ya existe un comentario para esta revisión asignada.",
+      });
+    } */
+
     // Desactivar el proceso de revisión
-    await RevisionThesis.update(
+    const revision = await RevisionThesis.update(
       {
         active_process: false,
       },
@@ -48,26 +65,36 @@ const createCommentRevision = async (req, res) => {
         transaction,
       }
     );
-
+    /*     // Verificar si alguna fila fue actualizada
+    if (revision[0] === 0) {
+      return res.status(400).json({
+        message: "El proceso de revisión ya ha sido desactivado",
+      });
+    }
+ */
     // Actualizar el estado de la aprobación
     await ApprovalThesis.update(
       {
-        status: status,
-        approved: status === "approved", // Establecer approved en true si el estado es "approved"
-        date_approved: new Date(),
+        status: isApproved ? "approved" : "rejected",
+        approved: isApproved,
+        date_approved: moment()
+          .tz("America/Guatemala")
+          .format("YYYY-MM-DD HH:mm:ss"),
       },
       {
         where: { revision_thesis_id },
         transaction,
       }
     );
-
     // Crear el comentario
     const newComment = await CommentRevision.create(
       {
         assigned_review_id,
         title,
         comment,
+        date_comment: moment()
+          .tz("America/Guatemala")
+          .format("YYYY-MM-DD HH:mm:ss"),
       },
       { transaction }
     );

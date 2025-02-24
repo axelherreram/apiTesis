@@ -7,6 +7,7 @@ const verifyRole = require("../middlewares/roleMiddleware");
 const router = express.Router();
 
 const cordThesis = verifyRole([6, 7]);
+
 /**
  * @swagger
  * /api/comment-revision:
@@ -42,10 +43,10 @@ const cordThesis = verifyRole([6, 7]);
  *                 example: "Es necesario mejorar la redacción en la introducción."
  *                 description: Contenido del comentario.
  *               status:
- *                 type: string
- *                 enum: [approved, rejected]
- *                 example: "approved"
- *                 description: Estado de la revisión después del comentario.
+ *                 type: integer
+ *                 enum: [0, 1]
+ *                 example: 0
+ *                 description: Estado de la revisión después del comentario (0 = rechazado, 1 = aprobado).
  *     responses:
  *       201:
  *         description: Comentario creado con éxito.
@@ -78,7 +79,7 @@ const cordThesis = verifyRole([6, 7]);
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Todos los campos son requeridos: assigned_review_id, title, comment, state"
+ *                   example: "Todos los campos son requeridos: assigned_review_id, title, comment, status"
  *       404:
  *         description: Revisión asignada no encontrada.
  *         content:
