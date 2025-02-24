@@ -65,13 +65,14 @@ const createCommentRevision = async (req, res) => {
         transaction,
       }
     );
-    /*     // Verificar si alguna fila fue actualizada
+    
+    // Verificar si alguna fila fue actualizada
     if (revision[0] === 0) {
       return res.status(400).json({
         message: "El proceso de revisión ya ha sido desactivado",
       });
     }
- */
+
     // Actualizar el estado de la aprobación
     await ApprovalThesis.update(
       {
