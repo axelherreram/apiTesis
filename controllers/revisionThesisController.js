@@ -9,6 +9,18 @@ const AssignedReview = require("../models/assignedReviewthesis");
 const Year = require("../models/year");
 const CommentsRevision = require("../models/commentsRevisionThesis");
 
+/**
+ * The function `uploadRevisionThesis` handles the upload of a thesis revision, verifying the
+ * existence of required files, validating user information, and ensuring that no active revision
+ * process exists before creating a new one.
+ * @param req - The `req` parameter represents the HTTP request object, which contains the thesis
+ * and approval letter files, as well as user details such as `carnet` and `sede_id`.
+ * @param res - The `res` parameter represents the HTTP response object used to send back the result
+ * of the operation.
+ * @returns A JSON response indicating success or failure, including validation errors if the user
+ * does not exist, is not a student, the sede does not exist, or the user already has an active
+ * revision process.
+ */
 const uploadRevisionThesis = async (req, res) => {
   let approval_letter_dir = null;
   let thesis_dir = null;
@@ -124,6 +136,14 @@ const uploadRevisionThesis = async (req, res) => {
   }
 };
 
+/**
+ * The function `getRevisionsByUserId` retrieves all active thesis revisions for a given student,
+ * including user details, assigned reviewers, and the formatted thesis file path.
+ * @param req - The HTTP request object, containing the `user_id` as a URL parameter.
+ * @param res - The HTTP response object used to return the result of the request.
+ * @returns A JSON response with the list of active thesis revisions for the user, or an error message
+ * if none are found or if an internal server error occurs.
+ */
 const getRevisionsByUserId = async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -206,6 +226,14 @@ const getRevisionsByUserId = async (req, res) => {
   }
 };
 
+/**
+ * The function `getPendingRevisions` retrieves all pending thesis revisions that have not been assigned 
+ * to a reviewer, with optional filtering by student ID (`carnet`) and ordering by date.
+ * @param req - The HTTP request object, allowing query parameters `order` (asc/desc) and `carnet`.
+ * @param res - The HTTP response object used to return the list of pending thesis revisions.
+ * @returns A JSON response with the list of pending thesis revisions or an error message if none are found
+ * or if an internal server error occurs.
+ */
 const getPendingRevisions = async (req, res) => {
   try {
     const { order = "asc", carnet } = req.query;
@@ -360,6 +388,14 @@ const getRevisionsInReview = async (req, res) => {
   }
 };
 
+/**
+ * The function `getRevisionsInReview` retrieves all thesis revisions that are currently in review
+ * and have been assigned to a reviewer, with optional filtering by student ID (`carnet`) and ordering by date.
+ * @param req - The HTTP request object, allowing query parameters `order` (asc/desc) and `carnet`.
+ * @param res - The HTTP response object used to return the list of thesis revisions in review.
+ * @returns A JSON response with the list of thesis revisions in review or an error message if none are found
+ * or if an internal server error occurs.
+ */
 const getInforRevisionsByUserId = async (req, res) => {
   try {
     const { user_id } = req.params;
@@ -417,6 +453,14 @@ const getInforRevisionsByUserId = async (req, res) => {
   }
 };
 
+/**
+ * The function `getApprovedRevisions` retrieves all thesis revisions that have been approved,
+ * with optional filtering by student ID (`carnet`) and ordering by date.
+ * @param req - The HTTP request object, allowing query parameters `order` (asc/desc) and `carnet`.
+ * @param res - The HTTP response object used to return the list of approved thesis revisions.
+ * @returns A JSON response with the list of approved thesis revisions or an error message if none are found
+ * or if an internal server error occurs.
+ */
 const getApprovedRevisions = async (req, res) => {
   try {
     const { order = "asc", carnet } = req.query;
@@ -504,6 +548,7 @@ const getApprovedRevisions = async (req, res) => {
     });
   }
 };
+
 module.exports = {
   uploadRevisionThesis,
   getPendingRevisions,

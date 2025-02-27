@@ -5,6 +5,14 @@ const RevisionThesis = require("../models/revisionThesis");
 const Sede = require("../models/sede");
 const User = require("../models/user");
 
+/**
+ * The function `getRevisionStatistics` retrieves statistics related to thesis revisions.
+ * It counts the total number of revisions, approved revisions, rejected revisions, active revisions, and the total number of reviewers.
+ * These statistics are then returned in a JSON response.
+ * @param req - The HTTP request object.
+ * @param res - The HTTP response object to send back the statistics data or an error message.
+ * @returns A JSON response with revision statistics or an error message.
+ */
 const getRevisionStatistics = async (req, res) => {
   try {
     // Total de revisiones recibidas (todas las revisiones)
@@ -49,6 +57,16 @@ const getRevisionStatistics = async (req, res) => {
   }
 };
 
+/**
+ * The function `getRevisionStatisticsBySede` retrieves the total number of thesis revision requests
+ * grouped by sede, including the name of the sede for each group.
+ * @param req - The `req` parameter represents the HTTP request object, which contains the parameters
+ * for the request, though no specific parameters are required for this function.
+ * @param res - The `res` parameter represents the HTTP response object used to send back the result
+ * of the operation, including the total number of requests for each sede.
+ * @returns A JSON response with a message indicating success and the data containing the total number of
+ * requests per sede, or an error message if the request fails.
+ */
 const getRevisionStatisticsBySede = async (req, res) => {
   try {
     // Obtener el total de solicitudes por sede
@@ -83,6 +101,16 @@ const getRevisionStatisticsBySede = async (req, res) => {
   }
 };
 
+/**
+ * The function `getRevisionStatisticsByDateRange` retrieves the statistics of thesis revisions, including
+ * the total number of approved and rejected revisions within a given date range.
+ * @param req - The `req` parameter represents the HTTP request object, which contains the `startMonth`
+ * and `endMonth` query parameters that define the range of dates for filtering the revision statistics.
+ * @param res - The `res` parameter represents the HTTP response object used to send back the result of the operation,
+ * including the statistics for approved and rejected revisions.
+ * @returns A JSON response with a message indicating success and the data containing the total number of approved and 
+ * rejected revisions within the specified date range, or an error message if validation or the request fails.
+ */
 const getRevisionStatisticsByDateRange = async (req, res) => {
   try {
     const { startMonth, endMonth } = req.query;

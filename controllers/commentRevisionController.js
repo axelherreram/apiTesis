@@ -5,6 +5,15 @@ const AssignedReview = require("../models/assignedReviewthesis");
 const ApprovalThesis = require("../models/approvalThesis");
 const moment = require("moment-timezone");
 
+/**
+ * The function `createCommentRevision` handles the creation of a comment on a thesis revision,
+ * updates the thesis approval status, and deactivates the revision process.
+ * It ensures transactional consistency using Sequelize transactions.
+ *
+ * @param req - The HTTP request object containing `assigned_review_id`, `title`, `comment`, and `status` in the body.
+ * @param res - The HTTP response object used to return the created comment or an error message.
+ * @returns A JSON response confirming the successful creation of the comment or an error message in case of failure.
+ */
 const createCommentRevision = async (req, res) => {
   const transaction = await sequelize.transaction(); // Iniciar una transacción
   try {

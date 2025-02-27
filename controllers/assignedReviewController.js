@@ -3,6 +3,17 @@ const AssignedReview = require("../models/assignedReviewthesis");
 const RevisionThesis = require("../models/revisionThesis");
 const User = require("../models/user");
 
+/**
+ * The function `createAssignedReview` assigns a reviewer to a thesis revision, ensuring the user
+ * exists, has the correct role, and that the revision is active and not already assigned.
+ * @param req - The `req` parameter represents the HTTP request object containing the `revision_thesis_id`
+ * and `user_id` in the request body.
+ * @param res - The `res` parameter represents the HTTP response object used to send back the result
+ * of the operation.
+ * @returns A JSON response indicating success or failure, including messages if the user does not exist,
+ * is not a reviewer or coordinator, if the thesis revision does not exist or is inactive, or if an
+ * assignment already exists.
+ */
 const createAssignedReview = async (req, res) => {
   const { revision_thesis_id, user_id } = req.body;
 
