@@ -25,43 +25,44 @@ const listAllLogs = async (req, res) => {
   try {
     // Validar si la sede del token coincide con la sede de la solicitud
     if (parseInt(requestSedeId, 10) !== parseInt(tokenSedeId, 10)) {
-      return res
-        .status(403)
-        .json({
-          message:
-            "No tienes permiso para acceder a los registros de esta sede.",
-        });
+      return res.status(403).json({
+        message: "No tienes permiso para acceder a los registros de esta sede.",
+      });
     }
 
-    // Obtener los registros de bitácora para la sede
-    const logs = await AppLog.findAll({
+    const logs = await AppLog.findAndCountAll({
       where: { sede_id: requestSedeId },
+      include: [
+        {
+          model: User,
+          attributes: ["name", "rol_id"],
+          include: [
+            {
+              model: Roles,
+              as: "role",
+              attributes: ["name"],
+            },
+          ],
+        },
+      ],
       order: [["date", "DESC"]],
     });
 
     if (!logs || logs.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message:
-            "No se encontraron entradas de bitácora para esta sede.",
-        });
+      return res.status(404).json({
+        message: "No se encontraron entradas de bitácora para esta sede.",
+      });
     }
-    const formattedLogs = await Promise.all(
-      logs.map(async (log) => {
-        const user = await User.findOne({ where: { user_id: log.user_id } });
-        const Role = await Roles.findOne({ where: { rol_id: user.rol_id } });
 
-        return {
-          user_id: log.user_id,
-          username: user ? user.name : "Usuario desconocido",
-          role: Role ? Role.name : "Rol desconocido",
-          action: log.action,
-          description: log.details,
-          date: log.date,
-        };
-      })
-    );
+    // Formatear logs
+    const formattedLogs = logs.rows.map((log) => ({
+      user_id: log.user_id,
+      username: log.user ? log.user.name : "Usuario desconocido",
+      role: log.user?.role ? log.user.role.name : "Rol desconocido",
+      action: log.action,
+      description: log.details,
+      date: log.date,
+    }));
 
     res.json({
       message: "Lista completa de bitácoras",
@@ -103,11 +104,9 @@ const listLogsByUser = async (req, res) => {
     });
 
     if (!logs || logs.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "No se encontraron entradas de bitácora para este usuario",
-        });
+      return res.status(404).json({
+        message: "No se encontraron entradas de bitácora para este usuario",
+      });
     }
 
     const formattedLogs = logs.map((log) => ({

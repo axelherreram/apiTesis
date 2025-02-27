@@ -21,6 +21,7 @@ const RevisionThesis = require("./revisionThesis");
 const ApprovalThesis = require("./approvalThesis");
 const AssignedReview = require("./assignedReviewthesis");
 const CommentsRevision = require("./commentsRevisionThesis");
+const AppLog = require("./appLog");
 
 module.exports = function associateModels() {
   // Relación entre Task y CourseSedeAssignment
@@ -64,12 +65,16 @@ module.exports = function associateModels() {
   // Relación entre User y CourseSedeAssignment
   User.hasMany(CourseSedeAssignment, { foreignKey: "sede_id" });
 
+  AppLog.belongsTo(User, { foreignKey: "user_id" });
+  User.hasMany(AppLog, { foreignKey: "user_id" });
+
   // Relación entre TimelineEventos y User
   TimelineEventos.belongsTo(User, { foreignKey: "user_id" });
   User.hasMany(TimelineEventos, { foreignKey: "user_id" });
 
   // Relación entre User y Roles
   User.belongsTo(Roles, { foreignKey: "rol_id", as: "role" });
+  Roles.hasMany(User, { foreignKey: "rol_id" });
 
   // Relación entre User y Year
   User.belongsTo(Year, { foreignKey: "year_id", as: "year" });
