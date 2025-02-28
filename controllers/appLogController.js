@@ -46,6 +46,7 @@ const listAllLogs = async (req, res) => {
         },
       ],
       order: [["date", "DESC"]],
+      limmit: 100,
     });
 
     if (!logs || logs.length === 0) {
