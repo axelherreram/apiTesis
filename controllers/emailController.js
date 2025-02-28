@@ -3,10 +3,12 @@ const fs = require("fs");
 const path = require("path");
 
 const transporter = nodemailer.createTransport({
-  service: "gmail", 
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER, // Tu correo electrónico
-    pass: process.env.EMAIL_PASSWORD, // Tu contraseña o clave de aplicación
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
   },
 });
 
