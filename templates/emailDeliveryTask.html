@@ -1,54 +1,101 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #eef1f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            background-color: #ffffff;
+            margin: 20px auto;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #1c72a5;
+            padding-bottom: 15px;
+        }
+        .header img {
+            max-width: 80px;
+            height: auto;
+        }
+        .title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1c72a5;
+        }
+        .content {
+            padding: 20px 0;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .details {
+            font-size: 16px;
+            color: #555;
+            margin-top: 20px;
+        }
+        .details li {
+            margin-bottom: 8px;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .button {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: #1c72a5;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+        }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
-    <table style="max-width: 600px; background-color: #ffffff; margin: 20px auto; padding: 20px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); border-spacing: 0; width: 100%;">
-        <tr>
-            <td style="border-bottom: 2px solid #ccc; padding-bottom: 10px;">
-                <table style="width: 100%;">
-                    <tr>
-                        <td style="font-size: 24px; color: #333;">UMG: Universidad Mariano Gálvez</td>
-                        <td style="text-align: right;">
-                            <img src="https://umg.edu.gt/img/Umg.png" alt="logo umg" style="max-width: 70px; height: auto; display: block;" />
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 20px 0;">
-                <h1 style="font-size: 24px; font-weight: bold; color: #333;">Nueva entrega de capítulo/tarea</h1>
-                <p style="font-size: 16px; color: #666; line-height: 1.5;">
-                    Estimado/a <strong>{{catedraticoNombre}}</strong>,
-                </p>
-                <p style="font-size: 16px; color: #666; line-height: 1.5;">
-                    Se ha registrado una nueva entrega en la plataforma <strong>TesM</strong>. A continuación, se detallan los datos de la entrega:
-                </p>
-                <h3 style="font-size: 20px; color: #333;">Detalles de la entrega:</h3>
-                <ul style="font-size: 16px; color: #666; line-height: 1.5;">
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">Universidad Mariano Gálvez</div>
+            <img src="https://umg.edu.gt/img/Umg.png" alt="Logo UMG" />
+        </div>
+        <div class="content">
+            <h2>¡Nueva entrega de capítulo/tarea!</h2>
+            <p>Estimado/a <strong>{{catedraticoNombre}}</strong>,</p>
+            <p>Se ha registrado una nueva entrega en la plataforma <strong>TesM</strong>. A continuación, se detallan los datos de la entrega:</p>
+            <div class="details">
+                <ul>
                     <li><strong>Estudiante:</strong> {{studentName}}</li>
                     <li><strong>Capítulo/Tarea:</strong> {{chapterTitle}}</li>
                     <li><strong>Fecha de entrega:</strong> {{deliveryDate}}</li>
                     <li><strong>Estado de entrega:</strong> {{stateDelivery}}</li>
                 </ul>
-                <p style="font-size: 16px; color: #666;">
-                    Puede revisar la entrega en la plataforma y proporcionar sus comentarios o retroalimentación.
-                </p>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: center;">
-                <a href="/" style="padding: 10px 20px; background-color: #1c72a5; color: white; text-decoration: none; border-radius: 4px; font-size: 16px; font-weight: 700;">Ver entrega</a>
-            </td>
-        </tr>
-        <tr>
-            <td style="text-align: center; padding-top: 20px;">
-                <strong>¡No respondas a este correo!</strong>
-            </td>
-        </tr>
-    </table>
+            </div>
+            <p>Puede revisar la entrega en la plataforma y proporcionar sus comentarios o retroalimentación.</p>
+            <div class="button-container">
+                <a href="/" class="button">Ver entrega</a>
+            </div>
+        </div>
+        <div class="footer">
+            <strong>¡No respondas a este correo!</strong>
+        </div>
+    </div>
 </body>
 </html>

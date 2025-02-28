@@ -1,48 +1,92 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            background-color: #ffffff;
+            margin: 20px auto;
+            padding: 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #1c72a5;
+            padding-bottom: 15px;
+        }
+        .header img {
+            max-width: 80px;
+            height: auto;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .content {
+            padding: 20px 0;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .details {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+        .details ul {
+            padding-left: 20px;
+            font-size: 16px;
+            color: #666;
+            line-height: 1.5;
+        }
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 20px;
+        }
+    </style>
 </head>
-<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 20px;">
-    <table style="max-width: 600px; background-color: #ffffff; margin: 20px auto; padding: 20px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); border-spacing: 0; width: 100%;">
-        <tr>
-            <td style="border-bottom: 2px solid #ccc; padding-bottom: 10px;">
-                <table style="width: 100%;">
-                    <tr>
-                        <td style="font-size: 24px; color: #333;">UMG: Universidad Mariano Gálvez</td>
-                        <td style="text-align: right;">
-                            <img src="https://umg.edu.gt/img/Umg.png" alt="logo umg" style="max-width: 70px; height: auto; display: block;" />
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-        <tr>
-            <td style="padding: 20px 0;">
-                <h1 style="font-size: 24px; font-weight: bold; color: #333;">Nueva Entrega de Propuesta de Tesis</h1>
-                <p style="font-size: 16px; color: #666; line-height: 1.5;">
-                    Estimado/a <strong>{{professor}}</strong>,
-                </p>
-                <p style="font-size: 16px; color: #666; line-height: 1.5;">
-                    Le informamos que el estudiante <strong>{{student}}</strong> ha realizado la entrega de su propuesta de tesis en la plataforma <strong>TesM</strong>. A continuación, los detalles de la entrega:
-                </p>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title">Universidad Mariano Gálvez</div>
+            <img src="https://umg.edu.gt/img/Umg.png" alt="Logo UMG" />
+        </div>
+        <div class="content">
+            <h2 style="font-size: 24px; color: #333;">Nueva Entrega de Propuesta de Tesis</h2>
+            <p style="font-size: 16px; color: #666;">
+                Estimado/a <strong>{{professor}}</strong>,
+            </p>
+            <p style="font-size: 16px; color: #666;">
+                Le informamos que el estudiante <strong>{{student}}</strong> ha realizado la entrega de su propuesta de tesis en la plataforma <strong>TesM</strong>. A continuación, los detalles de la entrega:
+            </p>
+            <div class="details">
                 <h3 style="font-size: 20px; color: #333;">Detalles de la entrega:</h3>
-                <ul style="font-size: 16px; color: #666; line-height: 1.5;">
+                <ul>
                     <li><strong>Título de la tarea:</strong> {{thesisTitle}}</li>
                     <li><strong>Fecha de Entrega:</strong> {{submissionDate}}</li>
                 </ul>
                 <p style="font-size: 16px; color: #666;">
                     Por favor, revise la propuesta y proporcione sus comentarios en la plataforma.
                 </p>
-            </td>
-        </tr>
-
-        <tr>
-            <td style="text-align: center; padding-top: 20px;">
-                <p style="font-size: 14px; color: #666;">Este es un mensaje generado automáticamente, por favor no responda a este correo.</p>
-            </td>
-        </tr>
-    </table>
+            </div>
+        </div>
+        <div class="footer">
+            <p style="font-size: 14px; color: #666;">Este es un mensaje generado automáticamente, por favor no responda a este correo.</p>
+        </div>
+    </div>
 </body>
 </html>
