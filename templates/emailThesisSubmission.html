@@ -6,86 +6,76 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f4f4f4;
+            background-color: #e3f2fd;
             margin: 0;
             padding: 20px;
         }
+
         .container {
             max-width: 600px;
             background-color: #ffffff;
             margin: 20px auto;
             padding: 30px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
         }
+
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 3px solid #1c72a5;
-            padding-bottom: 15px;
-        }
-        .header img {
-            max-width: 80px;
-            height: auto;
-        }
-        .title {
-            font-size: 24px;
+            background-color: #0d47a1;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            font-size: 22px;
             font-weight: bold;
-            color: #333;
         }
+
         .content {
-            padding: 20px 0;
             font-size: 16px;
             color: #333;
-            line-height: 1.6;
+            padding: 20px;
         }
-        .details {
-            font-size: 16px;
-            color: #666;
+
+        .content h2 {
+            font-size: 22px;
+            color: #0d47a1;
             margin-bottom: 15px;
+            text-align: center;
         }
-        .details ul {
-            padding-left: 20px;
-            font-size: 16px;
-            color: #666;
-            line-height: 1.5;
+
+        .info-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 5px solid #0d47a1;
+            margin: 15px 0;
+            border-radius: 5px;
         }
+
         .footer {
             text-align: center;
             font-size: 14px;
-            color: #666;
-            margin-top: 20px;
+            color: #555;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid #e3f2fd;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="title">Universidad Mariano Gálvez</div>
-            <img src="https://umg.edu.gt/img/Umg.png" alt="Logo UMG" />
-        </div>
+        <div class="header">Gestión de Documentos Investigativos</div>
         <div class="content">
-            <h2 style="font-size: 24px; color: #333;">Nueva Entrega de Propuesta de Tesis</h2>
-            <p style="font-size: 16px; color: #666;">
-                Estimado/a <strong>{{professor}}</strong>,
-            </p>
-            <p style="font-size: 16px; color: #666;">
-                Le informamos que el estudiante <strong>{{student}}</strong> ha realizado la entrega de su propuesta de tesis en la plataforma <strong>Gestor de documentos de Investigativos</strong>. A continuación, los detalles de la entrega:
-            </p>
-            <div class="details">
-                <h3 style="font-size: 20px; color: #333;">Detalles de la entrega:</h3>
-                <ul>
-                    <li><strong>Título de la tarea:</strong> {{thesisTitle}}</li>
-                    <li><strong>Fecha de Entrega:</strong> {{submissionDate}}</li>
-                </ul>
-                <p style="font-size: 16px; color: #666;">
-                    Por favor, revise la propuesta y proporcione sus comentarios en la plataforma.
-                </p>
+            <h2>📄 Nueva Entrega de Propuesta de Tesis 📄</h2>
+            <p>Estimado/a <strong>{{professor}}</strong>,</p>
+            <p>Le informamos que el estudiante <strong>{{student}}</strong> ha realizado la entrega de su propuesta de tesis en la plataforma <strong>Gestor de Documentos Investigativos</strong>. A continuación, los detalles de la entrega:</p>
+            <div class="info-box">
+                <p><strong>Título de la tarea:</strong> {{thesisTitle}}</p>
+                <p><strong>Fecha de Entrega:</strong> {{submissionDate}}</p>
             </div>
+            <p>Por favor, revise la propuesta y proporcione sus comentarios en la plataforma.</p>
         </div>
         <div class="footer">
-            <p style="font-size: 14px; color: #666;">Este es un mensaje generado automáticamente, por favor no responda a este correo.</p>
+            <strong>¡No responda a este correo!</strong>
         </div>
     </div>
 </body>

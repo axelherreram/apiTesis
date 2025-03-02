@@ -6,85 +6,88 @@
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #eef1f5;
+            background-color: #e3f2fd;
             margin: 0;
             padding: 20px;
         }
+
         .container {
             max-width: 600px;
             background-color: #ffffff;
             margin: 20px auto;
             padding: 30px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
         }
+
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 3px solid #1c72a5;
-            padding-bottom: 15px;
-        }
-        .header img {
-            max-width: 80px;
-            height: auto;
-        }
-        .title {
+            background-color: #0d47a1;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
             font-size: 22px;
             font-weight: bold;
-            color: #1c72a5;
         }
+
         .content {
-            padding: 20px 0;
             font-size: 16px;
             color: #333;
+            padding: 20px;
         }
-        .details {
-            font-size: 16px;
-            color: #555;
-            margin-top: 20px;
+
+        .content h2 {
+            font-size: 22px;
+            color: #0d47a1;
+            margin-bottom: 15px;
+            text-align: center;
         }
-        .details li {
-            margin-bottom: 8px;
+
+        .info-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 5px solid #0d47a1;
+            margin: 15px 0;
+            border-radius: 5px;
         }
+
         .button-container {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 30px;
         }
+
         .button {
             display: inline-block;
-            padding: 12px 25px;
-            background-color: #1c72a5;
+            padding: 12px 18px;
+            background-color: #0d47a1;
             color: white;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
         }
+
         .footer {
             text-align: center;
             font-size: 14px;
-            color: #666;
-            margin-top: 20px;
+            color: #555;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid #e3f2fd;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <div class="title">Universidad Mariano Gálvez</div>
-            <img src="https://umg.edu.gt/img/Umg.png" alt="Logo UMG" />
-        </div>
+        <div class="header">Gestión de Documentos Investigativos</div>
         <div class="content">
-            <h2>Comentarios sobre tu entrega</h2>
+            <h2>📄 Comentarios sobre tu entrega 📄</h2>
             <p>Estimado/a <strong>{{nombre}}</strong>,</p>
             <p>Se ha realizado un nuevo comentario sobre tu entrega en la plataforma <strong>TesM</strong>. A continuación, te proporcionamos los detalles:</p>
-            <div class="details">
-                <ul>
-                    <li><strong>Entrega:</strong> {{entregaTitulo}}</li>
-                    <li><strong>Comentario:</strong> {{comentario}}</li>
-                    <li><strong>Fecha de comentario:</strong> {{fechaComentario}}</li>
-                </ul>
+            <div class="info-box">
+                <p><strong>Entrega:</strong> {{entregaTitulo}}</p>
+                <p><strong>Comentario:</strong> {{comentario}}</p>
+                <p><strong>Fecha de comentario:</strong> {{fechaComentario}}</p>
             </div>
             <p>Te recomendamos revisar el comentario en la plataforma para más detalles y tomar las acciones necesarias para mejorar tu entrega.</p>
             <div class="button-container">

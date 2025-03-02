@@ -1,13 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #eef1f5;
+            background-color: #e3f2fd;
             margin: 0;
             padding: 20px;
         }
@@ -22,33 +21,34 @@
         }
 
         .header {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-bottom: 3px solid #16709f;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-        }
-
-        .title {
-            font-size: 26px;
-            font-weight: bold;
-            color: #16709f;
+            background-color: #0d47a1;
+            color: white;
             text-align: center;
-            padding: 0 10px;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            font-size: 22px;
+            font-weight: bold;
         }
 
         .content {
-            padding: 20px 0;
             font-size: 16px;
             color: #333;
-            line-height: 1.6;
+            padding: 20px;
         }
 
         .content h2 {
             font-size: 22px;
-            color: #16709f;
-            margin-bottom: 10px;
+            color: #0d47a1;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .info-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 5px solid #0d47a1;
+            margin: 15px 0;
+            border-radius: 5px;
         }
 
         .button-container {
@@ -58,8 +58,8 @@
 
         .button {
             display: inline-block;
-            padding: 12px 12px;
-            background-color: #16709f; /* Azul fijo */
+            padding: 12px 18px;
+            background-color: #0d47a1;
             color: white;
             text-decoration: none;
             border-radius: 5px;
@@ -70,33 +70,31 @@
         .footer {
             text-align: center;
             font-size: 14px;
-            color: #666;
+            color: #555;
             margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid #e3f2fd;
         }
     </style>
 </head>
-
 <body>
     <div class="container">
-        <div class="header">
-            <div class="title"><strong>Gestión de Documentos Investigativos</strong></div>
-        </div>
+        <div class="header">Gestión de Documentos Investigativos</div>
         <div class="content">
-            <h2>¡Nueva Revisión Activa para Usted!</h2>
-            <p>Estimado/a {{reviewer_name}},</p>
-            <p>Le informamos que tiene una nueva revisión activa pendiente en la plataforma de gestión de tesis. Puede
-                acceder a ella en el apartado de <strong>Mis Revisiones</strong> en su cuenta.</p>
-            <p>Fecha de asignación: {{reviewer_date}}</p>
+            <h2>📄 ¡Nueva Revisión Activa! 📄</h2>
+            <p>Estimado/a <strong>{{reviewer_name}}</strong>,</p>
+            <p>Le informamos que tiene una nueva revisión activa pendiente en la plataforma de gestión de tesis.</p>
+            <div class="info-box">
+                <p><strong>Fecha de asignación:</strong> {{reviewer_date}}</p>
+            </div>
             <div class="button-container">
                 <a href="https://onlineproject.online/" class="button">Revisar Documento</a>
             </div>
-            <p>Recuerde que es importante completar su revisión y proporcionar su retroalimentación en el plazo
-                correspondiente.</p>
+            <p>Recuerde completar su revisión y proporcionar su retroalimentación dentro del plazo correspondiente.</p>
         </div>
         <div class="footer">
             <strong>¡No responda a este correo!</strong>
         </div>
     </div>
 </body>
-
 </html>
