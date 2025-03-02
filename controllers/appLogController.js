@@ -58,8 +58,8 @@ const listAllLogs = async (req, res) => {
     // Formatear logs
     const formattedLogs = logs.rows.map((log) => ({
       user_id: log.user_id,
-      username: log.user ? log.user.name : "Usuario desconocido",
-      role: log.user?.role ? log.user.role.name : "Rol desconocido",
+      username: log.username,
+      role: log.User.role.name,
       action: log.action,
       description: log.details,
       date: log.date,
