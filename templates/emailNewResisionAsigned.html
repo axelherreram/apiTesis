@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #eef1f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            background-color: #ffffff;
+            margin: 20px auto;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 3px solid #16709f;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .title {
+            font-size: 26px;
+            font-weight: bold;
+            color: #16709f;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        .content {
+            padding: 20px 0;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .content h2 {
+            font-size: 22px;
+            color: #16709f;
+            margin-bottom: 10px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 12px;
+            background-color: #16709f; /* Azul fijo */
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="title"><strong>Gestión de Documentos Investigativos</strong></div>
+        </div>
+        <div class="content">
+            <h2>¡Nueva Revisión Activa para Usted!</h2>
+            <p>Estimado/a {{reviewer_name}},</p>
+            <p>Le informamos que tiene una nueva revisión activa pendiente en la plataforma de gestión de tesis. Puede
+                acceder a ella en el apartado de <strong>Mis Revisiones</strong> en su cuenta.</p>
+            <p>Fecha de asignación: {{reviewer_date}}</p>
+            <div class="button-container">
+                <a href="https://onlineproject.online/" class="button">Revisar Documento</a>
+            </div>
+            <p>Recuerde que es importante completar su revisión y proporcionar su retroalimentación en el plazo
+                correspondiente.</p>
+        </div>
+        <div class="footer">
+            <strong>¡No responda a este correo!</strong>
+        </div>
+    </div>
+</body>
+
+</html>

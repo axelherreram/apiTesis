@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e3f2fd;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            background-color: #ffffff;
+            margin: 20px auto;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .header {
+            background-color: #0d47a1;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .content {
+            font-size: 16px;
+            color: #333;
+            padding: 20px;
+        }
+
+        .content h2 {
+            font-size: 22px;
+            color: #0d47a1;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .info-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 5px solid #0d47a1;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .status-message {
+            display: inline-block;
+            padding: 5px 10px;
+            background-color: #c8e6c9; /* verde suave */
+            color: #388e3c; /* color de texto en verde oscuro */
+            border-radius: 4px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 12px 18px;
+            background-color: #0d47a1;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin-top: 30px;
+            padding-top: 15px;
+            border-top: 2px solid #e3f2fd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Gestión de Documentos Investigativos</div>
+        <div class="content">
+            <h2>✅ ¡Tu Tesis ha sido Aprobada! ✅</h2>
+            <p>Estimado/a <strong>{{student_name}}</strong>,</p>
+            <p>Nos complace informarte que tu tesis ha sido revisada y <strong>aprobada</strong>. A continuación, te proporcionamos los detalles:</p>
+            <div class="info-box">
+                <p><strong>Título del comentario:</strong> {{title}}</p>
+                <p><strong>Comentario:</strong> {{comment}}</p>
+                <p><strong>Fecha del comentario:</strong> {{date}}</p>
+            </div>
+            <p>La revisión ha sido completada y el estado de la tesis ha sido marcado como <span class="status-message">{{status_message}}</span>.</p>
+            <p>{{custom_message}}</p>
+            <p>Le solicitamos amablemente que se comunique con su catedrático correspondiente para continuar con el proceso.</p>
+        </div>
+        <div class="footer">
+            <strong>¡No responda a este correo!</strong>
+        </div>
+    </div>
+</body>
+</html>

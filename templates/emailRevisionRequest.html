@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,82 +15,76 @@
             background-color: #ffffff;
             margin: 20px auto;
             padding: 30px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             border-radius: 8px;
         }
         .header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
             border-bottom: 3px solid #1c72a5;
-            padding-bottom: 15px;
-        }
-        .header img {
-            max-width: 80px;
-            height: auto;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
         }
         .title {
-            font-size: 22px;
+            font-size: 26px;
             font-weight: bold;
             color: #1c72a5;
+            text-align: center;
+            padding: 0 10px;
         }
         .content {
             padding: 20px 0;
             font-size: 16px;
             color: #333;
+            line-height: 1.6;
         }
-        .password-box {
-            background-color: #f4f4f4;
-            padding: 10px;
-            font-size: 18px;
-            font-weight: bold;
-            text-align: center;
-            border-radius: 5px;
-            margin: 10px 0;
+        .content h2 {
+            font-size: 22px;
+            color: #1c72a5;
+            margin-bottom: 10px;
         }
         .button-container {
             text-align: center;
-            margin-top: 20px;
+            margin-top: 30px;
         }
         .button {
             display: inline-block;
-            padding: 12px 25px;
+            padding: 12px 12px;
             background-color: #1c72a5;
             color: white;
             text-decoration: none;
             border-radius: 5px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #135f8a;
         }
         .footer {
             text-align: center;
             font-size: 14px;
             color: #666;
-            margin-top: 20px;
+            margin-top: 30px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="title">Universidad Mariano Gálvez</div>
-            <img src="https://umg.edu.gt/img/Umg.png" alt="Logo UMG" />
+            <div class="title"><strong>Gestión de Documentos Investigativos</strong></div>
         </div>
         <div class="content">
-            <h2>¡Bienvenido, {{nombre}}!</h2>
-            <p>
-                Nos complace informarle que ha sido asignado a la plataforma <strong>TesM</strong>
-                como catedrático de la Facultad de Ingeniería en Sistemas de la Universidad Mariano Gálvez.
-            </p>
-            <p>A continuación, le proporcionamos sus credenciales de acceso:</p>
-            <div class="password-box">{{password}}</div>
-            <p>
-                Le recomendamos cambiar esta contraseña al ingresar por primera vez para garantizar
-                la seguridad de su cuenta.
-            </p>
+            <h2>Nueva Solicitud de Revisión de Documento</h2>
+            <p>Estimado/a {{recipient_name}},</p>
+            <p>Nos complace informarle que se ha enviado una nueva solicitud de revisión de tesis por parte de <strong>{{student_name}}</strong> de la sede <strong>{{campus_name}}</strong>.</p>
+            <p>La solicitud ha sido enviada el <strong>{{request_date}}</strong>.</p>
+            <p>Puede revisar los documentos a través de la plataforma:</p>
             <div class="button-container">
-                <a href="/" class="button">Iniciar sesión</a>
+                <a href="https://onlineproject.online/" class="button">Revisar Solicitud</a>
             </div>
+            <p>Por favor, asegúrese de realizar la revisión y proporcionar la retroalimentación correspondiente dentro del plazo indicado.</p>
         </div>
         <div class="footer">
             <strong>¡No responda a este correo!</strong>
@@ -98,5 +92,3 @@
     </div>
 </body>
 </html>
-
-
