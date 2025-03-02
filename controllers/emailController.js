@@ -12,7 +12,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-
 /**
  * @function loadTemplate
  * @description Loads an email template from the specified path and replaces variables within the template.
@@ -46,7 +45,10 @@ const loadTemplate = (templatePath, variables) => {
  */
 const sendEmailPassword = async (subject, text, to, templateVariables) => {
   try {
-    const templatePath = path.join(__dirname, "../templates/emailTemplatePassword.html");
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailTemplatePassword.html"
+    );
     const htmlContent = loadTemplate(templatePath, templateVariables);
 
     const mailOptions = {
@@ -76,7 +78,10 @@ const sendEmailPassword = async (subject, text, to, templateVariables) => {
  */
 const sendEmailTask = async (subject, text, to, templateVariables) => {
   try {
-    const templatePath = path.join(__dirname, "../templates/emailTemplateInfo.html");
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailTemplateInfo.html"
+    );
     const htmlContent = loadTemplate(templatePath, templateVariables);
 
     const mailOptions = {
@@ -106,7 +111,10 @@ const sendEmailTask = async (subject, text, to, templateVariables) => {
  */
 const sendCommentEmail = async (subject, text, to, templateVariables) => {
   try {
-    const templatePath = path.join(__dirname, "../templates/emailComentTemplate.html");
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailComentTemplate.html"
+    );
     const htmlContent = loadTemplate(templatePath, templateVariables);
 
     const mailOptions = {
@@ -134,9 +142,17 @@ const sendCommentEmail = async (subject, text, to, templateVariables) => {
  * @example
  * sendEmailPasswordRecovery('Password Recovery', 'Follow the instructions.', 'user@example.com', { link: 'recovery-link.com' });
  */
-const sendEmailPasswordRecovery = async (subject, text, to, templateVariables) => {
+const sendEmailPasswordRecovery = async (
+  subject,
+  text,
+  to,
+  templateVariables
+) => {
   try {
-    const templatePath = path.join(__dirname, "../templates/passwordRecoveryTemplate.html");
+    const templatePath = path.join(
+      __dirname,
+      "../templates/passwordRecoveryTemplate.html"
+    );
     const htmlContent = loadTemplate(templatePath, templateVariables);
 
     const mailOptions = {
@@ -165,7 +181,10 @@ const sendEmailPasswordRecovery = async (subject, text, to, templateVariables) =
  */
 const sendEmailCatedratico = async (subject, to, templateVariables) => {
   try {
-    const templatePath = path.join(__dirname, "../templates/emailCatedraticoTemplate.html");
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailCatedraticoTemplate.html"
+    );
     const htmlContent = loadTemplate(templatePath, templateVariables);
 
     const mailOptions = {
@@ -197,7 +216,10 @@ const sendEmailCatedratico = async (subject, to, templateVariables) => {
  */
 const sendEmailConfirmDelivery = async (subject, to, templateVariables) => {
   try {
-    const templatePath = path.join(__dirname, "../templates/emailDeliveryTask.html");
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailDeliveryTask.html"
+    );
     const htmlContent = loadTemplate(templatePath, templateVariables);
 
     const mailOptions = {
@@ -229,7 +251,173 @@ const sendEmailConfirmDelivery = async (subject, to, templateVariables) => {
  */
 const sendEmailThesisSubmission = async (subject, to, templateVariables) => {
   try {
-    const templatePath = path.join(__dirname, "../templates/emailThesisSubmission.html");
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailThesisSubmission.html"
+    );
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}: ${info.response}`);
+  } catch (error) {
+    console.error(`Error sending email: ${error.message}`);
+  }
+};
+
+/**
+ * @function sendEmailThesisRequest
+ * @description Sends an email notification about a new thesis review request.
+ * @param {string} subject - The subject of the email.
+ * @param {string} to - The email address of the recipient (professor).
+ * @param {Object} templateVariables - An object containing values to replace the placeholders in the email template.
+ * @param {string} templateVariables.recipient_name - The name of the professor who will receive the notification.
+ * @param {string} templateVariables.student_name - The name of the student who made the review request.
+ * @param {string} templateVariables.campus_name - The name of the campus where the review request was made.
+ * @param {string} templateVariables.requestDate - The date the review request was made.
+ *
+ *
+ * @example
+ * sendEmailThesisRequest(
+ *   'Thesis Review Request',
+ *   'professor@example.com',
+ *   {
+ *     recipient_name: 'Dr. Gomez',
+ *     student_name: 'Ana Perez',
+ *     campus_name: 'Central',
+ *     requestDate: '03/10/2025',
+ *   }
+ * );
+ *
+ * @returns {Promise<void>} Returns a promise indicating the result of the email sending process.
+ */
+const sendEmailThesisRequest = async (subject, to, templateVariables) => {
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailRevisionRequest.html"
+    );
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}: ${info.response}`);
+  } catch (error) {
+    console.error(`Error sending email: ${error.message}`);
+  }
+};
+
+/**
+ * @function sendEmailReviewerAsigned
+ * @description Sends an email notification to a reviewer about a new thesis review request.
+ * @param {string} subject - The subject of the email.
+ * @param {string} to - The email address of the recipient (professor).
+ * @param {Object} templateVariables - An object containing values to replace the placeholders in the email template.
+ * @param {string} templateVariables.reviewer_name - The name of the revisor who will receive the notification.
+ * @param {string} templateVariables.reviewer_date - The date the review request was made.
+ *
+ * @example
+ * sendEmailReviewerAsigned(
+ *  'Thesis Review Request',
+ *  'review@miumg.edt'
+ * {
+ *   reviewer_name: 'Dr. Smith',
+ *   reviewer_date: '05/02/2025',
+ * }
+ * );
+ *
+ * @returns {Promise<void>} Returns a promise indicating the result of the email sending process.
+ *  */
+
+const sendEmailReviewerAsigned = async (subject, to, templateVariables) => {
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailNewResisionAsigned.html"
+    );
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}: ${info.response}`);
+  } catch (error) {
+    console.error(`Error sending email: ${error.message}`);
+  }
+};
+
+/**
+ * @function sendEmailCommentRevisionAproved
+ * @description Sends an email notification to a student about a new comment revision.
+ * @param {string} subject - The subject of the email.
+ * @param {string} to - The email address of the recipient (student).
+ * @param {Object} templateVariables - An object containing values to replace the placeholders in the email template.
+ * @param {string} templateVariables.student_name - The name of the student who will receive the notification.
+ * @param {string} templateVariables.reviewer_name - The name of the reviewer who made the comment.
+ * @param {string} templateVariables.comment - The comment made by the reviewer.
+ * @param {string} templateVariables.status - The status of the comment (approved or rejected).
+ * @param {string} templateVariables.date - The date the comment was made.
+ * @example
+ * sendEmailCommentRevision(
+ *  'Comment Revision',
+ * 'student@gmail.com',
+ * {
+ *  student_name: 'John Doe',
+ *  title: 'Comment title',
+ *  comment: 'Good work!',
+ *  approval_status: 'approved',
+ *  status_message: 'Rechazada.',
+ *  date: '05/02/2025',
+ * }
+ * );
+ * @returns {Promise<void>} Returns a promise indicating the result of the email sending process.
+ */
+
+const sendEmailCommentRevisionAproved = async (subject, to, templateVariables) => {
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailCommentRevisionAproved.html"
+    );
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}: ${info.response}`);
+  } catch (error) {
+    console.error(`Error sending email: ${error.message}`);
+  }
+};
+
+const sendEmailCommentRevisionRejected = async (subject, to, templateVariables) => {
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailCommentRevisionRejected.html"
+    );
     const htmlContent = loadTemplate(templatePath, templateVariables);
 
     const mailOptions = {
@@ -247,7 +435,6 @@ const sendEmailThesisSubmission = async (subject, to, templateVariables) => {
 };
 
 
-
 module.exports = {
   sendEmailPassword,
   sendEmailTask,
@@ -256,4 +443,8 @@ module.exports = {
   sendEmailCatedratico,
   sendEmailConfirmDelivery,
   sendEmailThesisSubmission,
+  sendEmailThesisRequest,
+  sendEmailReviewerAsigned,
+  sendEmailCommentRevisionAproved,
+  sendEmailCommentRevisionRejected
 };

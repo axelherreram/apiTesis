@@ -2,6 +2,8 @@ const ApprovalThesis = require("../models/approvalThesis");
 const AssignedReview = require("../models/assignedReviewthesis");
 const RevisionThesis = require("../models/revisionThesis");
 const User = require("../models/user");
+const { sendEmailReviewerAsigned } = require("./emailController");
+const moment = require("moment");
 
 /**
  * The function `createAssignedReview` assigns a reviewer to a thesis revision, ensuring the user
@@ -73,6 +75,18 @@ const createAssignedReview = async (req, res) => {
     await ApprovalThesis.update(
       { status: "in revision" },
       { where: { revision_thesis_id } }
+    );
+
+    // Enviar correo al revisor asignado
+    const templateVariables = {
+      reviewer_name: infoUser.name,
+      reviewer_date: moment().format("DD/MM/YYYY HH:mm"), 
+    };
+
+    await sendEmailReviewerAsigned(
+      "Nueva revisión",
+      infoUser.email,
+      templateVariables
     );
 
     // Respuesta exitosa

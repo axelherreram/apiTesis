@@ -8,7 +8,8 @@ const { Op } = require("sequelize");
 const AssignedReview = require("../models/assignedReviewthesis");
 const Year = require("../models/year");
 const CommentsRevision = require("../models/commentsRevisionThesis");
-
+const { sendEmailThesisRequest } = require("./emailController");
+const moment = require("moment");
 /**
  * The function `uploadRevisionThesis` handles the upload of a thesis revision, verifying the
  * existence of required files, validating user information, and ensuring that no active revision
@@ -74,11 +75,11 @@ const uploadRevisionThesis = async (req, res) => {
 
     if (userRevision) {
       if (userRevision.active_process) {
-          throw new Error(
-            `El estudiante ya cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
-          );
+        throw new Error(
+          `El estudiante ya cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
+        );
       }
- /*  
+      /*  
       const approval = await ApprovalThesis.findOne({
           where: { revision_thesis_id: userRevision.revision_thesis_id },
       });
@@ -88,8 +89,7 @@ const uploadRevisionThesis = async (req, res) => {
             `El estudiante no puede mandar solicitud porque ya se aprobó su tesis`
           );
       } */
-  }
-  
+    }
 
     // Crear la nueva revisión de tesis
     const newRevision = await RevisionThesis.create({
@@ -105,6 +105,25 @@ const uploadRevisionThesis = async (req, res) => {
       status: "pending",
       date_aproved: null,
     });
+
+    // Obtener informacion del coordinador de tesis
+    const CordinadorThesis = await User.findOne({
+      where: { rol_id: 6 },
+    });
+
+    // Enviar correo electrónico al coordinador de sede
+    const templateVariables = {
+      recipient_name: CordinadorThesis.name,
+      student_name: userInfo.name,
+      campus_name: sedeInfo.nameSede,
+      request_date: moment(newRevision.date_revision).format("DD/MM/YYYY HH:mm"),
+    };
+
+    await sendEmailThesisRequest(
+      "Solicitud de revisión de tesis",
+      CordinadorThesis.email,
+      templateVariables
+    );
 
     // Respuesta exitosa
     res.status(201).json({
@@ -227,7 +246,7 @@ const getRevisionsByUserId = async (req, res) => {
 };
 
 /**
- * The function `getPendingRevisions` retrieves all pending thesis revisions that have not been assigned 
+ * The function `getPendingRevisions` retrieves all pending thesis revisions that have not been assigned
  * to a reviewer, with optional filtering by student ID (`carnet`) and ordering by date.
  * @param req - The HTTP request object, allowing query parameters `order` (asc/desc) and `carnet`.
  * @param res - The HTTP response object used to return the list of pending thesis revisions.
