@@ -1,3 +1,4 @@
+const JSONTransport = require("nodemailer/lib/json-transport");
 const ApprovalThesis = require("../models/approvalThesis");
 const AssignedReview = require("../models/assignedReviewthesis");
 const RevisionThesis = require("../models/revisionThesis");
@@ -80,7 +81,7 @@ const createAssignedReview = async (req, res) => {
     // Enviar correo al revisor asignado
     const templateVariables = {
       reviewer_name: infoUser.name,
-      reviewer_date: moment().format("DD/MM/YYYY HH:mm"), 
+      reviewer_date: moment().format("DD/MM/YYYY HH:mm"),
     };
 
     await sendEmailReviewerAsigned(
@@ -102,6 +103,74 @@ const createAssignedReview = async (req, res) => {
   }
 };
 
+const getAssignedReviewsByUser = async (req, res) => {
+  const { user_id } = req.params;
+
+  try {
+    // Validar que el usuario exista
+    const infoUser = await User.findByPk(user_id);
+    if (!infoUser) {
+      return res.status(404).json({
+        message: "Usuario no encontrado",
+      });
+    }
+
+    // Obtener las revisiones asignadas al usuario
+    const assignedReviews = await AssignedReview.findAll({
+      where: { user_id },
+      attributes: [],
+      include: [
+        {
+          model: RevisionThesis,
+          attributes: ["date_revision", "active_process"],
+          include: [
+            {
+              model: ApprovalThesis,
+              attributes: ["status"],
+              where: { status: "in revision" },
+            },
+            {
+              model: User,
+              attributes: ["name", "email", "carnet"],
+            },
+          ],
+        },
+      ],
+    });
+
+    if (assignedReviews.length === 0) {
+      return res.status(200).json({
+        message: "No tienes revisiones asignadas",
+        reviews: [],
+      });
+    }
+
+    // Transformar el estado "in revision" a "en revisión"
+    const transformedReviews = assignedReviews.map(review => {
+      if (review.RevisionThesis) {
+        review.RevisionThesis.approvaltheses = review.RevisionThesis.approvaltheses.map(approval => {
+          if (approval.status === "in revision") {
+            approval.status = "en revisión";
+          }
+          return approval;
+        });
+      }
+      return review;
+    });
+
+    res.status(200).json({
+      message: "Revisiones asignadas obtenidas con éxito",
+      reviews: transformedReviews,
+    });
+  } catch (error) {
+    console.error("Error al obtener revisiones asignadas:", error);
+    res.status(500).json({
+      message: "Error interno del servidor al obtener revisiones asignadas",
+      details: `Ocurrió un error inesperado: ${error.message}. Por favor, contacta al administrador del sistema.`,
+    });
+  }
+};
 module.exports = {
   createAssignedReview,
+  getAssignedReviewsByUser,
 };

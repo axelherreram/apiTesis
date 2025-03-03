@@ -4,7 +4,7 @@ const RevisionThesis = require("./revisionThesis");
 const User = require("./user");
 
 const ApprovalThesis = sequelize.define(
-  "Approval",
+  "approvalthesis",
   {
     approval_id: {
       type: DataTypes.INTEGER,
