@@ -2,6 +2,7 @@ const nodemailer = require("nodemailer");
 const fs = require("fs");
 const path = require("path");
 
+// Configuración del servicio de envío de correos electrónicos
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
   port: process.env.EMAIL_PORT,
@@ -340,7 +341,6 @@ const sendEmailThesisRequest = async (subject, to, templateVariables) => {
  *
  * @returns {Promise<void>} Returns a promise indicating the result of the email sending process.
  *  */
-
 const sendEmailReviewerAsigned = async (subject, to, templateVariables) => {
   try {
     const templatePath = path.join(
@@ -389,8 +389,11 @@ const sendEmailReviewerAsigned = async (subject, to, templateVariables) => {
  * );
  * @returns {Promise<void>} Returns a promise indicating the result of the email sending process.
  */
-
-const sendEmailCommentRevisionAproved = async (subject, to, templateVariables) => {
+const sendEmailCommentRevisionAproved = async (
+  subject,
+  to,
+  templateVariables
+) => {
   try {
     const templatePath = path.join(
       __dirname,
@@ -412,7 +415,37 @@ const sendEmailCommentRevisionAproved = async (subject, to, templateVariables) =
   }
 };
 
-const sendEmailCommentRevisionRejected = async (subject, to, templateVariables) => {
+/**
+ * @function sendEmailCommentRevisionRejected
+ * @description Sends an email notification to a student about a new comment revision.
+ * @param {string} subject - The subject of the email.
+ * @param {string} to - The email address of the recipient (student).
+ * @param {Object} templateVariables - An object containing values to replace the placeholders in the email template.
+ * @param {string} templateVariables.student_name - The name of the student who will receive the notification.
+ * @param {string} templateVariables.reviewer_name - The name of the reviewer who made the comment.
+ * @param {string} templateVariables.comment - The comment made by the reviewer.
+ * @param {string} templateVariables.status - The status of the comment (approved or rejected).
+ * @param {string} templateVariables.date - The date the comment was made.
+ * @example
+ * sendEmailCommentRevision(
+ *  'Comment Revision',
+ * 'student@gmail.com',
+ * {
+ *  student_name: 'John Doe',
+ *  title: 'Comment title',
+ *  comment: 'Good work!',
+ *  approval_status: 'approved',
+ *  status_message: 'Rechazada.',
+ *  date: '05/02/2025',
+ * }
+ * );
+ * @returns {Promise<void>} Returns a promise indicating the result of the email sending process.
+ */
+const sendEmailCommentRevisionRejected = async (
+  subject,
+  to,
+  templateVariables
+) => {
   try {
     const templatePath = path.join(
       __dirname,
@@ -434,7 +467,6 @@ const sendEmailCommentRevisionRejected = async (subject, to, templateVariables) 
   }
 };
 
-
 module.exports = {
   sendEmailPassword,
   sendEmailTask,
@@ -446,5 +478,5 @@ module.exports = {
   sendEmailThesisRequest,
   sendEmailReviewerAsigned,
   sendEmailCommentRevisionAproved,
-  sendEmailCommentRevisionRejected
+  sendEmailCommentRevisionRejected,
 };
