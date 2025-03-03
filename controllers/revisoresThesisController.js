@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const Roles = require("../models/roles");
 const { Op } = require("sequelize");
+const { sendEmailRegisterRevisor } = require("../services/emailService");
 
 // Función para generar una contraseña aleatoria
 const generateRandomPassword = () => {
@@ -66,9 +67,21 @@ const createRevisor = async (req, res) => {
       rol_id: 7,
     });
 
+    // Enviar correo con la contraseña
+    const templateVariables = {
+      name,
+      email,
+      password,
+    };
+
+    await sendEmailRegisterRevisor(
+      "Registor en MyOnlineProject",
+      email,
+      templateVariables
+    );
+
     res.status(201).json({
       message: "Nuevo revisor creado con éxito",
-      password, // Devuelve la contraseña sin hashear si se necesita para el usuario
     });
   } catch (error) {
     console.error(error);

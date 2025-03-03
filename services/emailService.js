@@ -273,6 +273,49 @@ const sendEmailThesisSubmission = async (subject, to, templateVariables) => {
 };
 
 /**
+ * @function sendEmailRegisterRevisor
+ * @description Sends an email notification to a new revisor about their registration.
+ * @param {string} subject - The subject of the email.
+ * @param {string} to - The email address of the recipient (revisor).
+ * @param {Object} templateVariables - An object containing values to replace the placeholders in the email template.
+ * @param {string} templateVariables.name - The name of the revisor who will receive the notification.
+ * @param {string} templateVariables.email - The email address of the revisor.
+ * @param {string} templateVariables.password - The password of the revisor.
+ * @example
+ * sendEmailRegisterRevisor(
+ *  'Registration in MyOnlineProject',
+ * 'correo@gmail.com',
+ * {
+ *  name: 'John Doe',
+ *  email: 'registre@gmail.com',
+ *  password: '123',
+ * }
+ * );
+ * @returns {Promise<void>} Returns a promise indicating the result of the email sending process.
+ * */
+const sendEmailRegisterRevisor = async (subject, to, templateVariables) => {
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailRegisterRevisor.html"
+    );
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}: ${info.response}`);
+  } catch (error) {
+    console.error(`Error sending email: ${error.message}`);
+  }
+};
+
+/**
  * @function sendEmailThesisRequest
  * @description Sends an email notification about a new thesis review request.
  * @param {string} subject - The subject of the email.
@@ -479,4 +522,5 @@ module.exports = {
   sendEmailReviewerAsigned,
   sendEmailCommentRevisionAproved,
   sendEmailCommentRevisionRejected,
+  sendEmailRegisterRevisor,
 };
