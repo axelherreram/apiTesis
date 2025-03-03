@@ -116,7 +116,9 @@ const uploadRevisionThesis = async (req, res) => {
       recipient_name: CordinadorThesis.name,
       student_name: userInfo.name,
       campus_name: sedeInfo.nameSede,
-      request_date: moment(newRevision.date_revision).format("DD/MM/YYYY HH:mm"),
+      request_date: moment(newRevision.date_revision).format(
+        "DD/MM/YYYY HH:mm"
+      ),
     };
 
     await sendEmailThesisRequest(
@@ -331,6 +333,18 @@ const getPendingRevisions = async (req, res) => {
   }
 };
 
+/**
+ * The function `getRevisionsInReview` retrieves all thesis revisions that are currently in review
+ * and have been assigned to a reviewer, with optional filtering by student ID (`carnet`) and ordering by date.
+ * @param req - The HTTP request object, allowing query parameters `order` (asc/desc) and `carnet`.
+ * @param res - The HTTP response object used to return the list of thesis revisions in review.
+ * @returns A JSON response with the list of thesis revisions in review or an error message if none are found
+ * or if an internal server error occurs.
+ * @returns A JSON response with the list of thesis revisions in review or an error message if none are found
+ * or if an internal server error occurs.
+ * @returns A JSON response with the list of thesis revisions in review or an error message if none are found
+ * or if an internal server error occurs.
+ *  */
 const getRevisionsInReview = async (req, res) => {
   try {
     const { order = "asc", carnet } = req.query;
