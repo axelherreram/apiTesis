@@ -25,12 +25,12 @@ const cordThesis = verifyRole([6, 7]);
  *           schema:
  *             type: object
  *             required:
- *               - assigned_review_id
+ *               - revision_thesis_id
  *               - title
  *               - comment
  *               - status
  *             properties:
- *               assigned_review_id:
+ *               revision_thesis_id:
  *                 type: integer
  *                 example: 1
  *                 description: ID de la revisión asignada a la que pertenece el comentario.

@@ -15,20 +15,20 @@ const User = require("../models/user");
  * updates the thesis approval status, and deactivates the revision process.
  * It ensures transactional consistency using Sequelize transactions.
  *
- * @param req - The HTTP request object containing `assigned_review_id`, `title`, `comment`, and `status` in the body.
+ * @param req - The HTTP request object containing `revision_thesis_id`, `title`, `comment`, and `status` in the body.
  * @param res - The HTTP response object used to return the created comment or an error message.
  * @returns A JSON response confirming the successful creation of the comment or an error message in case of failure.
  */
 const createCommentRevision = async (req, res) => {
   const transaction = await sequelize.transaction(); // Iniciar transacción
   try {
-    const { assigned_review_id, title, comment, status } = req.body;
+    const { revision_thesis_id, title, comment, status } = req.body;
 
     // Validar que se proporcionen todos los campos requeridos
-    if (!assigned_review_id || !title || !comment || status == null) {
+    if (!revision_thesis_id || !title || !comment || status == null) {
       return res.status(400).json({
         message:
-          "Todos los campos son requeridos: assigned_review_id, title, comment, status",
+          "Todos los campos son requeridos: revision_thesis_id, title, comment, status",
       });
     }
 
@@ -42,20 +42,20 @@ const createCommentRevision = async (req, res) => {
     // Convertir el estado a booleano
     const isApproved = status === 1;
 
-    // Validar que la revisión asignada exista
-    const assignedReview = await AssignedReview.findByPk(assigned_review_id, {
+    // Validar que la revisión de tesis exista
+    const revisionThesis = await RevisionThesis.findByPk(revision_thesis_id, {
+      include: [{ model: AssignedReview, attributes: ["assigned_review_id"] }],
       transaction,
     });
 
-    if (!assignedReview) {
+    if (!revisionThesis || !revisionThesis.AssignedReviews.length) {
       await transaction.rollback();
       return res.status(404).json({
-        message: "Revisión asignada no encontrada",
+        message: "Revisión de tesis no encontrada",
       });
     }
 
-    // Obtener el ID de la tesis de revisión
-    const revision_thesis_id = assignedReview.revision_thesis_id;
+    const assigned_review_id = revisionThesis.AssignedReviews[0].assigned_review_id;
 
     // Desactivar el proceso de revisión
     const revision = await RevisionThesis.update(
@@ -116,14 +116,14 @@ const createCommentRevision = async (req, res) => {
 
     // Enviar correo electrónico al estudiante
     const templateVariables = {
-      student_name: data_student.User.name, // Ahora accede correctamente al nombre
+      student_name: data_student.User.name,
       title,
       comment,
-      date: moment(newComment.date_comment).format("DD/MM/YYYY HH:mm"),
+      date: moment(newComment.date_comment).format("DD/MM/YYYY"),
       status_message: isApproved ? "Aprobada" : "Rechazada",
       custom_message: isApproved
         ? "¡Felicitaciones! Tu tesis ha sido aprobada. Puedes proceder con los siguientes pasos."
-        : "Tu tesis ha sido rechazada. Por favor revisa los comentarios y realiza las correcciones necesarias y comunicate con tu catedratico correspondiente.",
+        : "Tu tesis ha sido rechazada. Por favor revisa los comentarios y realiza las correcciones necesarias y comunicate con tu catedrático correspondiente.",
     };
 
     // Enviar correo electrónico
@@ -157,5 +157,6 @@ const createCommentRevision = async (req, res) => {
     });
   }
 };
+
 
 module.exports = { createCommentRevision };

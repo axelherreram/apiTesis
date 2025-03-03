@@ -20,7 +20,7 @@ const commentsRevision = sequelize.define(
       },
     },
     title: {
-      type: DataTypes.STRING(30),
+      type: DataTypes.STRING(150),
       allowNull: false,
     },
     comment: {
