@@ -11,7 +11,7 @@ const Course = require("../models/course");
 
 const moment = require("moment-timezone");
 const { createNotification } = require("../sql/notification");
-const { sendEmailConfirmDelivery } = require("./emailController");
+const { sendEmailConfirmDelivery } = require("../services/emailService");
 
 /**
  * The function `createTaskSubmission` handles the submission of a task by a user, checking various

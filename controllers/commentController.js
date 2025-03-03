@@ -4,7 +4,7 @@ const CommentVersion = require("../models/commentVersion");
 const { createNotification } = require("../sql/notification");
 const { addTimeline } = require("../sql/timeline");
 const User = require("../models/user");
-const { sendCommentEmail } = require("./emailController");
+const { sendCommentEmail } = require("../services/emailService");
 const { DATE } = require("sequelize");
 
 /**

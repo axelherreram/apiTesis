@@ -5,7 +5,7 @@ const { logActivity } = require("../sql/appLog");
 const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
-const { sendEmailPasswordRecovery } = require("./emailController");
+const { sendEmailPasswordRecovery } = require("../services/emailService");
 
 /**
  * The function generates a random password of a specified length using a set of characters.

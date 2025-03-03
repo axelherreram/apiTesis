@@ -1,7 +1,7 @@
 const Task = require("../models/task");
 const TimelineEventos = require("../models/timelineEventos");
 const User = require("../models/user");
-const { sendCommentEmail } = require("./emailController");
+const { sendCommentEmail } = require("../services/emailService"); 
 
 /**
  * The function `getTimelineByUserId` retrieves timeline events for a specific user based on their user

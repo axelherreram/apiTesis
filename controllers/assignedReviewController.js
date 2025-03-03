@@ -3,7 +3,7 @@ const ApprovalThesis = require("../models/approvalThesis");
 const AssignedReview = require("../models/assignedReviewthesis");
 const RevisionThesis = require("../models/revisionThesis");
 const User = require("../models/user");
-const { sendEmailReviewerAsigned } = require("./emailController");
+const { sendEmailReviewerAsigned } = require("../services/emailService");
 const moment = require("moment");
 
 /**

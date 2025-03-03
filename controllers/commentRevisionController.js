@@ -7,7 +7,7 @@ const moment = require("moment-timezone");
 const {
   sendEmailCommentRevisionAproved,
   sendEmailCommentRevisionRejected,
-} = require("./emailController");
+} = require("../services/emailService");
 const User = require("../models/user");
 
 /**

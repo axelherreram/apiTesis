@@ -8,7 +8,7 @@ const { Op } = require("sequelize");
 const AssignedReview = require("../models/assignedReviewthesis");
 const Year = require("../models/year");
 const CommentsRevision = require("../models/commentsRevisionThesis");
-const { sendEmailThesisRequest } = require("./emailController");
+const { sendEmailThesisRequest } = require("../services/emailService");
 const moment = require("moment");
 /**
  * The function `uploadRevisionThesis` handles the upload of a thesis revision, verifying the

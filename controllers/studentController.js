@@ -5,7 +5,7 @@ const CourseAssignment = require("../models/courseAssignment");
 const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
-const { sendEmailPassword } = require("./emailController");
+const { sendEmailPassword } = require("../services/emailService");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const Course = require("../models/course");
 

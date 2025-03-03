@@ -5,7 +5,7 @@ const { logActivity } = require("../sql/appLog");
 const { sequelize } = require("../config/database");
 const bcrypt = require("bcrypt");
 require("dotenv").config(); // Asegúrate de cargar las variables de entorno
-const { sendEmailCatedratico } = require("../controllers/emailController");
+const { sendEmailCatedratico } = require("../services/emailService");
 
 /**
  * The function `updateProfessorStatus` updates the active status of a user, logs the activity, and

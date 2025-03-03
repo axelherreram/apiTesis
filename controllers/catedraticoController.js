@@ -4,7 +4,7 @@ const User = require("../models/user");
 const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
-const { sendEmailCatedratico } = require("./emailController");
+const { sendEmailCatedratico } = require("../services/emailService");
 
 /**
  * The function `bulkUploadCatedratico` handles the bulk upload of teacher data from an Excel file,

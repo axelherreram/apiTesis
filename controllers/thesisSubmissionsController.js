@@ -5,7 +5,7 @@ const upload = require("../middlewares/uploadPdf");
 const fs = require("fs");
 const { addTimeline } = require("../sql/timeline");
 const { createNotification } = require("../sql/notification");
-const { sendEmailThesisSubmission } = require("./emailController");
+const { sendEmailThesisSubmission } = require("../services/emailService");
 
 /**
  * The `uploadProposal` function in JavaScript handles the process of uploading a thesis proposal,

@@ -7,7 +7,7 @@ const Year = require("../models/year");
 const Roles = require("../models/roles");
 const bcrypt = require("bcrypt");
 const Sede = require("../models/sede");
-const { sendEmailPassword } = require("./emailController");
+const { sendEmailPassword } = require("../services/emailService");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 
 /**
