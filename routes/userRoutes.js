@@ -299,5 +299,48 @@ router.get(
   userController.listAllAdmins // Método en el controlador
 );
 
+/**
+ * @swagger
+ * /api/usuarios/crear:
+ *   post:
+ *     summary: Registrar un estudiante para historial (sin acceso a inicio de sesión)
+ *     security:
+ *       - bearerAuth: []
+ *     tags: [Estudiantes]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Correo electrónico del estudiante.
+ *               name:
+ *                 type: string
+ *                 description: Nombre completo del estudiante.
+ *               carnet:
+ *                 type: string
+ *                 description: Número de identificación del estudiante.
+ *             required:
+ *               - email
+ *               - name
+ *     responses:
+ *       201:
+ *         description: Estudiante registrado exitosamente (sin acceso a inicio de sesión).
+ *       400:
+ *         description: Error en la solicitud (correo o carnet en uso, datos inválidos).
+ *       500:
+ *         description: Error interno del servidor.
+ */
+router.post(
+  "/usuarios/crear",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  userController.createUserNotlog
+);
 
 module.exports = router;

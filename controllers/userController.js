@@ -203,17 +203,17 @@ const generateRandomPassword = () => {
 };
 
 /**
- * The function `createAdmin` registers a new administrator user, ensuring email uniqueness, 
+ * The function `createAdmin` registers a new administrator user, ensuring email uniqueness,
  * role limitations per location, and secure password handling.
- * @param req - The `req` parameter in the `createAdmin` function represents the HTTP request 
- * object containing user input such as `email`, `name`, `carnet`, and `sede_id`. These values 
+ * @param req - The `req` parameter in the `createAdmin` function represents the HTTP request
+ * object containing user input such as `email`, `name`, `carnet`, and `sede_id`. These values
  * are extracted from the request body for validation and processing.
- * @param res - The `res` parameter in the `createAdmin` function represents the HTTP response 
- * object used to send responses back to the client. It returns appropriate status codes and 
+ * @param res - The `res` parameter in the `createAdmin` function represents the HTTP response
+ * object used to send responses back to the client. It returns appropriate status codes and
  * messages based on the success or failure of the administrator creation process.
- * @returns The `createAdmin` function returns a JSON response. If successful, it returns a 
- * 201 status with a message confirming the administrator's creation. If validation fails 
- * or an error occurs, it returns a relevant status code (400, 404, or 500) with an 
+ * @returns The `createAdmin` function returns a JSON response. If successful, it returns a
+ * 201 status with a message confirming the administrator's creation. If validation fails
+ * or an error occurs, it returns a relevant status code (400, 404, or 500) with an
  * appropriate error message.
  */
 const createAdmin = async (req, res) => {
@@ -225,17 +225,17 @@ const createAdmin = async (req, res) => {
       .status(400)
       .json({ message: "Todos los campos son obligatorios." });
   }
-  
-    // Validar formato del código (carnet)
-    if (carnet) {
-      const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/; // Ejemplo válido: 2024-01-1234
-      if (!carnetRegex.test(carnet)) {
-        return res.status(400).json({
-          title: "Error",
-          message: "Carnet inválido, ingrese codigo completo",
-        });
-      }
+
+  // Validar formato del código (carnet)
+  if (carnet) {
+    const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/; // Ejemplo válido: 2024-01-1234
+    if (!carnetRegex.test(carnet)) {
+      return res.status(400).json({
+        title: "Error",
+        message: "Carnet inválido, ingrese codigo completo",
+      });
     }
+  }
   try {
     // Validar dominio del correo
     if (!email.endsWith("@miumg.edu.gt")) {
@@ -284,14 +284,14 @@ const createAdmin = async (req, res) => {
     const [yearRecord] = await Year.findOrCreate({
       where: { year: currentYear },
     });
-    
+
     // Enviar correo electrónico con la contraseña temporal
     const templateVariables = {
       nombre: name,
       password: password,
     };
 
-/*     await sendEmailPassword(
+    /*     await sendEmailPassword(
       "Registro exitoso",
       `Hola ${name}, tu contraseña temporal es: ${password}`,
       email,
@@ -322,16 +322,16 @@ const createAdmin = async (req, res) => {
 };
 
 /**
- * The function `removeAdmin` removes an administrator role from a user, ensuring that at 
+ * The function `removeAdmin` removes an administrator role from a user, ensuring that at
  * least one administrator remains per location.
- * @param req - The `req` parameter in the `removeAdmin` function represents the HTTP request 
- * object containing `user_id` and `sede_id` in the request body. These values are used to 
+ * @param req - The `req` parameter in the `removeAdmin` function represents the HTTP request
+ * object containing `user_id` and `sede_id` in the request body. These values are used to
  * identify and validate the administrator being removed.
- * @param res - The `res` parameter in the `removeAdmin` function represents the HTTP response 
- * object used to send responses back to the client. It returns appropriate status codes and 
+ * @param res - The `res` parameter in the `removeAdmin` function represents the HTTP response
+ * object used to send responses back to the client. It returns appropriate status codes and
  * messages based on the success or failure of the administrator removal process.
- * @returns The `removeAdmin` function returns a JSON response. If successful, it returns a 
- * 200 status with a confirmation message. If validation fails or an error occurs, it returns 
+ * @returns The `removeAdmin` function returns a JSON response. If successful, it returns a
+ * 200 status with a confirmation message. If validation fails or an error occurs, it returns
  * a relevant status code (400, 404, or 500) with an appropriate error message.
  */
 const removeAdmin = async (req, res) => {
@@ -382,17 +382,17 @@ const removeAdmin = async (req, res) => {
 };
 
 /**
- * The function `listAllAdmins` retrieves and returns a list of all administrators, 
+ * The function `listAllAdmins` retrieves and returns a list of all administrators,
  * including their details and associated locations.
- * @param req - The `req` parameter in the `listAllAdmins` function represents the HTTP 
- * request object. Although not directly used, it may contain authentication details or 
+ * @param req - The `req` parameter in the `listAllAdmins` function represents the HTTP
+ * request object. Although not directly used, it may contain authentication details or
  * filters in future implementations.
- * @param res - The `res` parameter in the `listAllAdmins` function represents the HTTP 
- * response object used to send a response back to the client. It returns the list of 
+ * @param res - The `res` parameter in the `listAllAdmins` function represents the HTTP
+ * response object used to send a response back to the client. It returns the list of
  * administrators or an error message if no administrators are found or an internal error occurs.
- * @returns The `listAllAdmins` function returns a JSON response. If successful, it returns 
- * a 200 status with a list of administrators. If no administrators are found, it returns 
- * a 404 status with a corresponding message. In case of an error, it returns a 500 status 
+ * @returns The `listAllAdmins` function returns a JSON response. If successful, it returns
+ * a 200 status with a list of administrators. If no administrators are found, it returns
+ * a 404 status with a corresponding message. In case of an error, it returns a 500 status
  * with an error message.
  */
 const listAllAdmins = async (req, res) => {
@@ -447,16 +447,16 @@ const listAllAdmins = async (req, res) => {
 };
 
 /**
- * The function `assignAdminToSede` assigns an existing administrator to a specific 
+ * The function `assignAdminToSede` assigns an existing administrator to a specific
  * location (sede) after validating the required conditions.
- * @param req - The `req` parameter in the `assignAdminToSede` function represents the HTTP 
+ * @param req - The `req` parameter in the `assignAdminToSede` function represents the HTTP
  * request object containing the `user_id` and `sede_id` in the request body.
- * @param res - The `res` parameter in the `assignAdminToSede` function represents the HTTP 
+ * @param res - The `res` parameter in the `assignAdminToSede` function represents the HTTP
  * response object used to send a response back to the client, indicating success or failure.
- * @returns The `assignAdminToSede` function returns a JSON response. If successful, it 
- * returns a 200 status confirming the administrator was assigned. If the sede or user 
- * does not exist, it returns a 404 status. If the maximum number of administrators is 
- * reached, it returns a 400 status. In case of an error, it returns a 500 status with 
+ * @returns The `assignAdminToSede` function returns a JSON response. If successful, it
+ * returns a 200 status confirming the administrator was assigned. If the sede or user
+ * does not exist, it returns a 404 status. If the maximum number of administrators is
+ * reached, it returns a 400 status. In case of an error, it returns a 500 status with
  * an error message.
  */
 
@@ -517,6 +517,69 @@ const assignAdminToSede = async (req, res) => {
   }
 };
 
+/**
+ * The `createUserNotlog` function handles the registration of a student for historical record purposes only.
+ * This user will not be able to log in.
+ *
+ * The function validates the provided email and student ID (`carnet`), generates a temporary password,
+ * hashes it, and creates a new user entry in the database with `active: false` to restrict login access.
+ *
+ * @param {Object} req - The request object containing data such as `email`, `name` and `carnet`.
+ * @param {Object} res - The response object used to send HTTP responses indicating the success or failure of the process.
+ *
+ * @returns {Object} JSON responses based on different conditions during the student registration process:
+ * - If the email does not end with "@miumg.edu.gt", it returns a 400 status with an error message.
+ * - If the email is already in use, it returns a 400 status with an error message.
+ * - If the `carnet` is already in use, it returns a 400 status with an error message.
+ * - If the student is successfully registered, it returns a 201 status with a success message and the created user data.
+ * - If an error occurs during the process, it returns a 500 status with an error message.
+ */
+const createUserNotlog = async (req, res) => {
+  try {
+    const { email, name, carnet } = req.body;
+    const sede_id_token = req.sede_id;
+
+    // Verificar que el email termine con el dominio @miumg.edu.gt
+    const emailDomain = "@miumg.edu.gt";
+    if (!email.endsWith(emailDomain)) {
+      return res.status(400).json({ message: `Correo no valido` });
+    }
+
+    // Verificar si el correo ya existe
+    const existingEmail = await User.findOne({ where: { email } });
+    if (existingEmail) {
+      return res.status(400).json({ message: "El correo ya está en uso" });
+    }
+
+    // Verificar si el carnet ya existe
+    const existingCarnet = await User.findOne({ where: { carnet } });
+    if (existingCarnet) {
+      return res.status(400).json({ message: "El carnet ya está en uso" });
+    }
+
+    // Generar una contraseña temporal y hashearla
+    const randomPassword = Math.random().toString(36).slice(-8);
+    const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+    // Crear un nuevo usuario con los datos proporcionados
+    await User.create({
+      email,
+      password: hashedPassword,
+      name,
+      carnet,
+      sede_id: sede_id_token,
+      rol_id: 1, // Rol de estudiante
+      active: false, // Valor por defecto: No podra iniciar sesión hasta solo para historial
+    });
+
+    res.status(201).json({ message: "Usuario creado exitosamente" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error al crear el usuario", error: error.message });
+  }
+};
+
 module.exports = {
   getUsersByCourse,
   listuserbytoken,
@@ -524,4 +587,5 @@ module.exports = {
   removeAdmin,
   listAllAdmins,
   assignAdminToSede,
+  createUserNotlog,
 };

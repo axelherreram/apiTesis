@@ -18,7 +18,7 @@ const { sequelize } = require("../config/database");
  * - `rol_id`: Foreign key referencing the `Roles` model, representing the user's role (Required, defaults to 1).
  * - `year_id`: Foreign key referencing the `Year` model, indicating the year associated with the user (Optional).
  * - `profilePhoto`: URL to the user's profile photo (Optional).
- * - `active`: Boolean indicating whether the user is active (Optional, defaults to true).
+ * - `active`: Boolean indicating whether the user is active, determining whether they can log in (Optional, defaults to true).
  * - `passwordUpdate`: Boolean indicating whether the user needs to update their password (Optional, defaults to false).
  * 
  * Configuration:
@@ -52,7 +52,7 @@ const User = sequelize.define(
       allowNull: false,
     },
     carnet: {
-      type: DataTypes.STRING(15),
+      type: DataTypes.STRING(25),
       allowNull: true,
       unique: true,
     },
