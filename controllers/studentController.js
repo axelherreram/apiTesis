@@ -8,6 +8,7 @@ const Year = require("../models/year");
 const { sendEmailPassword } = require("../services/emailService");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const Course = require("../models/course");
+const crypto = require("crypto");
 
 /**
  * The function `bulkUploadUsers` handles the bulk upload of users, validates the uploaded Excel file,
@@ -128,6 +129,7 @@ const bulkUploadUsers = async (req, res) => {
       if (!existingUser) {
         // Paso 12: Generar una contraseña temporal y hashearla
         const randomPassword = crypto.randomBytes(8).toString("base64").slice(0, 12);
+
         console.log(`Contraseña generada para ${email}: ${randomPassword}`);
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
