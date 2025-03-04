@@ -1,4 +1,3 @@
-const JSONTransport = require("nodemailer/lib/json-transport");
 const ApprovalThesis = require("../models/approvalThesis");
 const AssignedReview = require("../models/assignedReviewthesis");
 const RevisionThesis = require("../models/revisionThesis");
@@ -128,13 +127,6 @@ const getAssignedReviewsByUser = async (req, res) => {
     // Configurar la ordenación (por defecto DESC)
     const orderDirection = order.toLowerCase() === "asc" ? "ASC" : "DESC";
 
-    // Construir el filtro por carnet si se proporciona
-    const carnetFilter = carnet
-      ? {
-          "$RevisionThesis.User.carnet$": { [Op.like]: `%${carnet}%` },
-        }
-      : {};
-
     // Obtener las revisiones asignadas al usuario con filtros y ordenación
     const assignedReviews = await AssignedReview.findAll({
       where: {
@@ -197,7 +189,68 @@ const getAssignedReviewsByUser = async (req, res) => {
 };
 
 
+const getReviewHistoryByUser = async (req, res) => {
+  const { user_id } = req.params;
+  const { order = "desc", carnet = "" } = req.query;
+
+  try {
+    // Validar que el usuario exista
+    const infoUser = await User.findByPk(user_id);
+    if (!infoUser) {
+      return res.status(404).json({
+        message: "Usuario no encontrado",
+      });
+    }
+
+    // Configurar la ordenación (por defecto DESC)
+    const orderDirection = order.toLowerCase() === "asc" ? "ASC" : "DESC";
+
+    // Obtener el historial de revisiones con filtros y ordenación
+    const reviewHistory = await AssignedReview.findAll({
+      where: { user_id },
+      attributes: ["date_assigned"],
+      order: [["date_assigned", orderDirection]],
+      include: [
+        {
+          model: RevisionThesis,
+          attributes: ["date_revision", "active_process"],
+          include: [
+            {
+              model: ApprovalThesis,
+              attributes: ["status","date_approved"],
+            },
+            {
+              model: User,
+              attributes: ["user_id","name", "email", "carnet"],
+              where: carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {},
+            },
+          ],
+        },
+      ],
+    });
+
+    if (reviewHistory.length === 0) {
+      return res.status(200).json({
+        message: "No hay historial de revisiones para este usuario",
+        reviews: [],
+      });
+    }
+
+    res.status(200).json({
+      message: "Historial de revisiones obtenido con éxito",
+      reviews: reviewHistory,
+    });
+  } catch (error) {
+    console.error("Error al obtener el historial de revisiones:", error);
+    res.status(500).json({
+      message: "Error interno del servidor al obtener el historial de revisiones",
+      details: `Ocurrió un error inesperado: ${error.message}. Por favor, contacta al administrador del sistema.`,
+    });
+  }
+};
+
 module.exports = {
   createAssignedReview,
   getAssignedReviewsByUser,
+  getReviewHistoryByUser,
 };
