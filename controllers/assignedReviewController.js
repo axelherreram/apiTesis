@@ -154,7 +154,7 @@ const getAssignedReviewsByUser = async (req, res) => {
             },
             {
               model: User,
-              attributes: ["name", "email", "carnet"],
+              attributes: ["user_id","name", "email", "carnet"],
               where: carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {}, // Filtro dentro de User
             },
           ],
