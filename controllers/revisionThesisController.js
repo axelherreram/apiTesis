@@ -455,7 +455,7 @@ const getInforRevisionsByUserId = async (req, res) => {
     // Obtener todas las revisiones solicitadas por el usuario
     const revisions = await RevisionThesis.findAll({
       where: { user_id },
-      attributes: ["revision_thesis_id", "active_process"], // Estado de la revisión
+      attributes: ["revision_thesis_id", "active_process", "thesis_dir"], // Estado de la revisión
       include: [
         {
           model: AssignedReview,
@@ -486,10 +486,19 @@ const getInforRevisionsByUserId = async (req, res) => {
         message: "No se encontraron revisiones para el usuario",
       });
     }
+
+    const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
+    
+    // Modificar thesis_dir para concatenar la BASE_URL
+    const updatedRevisions = revisions.map(revision => ({
+      ...revision.toJSON(),
+      thesis_dir: `${BASE_URL}/public${revision.thesis_dir}`
+    }));
+
     // Responder con éxito
     res.status(200).json({
       message: "Revisiones obtenidas con éxito",
-      data: revisions,
+      data: updatedRevisions,
     });
   } catch (error) {
     console.error("Error al obtener la información de revisiones:", error);
