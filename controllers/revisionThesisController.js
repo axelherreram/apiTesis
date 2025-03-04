@@ -452,6 +452,7 @@ const getInforRevisionsByUserId = async (req, res) => {
         message: "Usuario no encontrado",
       });
     }
+
     // Obtener todas las revisiones solicitadas por el usuario
     const revisions = await RevisionThesis.findAll({
       where: { user_id },
@@ -473,6 +474,22 @@ const getInforRevisionsByUserId = async (req, res) => {
           ],
         },
         {
+          model: User,
+          attributes: ["name", "carnet", "email", "profilePhoto"],
+          include: [
+            {
+              model: Sede,
+              as: "location",
+              attributes: ["nameSede"],
+            },
+            {
+              model: Year,
+              as: "year",
+              attributes: ["year"],
+            },
+          ],
+        },
+        {
           model: ApprovalThesis,
           attributes: ["status", "date_approved", "approved"], // Datos de aprobación
           required: false,
@@ -490,10 +507,20 @@ const getInforRevisionsByUserId = async (req, res) => {
     const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
     
     // Modificar thesis_dir para concatenar la BASE_URL
-    const updatedRevisions = revisions.map(revision => ({
-      ...revision.toJSON(),
-      thesis_dir: `${BASE_URL}/public${revision.thesis_dir}`
-    }));
+    const updatedRevisions = revisions.map(revision => {
+      // Convertir la revisión a JSON para evitar la estructura circular
+      const revisionData = revision.toJSON();
+
+      const userWithUpdatedPhoto = revisionData.User.profilePhoto 
+        ? { ...revisionData.User, profilePhoto: `${BASE_URL}/public${revisionData.User.profilePhoto}` }
+        : revisionData.User;
+        
+      return {
+        ...revisionData,
+        thesis_dir: `${BASE_URL}/public${revisionData.thesis_dir}`,
+        User: userWithUpdatedPhoto, // Actualizamos el perfil del usuario con la URL completa de la foto
+      };
+    });
 
     // Responder con éxito
     res.status(200).json({
@@ -508,6 +535,8 @@ const getInforRevisionsByUserId = async (req, res) => {
     });
   }
 };
+
+
 
 /**
  * The function `getApprovedRevisions` retrieves all thesis revisions that have been approved,
