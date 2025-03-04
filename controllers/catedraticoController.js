@@ -102,7 +102,7 @@ const bulkUploadCatedratico = async (req, res) => {
         });
 
 /*         // Enviar correo con las credenciales al profesor
-        await sendEmailCatedratico("Bienvenido a TesM", email, {
+        await sendEmailCatedratico("Bienvenido a MyOnlineProject", email, {
           nombre: nombre,
           password: randomPassword,
         }); */

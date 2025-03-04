@@ -179,7 +179,7 @@ const createTask = async (req, res) => {
 
         await sendEmailTask(
           "Nueva tarea creada: " + title,
-          `Se ha creado una nueva tarea en la plataforma TesM con el título: ${title}`,
+          `Se ha creado una nueva tarea en la plataforma MyOnlineProject con el título: ${title}`,
           userEmail.email,
           templateVariables
         ); */
