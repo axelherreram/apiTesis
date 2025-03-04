@@ -128,7 +128,10 @@ const bulkUploadUsers = async (req, res) => {
 
       if (!existingUser) {
         // Paso 12: Generar una contraseña temporal y hashearla
-        const randomPassword = crypto.randomBytes(8).toString("base64").slice(0, 12);
+        const randomPassword = crypto
+          .randomBytes(8)
+          .toString("base64")
+          .slice(0, 12);
 
         console.log(`Contraseña generada para ${email}: ${randomPassword}`);
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
