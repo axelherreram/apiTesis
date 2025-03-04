@@ -575,7 +575,6 @@ const getApprovedRevisions = async (req, res) => {
     // Obtener revisiones aprobadas
     const approvedRevisions = await RevisionThesis.findAll({
       attributes: ["revision_thesis_id", "date_revision", "thesis_dir"],
-      where: { active_process: true }, // Solo revisiones activas
       include: [
         {
           model: ApprovalThesis,
