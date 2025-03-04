@@ -22,6 +22,10 @@ const AssignedReview = sequelize.define(
         key: "user_id",
       },
     },
+    date_assigned: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
   },
   {
     tableName: "assignedreview",

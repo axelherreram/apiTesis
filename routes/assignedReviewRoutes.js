@@ -61,7 +61,7 @@ router.post(
  * /api/assigned-review/user/{user_id}:
  *   get:
  *     summary: Obtener revisiones de tesis asignadas a un usuario
- *     description: Retorna todas las revisiones de tesis asignadas a un usuario específico.
+ *     description: Retorna todas las revisiones de tesis asignadas a un usuario específico con filtros opcionales.
  *     tags:
  *       - Asignación de Revisiones
  *     security:
@@ -73,29 +73,49 @@ router.post(
  *         schema:
  *           type: integer
  *         description: ID del usuario para obtener sus revisiones asignadas.
+ *       - in: query
+ *         name: order
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Orden de las revisiones por fecha de asignación (ascendente o descendente).
+ *       - in: query
+ *         name: carnet
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Filtrar revisiones por número de carnet del estudiante (búsqueda parcial).
  *     responses:
  *       200:
  *         description: Lista de revisiones asignadas al usuario.
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   id:
- *                     type: integer
- *                     description: ID de la asignación.
- *                   revision_thesis_id:
- *                     type: integer
- *                     description: ID de la revisión de tesis.
- *                   user_id:
- *                     type: integer
- *                     description: ID del revisor asignado.
- *                   assigned_at:
- *                     type: string
- *                     format: date-time
- *                     description: Fecha y hora de asignación.
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Mensaje de éxito.
+ *                 reviews:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                         description: ID de la asignación.
+ *                       revision_thesis_id:
+ *                         type: integer
+ *                         description: ID de la revisión de tesis.
+ *                       user_id:
+ *                         type: integer
+ *                         description: ID del revisor asignado.
+ *                       assigned_at:
+ *                         type: string
+ *                         format: date-time
+ *                         description: Fecha y hora de asignación.
  *       400:
  *         description: ID de usuario inválido.
  *       404:

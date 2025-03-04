@@ -5,6 +5,7 @@ const RevisionThesis = require("../models/revisionThesis");
 const User = require("../models/user");
 const { sendEmailReviewerAsigned } = require("../services/emailService");
 const moment = require("moment");
+const { Op } = require("sequelize");
 
 /**
  * The function `createAssignedReview` assigns a reviewer to a thesis revision, ensuring the user
@@ -103,8 +104,17 @@ const createAssignedReview = async (req, res) => {
   }
 };
 
+/**
+ * The function `getAssignedReviewsByUser` retrieves the assigned reviews for a specific user, with optional
+ * filtering by `carnet` and ordering by `date_assigned`.
+ * @param {Object} req - The HTTP request object containing the `user_id` in the request parameters and optional `order` and `carnet` in the query parameters.
+ * @param {Object} res - The HTTP response object used to send back the result of the operation.
+ * @returns {Promise<void>} A JSON response indicating success or failure, including the list of assigned reviews
+ * or a message if no reviews are found.
+ */
 const getAssignedReviewsByUser = async (req, res) => {
   const { user_id } = req.params;
+  const { order = "desc", carnet = "" } = req.query; // Valores por defecto
 
   try {
     // Validar que el usuario exista
@@ -115,10 +125,23 @@ const getAssignedReviewsByUser = async (req, res) => {
       });
     }
 
-    // Obtener las revisiones asignadas al usuario
+    // Configurar la ordenación (por defecto DESC)
+    const orderDirection = order.toLowerCase() === "asc" ? "ASC" : "DESC";
+
+    // Construir el filtro por carnet si se proporciona
+    const carnetFilter = carnet
+      ? {
+          "$RevisionThesis.User.carnet$": { [Op.like]: `%${carnet}%` },
+        }
+      : {};
+
+    // Obtener las revisiones asignadas al usuario con filtros y ordenación
     const assignedReviews = await AssignedReview.findAll({
-      where: { user_id },
-      attributes: [],
+      where: {
+        user_id,
+      },
+      attributes: ["date_assigned"],
+      order: [["date_assigned", orderDirection]], // Ordenación dinámica
       include: [
         {
           model: RevisionThesis,
@@ -132,6 +155,7 @@ const getAssignedReviewsByUser = async (req, res) => {
             {
               model: User,
               attributes: ["name", "email", "carnet"],
+              where: carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {}, // Filtro dentro de User
             },
           ],
         },
@@ -146,14 +170,15 @@ const getAssignedReviewsByUser = async (req, res) => {
     }
 
     // Transformar el estado "in revision" a "en revisión"
-    const transformedReviews = assignedReviews.map(review => {
+    const transformedReviews = assignedReviews.map((review) => {
       if (review.RevisionThesis) {
-        review.RevisionThesis.approvaltheses = review.RevisionThesis.approvaltheses.map(approval => {
-          if (approval.status === "in revision") {
-            approval.status = "en revisión";
-          }
-          return approval;
-        });
+        review.RevisionThesis.approvaltheses =
+          review.RevisionThesis.approvaltheses.map((approval) => {
+            if (approval.status === "in revision") {
+              approval.status = "en revisión";
+            }
+            return approval;
+          });
       }
       return review;
     });
@@ -170,6 +195,8 @@ const getAssignedReviewsByUser = async (req, res) => {
     });
   }
 };
+
+
 module.exports = {
   createAssignedReview,
   getAssignedReviewsByUser,
