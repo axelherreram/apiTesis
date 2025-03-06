@@ -5,7 +5,7 @@ const {
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 const router = express.Router();
-
+const getUseridMiddleware = require('../middlewares/getUserIdToken');
 const cordThesis = verifyRole([6, 7]);
 
 /**
@@ -105,6 +105,7 @@ const cordThesis = verifyRole([6, 7]);
 router.post(
   "/comment-revision",
   authMiddleware,
+  getUseridMiddleware,
   cordThesis,
   createCommentRevision
 );

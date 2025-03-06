@@ -23,6 +23,7 @@ const createCommentRevision = async (req, res) => {
   const transaction = await sequelize.transaction(); // Iniciar transacción
   try {
     const { revision_thesis_id, title, comment, status } = req.body;
+    const { user_id: revisor_id } = req.user;
 
     // Validar que se proporcionen todos los campos requeridos
     if (!revision_thesis_id || !title || !comment || status == null) {
@@ -31,7 +32,6 @@ const createCommentRevision = async (req, res) => {
           "Todos los campos son requeridos: revision_thesis_id, title, comment, status",
       });
     }
-
     // Validar que el estado sea 0 o 1
     if (![0, 1].includes(status)) {
       return res.status(400).json({
@@ -55,7 +55,15 @@ const createCommentRevision = async (req, res) => {
       });
     }
 
-    const assigned_review_id = revisionThesis.AssignedReviews[0].assigned_review_id;
+    const assigned_review_id =
+      revisionThesis.AssignedReviews[0].assigned_review_id;
+
+    if (revisionThesis.AssignedReviews[0].user_id !== revisor_id) {
+      await transaction.rollback();
+      return res.status(403).json({
+        message: "No tienes permiso para comentar esta revisión. Solo la persona asignada puede comentar.",
+      });
+    }
 
     // Desactivar el proceso de revisión
     const revision = await RevisionThesis.update(
@@ -157,6 +165,5 @@ const createCommentRevision = async (req, res) => {
     });
   }
 };
-
 
 module.exports = { createCommentRevision };
