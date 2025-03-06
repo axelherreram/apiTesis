@@ -3,6 +3,8 @@ const Course = require("../models/course");
 const Sede = require("../models/sede");
 const Year = require("../models/year");
 const User = require("../models/user");
+const { sendEmailActiveCouser } = require("../services/emailService");
+const moment = require("moment");
 
 /**
  * The function `createSedeAssignment` handles the creation of course assignments to different
@@ -126,6 +128,25 @@ const createSedeAssignment = async (req, res) => {
       courseActive: true,
     });
 
+    // Obtener el correo del adminsitrador de la sede
+    const adminUser = await User.findOne({
+      where: { sede_id, rol_id: 3 }, // Rol 3 es el rol de administrador de sede
+      attributes: ["email"],
+    });
+
+    // Enviar correo de activación de curso
+    const templateVariables = {
+      name_sede: sedeName,
+      course_name: course_name,
+      date_assing: moment().format("YYYY-MM-DD"),
+    };
+    
+    await sendEmailActiveCouser(
+      "Nuevo curso asignado a la sede",
+      adminUser.dataValues.email,
+      templateVariables
+    );
+
     res.status(201).json({
       message: "Asignación de curso a sede creada exitosamente.",
     });
@@ -163,7 +184,7 @@ const getCoursesBySede = async (req, res) => {
         message: `No se encontró un usuario con el ID ${user_id}.`,
       });
     }
-    
+
     // Buscar el año actual en la tabla Year
     const yearRecord = await Year.findOne({
       where: { year: year },

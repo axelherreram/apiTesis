@@ -34,6 +34,28 @@ const loadTemplate = (templatePath, variables) => {
   return template;
 };
 
+const sendEmailActiveCouser = async (subject, to, templateVariables) => {
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailAddCourseSede.html"
+    );
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Email sent to ${to}: ${info.response}`);
+  } catch (error) {
+    console.error(`Error sending email: ${error.message}`);
+  }
+};
+
 /**
  * @function sendEmailPassword
  * @description Sends an email with a password-related template to the specified recipient.
@@ -44,7 +66,7 @@ const loadTemplate = (templatePath, variables) => {
  * @example
  * sendEmailPassword('Reset Your Password', 'Please check your email.', 'user@example.com', { link: 'reset-link.com' });
  */
-const sendEmailPassword = async (subject, text, to, templateVariables) => {
+const sendEmailPassword = async (subject, to, templateVariables) => {
   try {
     const templatePath = path.join(
       __dirname,
@@ -511,6 +533,7 @@ const sendEmailCommentRevisionRejected = async (
 };
 
 module.exports = {
+  sendEmailActiveCouser,
   sendEmailPassword,
   sendEmailTask,
   sendCommentEmail,
