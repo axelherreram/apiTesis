@@ -460,7 +460,7 @@ const getInforRevisionsByUserId = async (req, res) => {
       include: [
         {
           model: AssignedReview,
-          attributes: ["assigned_review_id"],
+          attributes: ["assigned_review_id", "date_assigned"], // Información de la asignación
           required: false, // No es obligatorio que haya asignaciones
           include: [
             {
