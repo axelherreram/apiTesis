@@ -5,6 +5,8 @@ const TaskSubmissions = require("../models/taskSubmissions");
 const Year = require("../models/year");
 const CourseAssignment = require("../models/courseAssignment");
 const Course = require("../models/course");
+const ApprovalThesis = require("../models/approvalThesis");
+const RevisionThesis = require("../models/revisionThesis");
 
 /**
  * The function `getTaskSubmissionStats` retrieves and calculates statistics on task submissions for a
@@ -128,17 +130,25 @@ const dataGraphics = async (req, res) => {
         .status(403)
         .json({ message: "No tienes acceso a los grupos de esta sede" });
     }
+    // Total de revisiones aprobadas
+    const totalApprovedRevisions = await ApprovalThesis.count({
+      where: { status: "approved" },
+    });
+
+    const totalInRevisions = await ApprovalThesis.count({
+      where: { status: "in revision" },
+    });
 
     const totalStudents = await User.count({ where: { rol_id: 1 } });
     const totalStudentsSede = await User.count({
       where: { rol_id: 1, sede_id },
     });
-    // const totalStudentsClosedGlobal = await User.count({where: { rol_id: 1, closedPlan: 1 }});
-    // const totalStudentsClosed = await User.count({where: { rol_id: 1, sede_id, closedPlan: 1 }});
 
     res.status(200).json({
       totalStudents,
       totalStudentsSede,
+      totalApprovedRevisions,
+      totalInRevisions,
     });
   } catch (error) {
     res.status(500).json({
@@ -151,12 +161,12 @@ const dataGraphics = async (req, res) => {
 /**
  * The function `getTaskSubmissionStats` retrieves and calculates statistics on task submissions for a
  * specific course, year, and location.
- * 
+ *
  * @param req - The `req` parameter is the request object containing parameters such as `course_id`,
  * `year`, and `sede_id`, which are used to fetch the corresponding data.
  * @param res - The `res` parameter is the response object, used to send the result of the function back to
  * the client. It will contain a JSON response with task submission statistics or error messages.
- * 
+ *
  * @returns A JSON object with the total number of students in the course and detailed statistics for each task.
  * This includes the number of confirmed submissions and pending submissions for each task.
  * In case of an error, a 500 status with an error message will be returned.
@@ -179,7 +189,9 @@ const getTaskSubmissionStatsAdvanced = async (req, res) => {
     });
 
     if (!yearRecord) {
-      return res.status(404).json({ message: "No se encontró el año actual en la base de datos." });
+      return res
+        .status(404)
+        .json({ message: "No se encontró el año actual en la base de datos." });
     }
 
     const year_id = yearRecord.year_id;
@@ -190,7 +202,11 @@ const getTaskSubmissionStatsAdvanced = async (req, res) => {
     });
 
     if (!courseSedeAssignment) {
-      return res.status(404).json({ message: "No hay cursos asignados para este mes en la sede actual." });
+      return res
+        .status(404)
+        .json({
+          message: "No hay cursos asignados para este mes en la sede actual.",
+        });
     }
 
     // Obtener las tareas del curso asignado
@@ -200,7 +216,9 @@ const getTaskSubmissionStatsAdvanced = async (req, res) => {
     });
 
     if (tasks.length === 0) {
-      return res.status(404).json({ message: "No hay tareas registradas para este curso." });
+      return res
+        .status(404)
+        .json({ message: "No hay tareas registradas para este curso." });
     }
 
     let totalSubmissions = 0;
@@ -241,19 +259,20 @@ const getTaskSubmissionStatsAdvanced = async (req, res) => {
     // Ordenar tareas por cantidad de entregas
     taskStats.sort((a, b) => a.totalSubmissions - b.totalSubmissions);
 
-
     // Calcular porcentajes de entregas completas vs. incompletas
     const totalTasksSubmissions = completedSubmissions + pendingSubmissions;
-    const completedPercentage = totalTasksSubmissions > 0
-      ? ((completedSubmissions / totalTasksSubmissions) * 100).toFixed(2)
-      : "0.00";
+    const completedPercentage =
+      totalTasksSubmissions > 0
+        ? ((completedSubmissions / totalTasksSubmissions) * 100).toFixed(2)
+        : "0.00";
 
-    const pendingPercentage = totalTasksSubmissions > 0
-      ? ((pendingSubmissions / totalTasksSubmissions) * 100).toFixed(2)
-      : "0.00";
+    const pendingPercentage =
+      totalTasksSubmissions > 0
+        ? ((pendingSubmissions / totalTasksSubmissions) * 100).toFixed(2)
+        : "0.00";
 
     res.status(200).json({
-      course_id, 
+      course_id,
       avgSubmissionsPerTask: avgSubmissions.toFixed(2),
       totalSubmissions,
       completedSubmissions,
@@ -268,7 +287,6 @@ const getTaskSubmissionStatsAdvanced = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   dataGraphics,
