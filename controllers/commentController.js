@@ -224,7 +224,7 @@ const getAllCommentsForTaskAndUser = async (req, res) => {
  * the comment deactivation is successful, or an error message with status code 404 if the comment is
  * not found, or an error message with status code 500 if there is an internal server error.
  */
-const desactivateComment = async (req, res) => {
+const toggleCommentStatus = async (req, res) => {
   const { commentId } = req.params;
 
   try {
@@ -235,25 +235,23 @@ const desactivateComment = async (req, res) => {
     if (!comment) {
       return res.status(404).json({ message: "Comentario no encontrado" });
     }
-    if ((comment.comment_active = false)) {
-      return res.status(400).json({ message: "Comentario ya desactivado" });
-    }
 
+    const newStatus = !comment.comment_active;
     await Comments.update(
-      { comment_active: false },
+      { comment_active: newStatus },
       { where: { comment_id: commentId } }
     );
 
-    res.status(200).json({ message: "Comentario desactivado" });
+    res.status(200).json({ 
+      message: `Comentario ${newStatus ? 'activado' : 'desactivado'}` 
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Internal server error", error: error.message });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 };
 
 module.exports = {
   addCommentForTask,
   getAllCommentsForTaskAndUser,
-  desactivateComment,
+  toggleCommentStatus,
 };

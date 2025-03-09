@@ -2,7 +2,7 @@ const express = require("express");
 const {
   addCommentForTask,
   getAllCommentsForTaskAndUser,
-  desactivateComment,
+  toggleCommentStatus,
 } = require("../controllers/commentController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
@@ -211,7 +211,7 @@ router.patch(
   "/comments/:commentId/deactivate",
   authMiddleware,
   admin,
-  desactivateComment
+  toggleCommentStatus
 );
 
 module.exports = router;
