@@ -188,8 +188,8 @@ router.get(
  *   patch:
  *     tags:
  *       - Comentarios
- *     summary: Desactivar un comentario.
- *     description: Cambia el estado de un comentario a inactivo.
+ *     summary: Desactivar un comentario o activar un comentario.
+ *     description: Cambia el estado de un comentario: activo o inactivo.
  *     security:
  *       - bearerAuth: []
  *     parameters:
