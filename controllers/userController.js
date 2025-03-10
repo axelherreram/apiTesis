@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const Sede = require("../models/sede");
 const { sendEmailPassword } = require("../services/emailService");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
+const crypto = require("crypto");
 
 /**
  * The function `getUsersByCourse` retrieves users assigned to a specific course for a given year and
@@ -186,21 +187,6 @@ const listuserbytoken = async (req, res) => {
   }
 };
 
-/**
- * The function generates a random password consisting of uppercase letters, lowercase letters,
- * numbers, and special characters.
- * @returns A randomly generated password consisting of a combination of uppercase letters, lowercase
- * letters, numbers, and special characters.
- */
-const generateRandomPassword = () => {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-  let password = "";
-  for (let i = 0; i < 10; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
-};
 
 /**
  * The function `createAdmin` registers a new administrator user, ensuring email uniqueness,
@@ -262,10 +248,10 @@ const createAdmin = async (req, res) => {
       return res.status(400).json({
         message: "Ya existen 3 administradores en esta sede. No se puede agregar más.",
       });
-    }
+    } 
 
     // Generar contraseña aleatoria
-    const password = generateRandomPassword();
+    const password = crypto.randomBytes(8).toString("hex");
 
     // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -563,7 +549,7 @@ const createUserNotlog = async (req, res) => {
     }
 
     // Generar y hashear una contraseña temporal
-    const randomPassword = Math.random().toString(36).slice(-8);
+    const randomPassword = crypto.randomBytes(8).toString("hex");
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
     // Crear el usuario con una transacción para asegurar la integridad
