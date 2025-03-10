@@ -1,6 +1,7 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/database");
 const User = require("./user");
+const RevisionThesis = require("./revisionThesis");
 
 const AssignedReview = sequelize.define(
   "AssignedReview",
@@ -13,6 +14,10 @@ const AssignedReview = sequelize.define(
     revision_thesis_id: {
       type: DataTypes.INTEGER,
       allowNull: false,
+      references: {
+        model: RevisionThesis,
+        key: "revision_thesis_id",
+      },
     },
     user_id: {
       type: DataTypes.INTEGER,
@@ -32,5 +37,7 @@ const AssignedReview = sequelize.define(
     timestamps: false,
   }
 );
+
+AssignedReview.belongsTo(RevisionThesis, { foreignKey: "revision_thesis_id" });
 
 module.exports = AssignedReview;

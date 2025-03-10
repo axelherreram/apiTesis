@@ -3,6 +3,27 @@ const { sequelize } = require("../config/database");
 const User = require("./user");
 const Sede = require("./sede");
 const moment = require("moment-timezone");
+
+/**
+ * Model `RevisionThesis` represents the thesis revision process, including the user and sede assigned to the revision.
+ * 
+ * Fields:
+ * - `revision_thesis_id`: Unique identifier for the thesis revision entry (PK, auto-increment).
+ * - `user_id`: ID of the user assigned to the thesis revision (FK to `User`, required).
+ * - `sede_id`: ID of the sede (location) associated with the thesis revision (FK to `Sede`, required).
+ * - `active_process`: Boolean flag indicating whether the revision process is active (default: `true`).
+ * - `date_revision`: Date when the thesis revision started (nullable, default: current date).
+ * - `approval_letter_dir`: Directory path for the thesis approval letter (nullable).
+ * - `thesis_dir`: Directory path for the thesis document (nullable).
+ * 
+ * Configuration:
+ * - `timestamps: false`: Disables automatic `createdAt` and `updatedAt` fields.
+ * - `tableName: "revisionthesis"`: Database table name (`revisionthesis`).
+ * 
+ * Relationships:
+ * - `belongsTo(User, { foreignKey: "user_id" })`: A thesis revision is assigned to a user.
+ * - `belongsTo(Sede, { foreignKey: "sede_id" })`: A thesis revision is assigned to a sede.
+ */
 const RevisionThesis = sequelize.define(
   "RevisionThesis",
   {
