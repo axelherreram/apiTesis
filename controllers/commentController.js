@@ -21,122 +21,98 @@ const { DATE } = require("sequelize");
  * during its execution:
  */
 const addCommentForTask = async (req, res) => {
-  const { taskId } = req.params;
-  const { comment, role, user_id } = req.body;
-
   try {
+    const { taskId } = req.params;
+    const { comment, role, user_id } = req.body;
+
     // Validaciones iniciales
-    if (!taskId || isNaN(taskId)) {
+    if (!taskId || isNaN(taskId)) 
       return res.status(400).json({ message: "El ID de la tarea es inválido" });
-    }
 
-    if (!comment || typeof comment !== "string" || comment.trim() === "") {
+    if (!comment?.trim()) 
       return res.status(400).json({ message: "El comentario no puede estar vacío" });
-    }
 
-    if (!["student", "teacher"].includes(role)) {
+    if (!["student", "teacher"].includes(role)) 
       return res.status(400).json({ message: "El rol debe ser 'student' o 'teacher'" });
-    }
 
-    if (!user_id) {
+    if (!user_id) 
       return res.status(400).json({ message: "El ID del usuario es requerido" });
-    }
 
-    // Obtener la tarea
-    const task = await Task.findOne({ where: { task_id: taskId } });
-    if (!task) {
-      return res.status(404).json({ message: "Tarea no encontrada" });
-    }
+    // Obtener la tarea y el usuario en una sola consulta
+    const [task, userExist] = await Promise.all([
+      Task.findOne({ where: { task_id: taskId } }),
+      User.findByPk(user_id),
+    ]);
 
-    // Verificar si el usuario existe
-    const userExist = await User.findByPk(user_id);
-    if (!userExist) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
+    if (!task) return res.status(404).json({ message: "Tarea no encontrada" });
+    if (!userExist) return res.status(404).json({ message: "Usuario no encontrado" });
 
-    // Obtener o crear comentario
+    // Obtener comentario existente o crear uno nuevo
     const [existingComment, created] = await Comments.findOrCreate({
       where: { user_id, task_id: taskId },
       defaults: { user_id, task_id: taskId },
     });
 
-    if (!created && existingComment.comment_active === false) {
+    if (!created && !existingComment.comment_active) {
       return res.status(400).json({
         message: "No puedes agregar más comentarios, el comentario ha sido desactivado.",
       });
     }
 
-    // Crear una nueva versión del comentario
+    // Crear versión del comentario
     await CommentVersion.create({
       comment,
       role,
       comment_id: existingComment.comment_id,
     });
 
-    // Notificación según el rol
+    // Construcción de notificación
     const notificationMessage =
       role === "student"
         ? `El estudiante ${userExist.name} ha comentado en la tarea ${task.title}`
         : `Tienes un nuevo comentario en la tarea ${task.title}`;
 
-    // Agregar a la línea de tiempo al estudiante si el usuario es catedrático
+    // Notificaciones y correos según el rol
     if (role === "teacher") {
-      await addTimeline(
-        user_id,
-        "Nuevo comentario",
-        "Se ha agregado un nuevo comentario a la tarea",
-        taskId
-      );
+      await addTimeline(user_id, "Nuevo comentario", "Se ha agregado un nuevo comentario a la tarea", taskId);
 
-      // Enviar correo al estudiante
       if (userExist.email) {
-        const templateVariables = {
-          nombre: userExist.name,
-          entregaTitulo: task.title,
-          comentario: comment,
-          fechaComentario: new Date().toLocaleString(),
-        };
-
         await sendCommentEmail(
           "Nuevo comentario en tarea",
           "Se ha agregado un nuevo comentario a la tarea",
           userExist.email,
-          templateVariables
+          {
+            nombre: userExist.name,
+            entregaTitulo: task.title,
+            comentario: comment,
+            fechaComentario: new Date().toLocaleString(),
+          }
         );
       }
     } else {
-      // Buscar catedrático de la sede
       const teacher = await User.findOne({
         where: { sede_id: userExist.sede_id, rol_id: 3 },
       });
 
-      if (teacher && teacher.email) {
-        const templateVariables = {
-          nombre: teacher.name,
-          entregaTitulo: task?.title || "Tarea sin título",
-          comentario: comment || "Sin comentario",
-          fechaComentario: new Date().toLocaleDateString("es-ES"),
-        };
-
+      if (teacher?.email) {
         await sendCommentEmail(
           "Nuevo comentario en tarea",
           "Se ha agregado un nuevo comentario a la tarea",
           teacher.email,
-          templateVariables
-        ); 
+          {
+            nombre: teacher.name,
+            entregaTitulo: task?.title || "Tarea sin título",
+            comentario: comment,
+            fechaComentario: new Date().toLocaleDateString("es-ES"),
+          }
+        );
       } else {
         console.warn("No se encontró un catedrático para enviar la notificación.");
       }
     }
 
-    // Crear notificación para la plataforma
-    await createNotification(
-      notificationMessage,
-      userExist.sede_id,
-      user_id,
-      taskId,
-      role === "student" ? "general" : "student"
-    );
+    // Crear notificación en la plataforma
+    await createNotification(notificationMessage, userExist.sede_id, user_id, taskId, role === "student" ? "general" : "student");
 
     // Respuesta exitosa
     res.status(201).json({ message: "Comentario agregado exitosamente." });

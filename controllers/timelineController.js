@@ -64,37 +64,47 @@ const getTimelineByUserAndTask = async (req, res) => {
   const { user_id, task_id } = req.params;
 
   try {
-    const user = await User.findByPk(user_id);
+    // Buscar usuario y tarea en una sola operación
+    const [user, task] = await Promise.all([
+      User.findByPk(user_id),
+      Task.findByPk(task_id),
+    ]);
+
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    const task = await Task.findByPk(task_id);
     if (!task) {
       return res.status(404).json({ message: "Tarea no encontrada" });
     }
 
-    // Buscar los eventos del usuario en una tarea específica
+    // Buscar los eventos del usuario en la tarea
     const eventos = await TimelineEventos.findAll({
       where: { user_id, task_id },
+      attributes: ["event_id", "event_type", "description", "created_at"], // Especificar los atributos a retornar
     });
 
     // Verificar si hay eventos
     if (eventos.length === 0) {
-      return res
-        .status(404)
-        .json({
-          message: "No se encontraron eventos para esta tarea y usuario",
-        });
+      return res.status(404).json({
+        message: "No se encontraron eventos para esta tarea y usuario",
+      });
     }
 
-    // Responder con los eventos encontrados
-    res.status(200).json(eventos);
+    // Responder con los eventos encontrados, formateados si es necesario
+    const formattedEventos = eventos.map(event => ({
+      eventId: event.event_id,
+      eventType: event.event_type,
+      description: event.description,
+      createdAt: event.created_at,
+    }));
+
+    res.status(200).json(formattedEventos);
   } catch (error) {
+    console.error("Error al obtener eventos de la tarea y usuario:", error);
     res.status(500).json({
-      message:
-        "Error en el servidor al obtener los eventos de la tarea y usuario",
-      error: error.message,
+      message: "Error en el servidor al obtener los eventos de la tarea y usuario",
+      error: error.message || error,
     });
   }
 };

@@ -204,7 +204,7 @@ const searchStudentByCarnetWithoutSede = async (req, res) => {
         carnet: {
           [Op.like]: `${carnet}%`,
         },
-        rol_id: 1,
+        rol_id: 1, // Buscar solo estudiantes
       },
       attributes: ["user_id", "name", "carnet", "email", "profilePhoto", "sede_id"],
     });
@@ -216,26 +216,30 @@ const searchStudentByCarnetWithoutSede = async (req, res) => {
       });
     }
 
-    // Formatear estudiantes con información de la sede
-    const formattedUsers = await Promise.all(
-      students.map(async (student) => {
-        const sede = await Sede.findOne({
-          where: { sede_id: student.sede_id },
-          attributes: ["nameSede"],
-        });
+    // Obtener la información de la sede en una sola consulta
+    const sedeIds = [...new Set(students.map((student) => student.sede_id))];
+    const sedes = await Sede.findAll({
+      where: { sede_id: sedeIds },
+      attributes: ["sede_id", "nameSede"],
+    });
 
-        return {
-          user_id: student.user_id,
-          email: student.email,
-          userName: student.name,
-          profilePhoto: student.profilePhoto
-            ? `${process.env.BASE_URL}/public/profilephoto/${student.profilePhoto}`
-            : null,
-          carnet: student.carnet,
-          Sede: sede ? sede.nameSede : null,
-        };
-      })
-    );
+    // Crear un mapa para acceder rápidamente a la sede por sede_id
+    const sedeMap = sedes.reduce((acc, sede) => {
+      acc[sede.sede_id] = sede.nameSede;
+      return acc;
+    }, {});
+
+    // Formatear estudiantes con información de la sede
+    const formattedUsers = students.map((student) => ({
+      user_id: student.user_id,
+      email: student.email,
+      userName: student.name,
+      profilePhoto: student.profilePhoto
+        ? `${process.env.BASE_URL}/public/profilephoto/${student.profilePhoto}`
+        : null,
+      carnet: student.carnet,
+      Sede: sedeMap[student.sede_id] || null, // Asignar el nombre de la sede desde el mapa
+    }));
 
     res.status(200).json({ formattedUsers });
   } catch (error) {
@@ -246,6 +250,7 @@ const searchStudentByCarnetWithoutSede = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   searchStudentByCarnet,

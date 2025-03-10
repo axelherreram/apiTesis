@@ -18,87 +18,74 @@ const { Op } = require("sequelize");
  * assignment already exists.
  */
 const createAssignedReview = async (req, res) => {
-  const { revision_thesis_id, user_id } = req.body;
-
   try {
-    // Validar que el usuario exista
-    const infoUser = await User.findByPk(user_id);
+    const { revision_thesis_id, user_id } = req.body;
+
+    // Consultar usuario y revisión en paralelo
+    const [infoUser, infoRevision] = await Promise.all([
+      User.findByPk(user_id),
+      RevisionThesis.findByPk(revision_thesis_id),
+    ]);
+
+    // Validaciones
     if (!infoUser) {
       return res.status(404).json({
         message: "Usuario no encontrado",
-        details: `No se encontró un usuario con el ID ${user_id}. Verifica que el ID sea correcto.`,
+        details: `No existe un usuario con ID ${user_id}.`,
       });
     }
 
-    // Validar que el usuario sea un revisor (rol_id === 7)
-    if (infoUser.rol_id !== 7 && infoUser.rol_id !== 6) {
+    if (![6, 7].includes(infoUser.rol_id)) {
       return res.status(400).json({
-        message: "El usuario no es un revisor o cordinador",
-        details: `El usuario no tiene el rol de revisor o cordinador. Solo los revisores pueden ser asignados a revisiones de tesis.`,
+        message: "El usuario no es un revisor o coordinador",
       });
     }
 
-    // Validar que la revisión de tesis exista
-    const infoRevision = await RevisionThesis.findByPk(revision_thesis_id);
     if (!infoRevision) {
       return res.status(404).json({
         message: "Revisión de tesis no encontrada",
-        details: `No se encontró una revisión de tesis con el ID ${revision_thesis_id}. Verifica que el ID sea correcto.`,
+        details: `No existe una revisión con ID ${revision_thesis_id}.`,
       });
     }
 
-    // Validar que la revisión esté activa (active_process: true)
     if (!infoRevision.active_process) {
       return res.status(400).json({
         message: "La revisión no está activa",
-        details: `La revisión de tesis con ID ${revision_thesis_id} no está activa (active_process = false). Solo se pueden asignar revisiones activas.`,
       });
     }
 
-    // Validar que no exista una asignación previa para esta revisión
+    // Verificar si ya tiene un revisor asignado
     const existingAssignment = await AssignedReview.findOne({
       where: { revision_thesis_id },
     });
+
     if (existingAssignment) {
       return res.status(409).json({
         message: "La revisión ya tiene un revisor asignado",
-        details: `La revisión de tesis con ID ${revision_thesis_id} ya tiene un revisor asignado. No se pueden asignar múltiples revisores a la misma revisión.`,
       });
     }
 
-    // Crear la nueva asignación
-    await AssignedReview.create({
-      revision_thesis_id,
-      user_id,
-    });
+    // Crear asignación y actualizar estado en paralelo
+    await Promise.all([
+      AssignedReview.create({ revision_thesis_id, user_id }),
+      ApprovalThesis.update(
+        { status: "in revision" },
+        { where: { revision_thesis_id } }
+      ),
+    ]);
 
-    // cambiar el estado de la revisión a "en revisión"
-    await ApprovalThesis.update(
-      { status: "in revision" },
-      { where: { revision_thesis_id } }
-    );
-
-    // Enviar correo al revisor asignado
-    const templateVariables = {
+    // Enviar correo al revisor
+    await sendEmailReviewerAsigned("Nueva revisión", infoUser.email, {
       reviewer_name: infoUser.name,
       reviewer_date: moment().format("DD/MM/YYYY HH:mm"),
-    };
-
-    await sendEmailReviewerAsigned(
-      "Nueva revisión",
-      infoUser.email,
-      templateVariables
-    );
-
-    // Respuesta exitosa
-    res.status(201).json({
-      message: "Revisión asignada con éxito",
     });
+
+    return res.status(201).json({ message: "Revisión asignada con éxito" });
   } catch (error) {
     console.error("Error al asignar la revisión:", error);
-    res.status(500).json({
-      message: "Error interno del servidor al asignar la revisión",
-      details: `Ocurrió un error inesperado: ${error.message}. Por favor, contacta al administrador del sistema.`,
+    return res.status(500).json({
+      message: "Error interno del servidor",
+      details: error.message,
     });
   }
 };
@@ -146,7 +133,7 @@ const getAssignedReviewsByUser = async (req, res) => {
             },
             {
               model: User,
-              attributes: ["user_id","name", "email", "carnet"],
+              attributes: ["user_id", "name", "email", "carnet"],
               where: carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {}, // Filtro dentro de User
             },
           ],
@@ -188,27 +175,32 @@ const getAssignedReviewsByUser = async (req, res) => {
   }
 };
 
-
+/**
+ * The function `getReviewHistoryByUser` retrieves the review history for a specific user, with optional
+ * filtering by `carnet` and ordering by `date_assigned`.
+ * @param {Object} req - The HTTP request object containing the `user_id` in the request parameters and optional `order` and `carnet` in the query parameters.
+ * @param {Object} res - The HTTP response object used to send back the result of the operation.
+ * @returns {Promise<void>} A JSON response indicating success or failure, including the list of review history
+ * or a message if no reviews are found.
+ */
 const getReviewHistoryByUser = async (req, res) => {
-  const { user_id } = req.params;
-  const { order = "desc", carnet = "" } = req.query;
-
   try {
-    // Validar que el usuario exista
-    const infoUser = await User.findByPk(user_id);
-    if (!infoUser) {
-      return res.status(404).json({
-        message: "Usuario no encontrado",
-      });
-    }
+    const { user_id } = req.params;
+    const { order = "desc", carnet } = req.query;
 
-    // Configurar la ordenación (por defecto DESC)
+    // Validar el formato del orden
     const orderDirection = order.toLowerCase() === "asc" ? "ASC" : "DESC";
 
-    // Obtener el historial de revisiones con filtros y ordenación
+    // Construcción dinámica de filtros
+    const whereClause = { user_id };
+    const userWhereClause = carnet
+      ? { carnet: { [Op.like]: `%${carnet}%` } }
+      : {};
+
+    // Obtener historial de revisiones
     const reviewHistory = await AssignedReview.findAll({
-      where: { user_id },
       attributes: ["date_assigned"],
+      where: whereClause,
       order: [["date_assigned", orderDirection]],
       include: [
         {
@@ -217,34 +209,30 @@ const getReviewHistoryByUser = async (req, res) => {
           include: [
             {
               model: ApprovalThesis,
-              attributes: ["status","date_approved"],
+              attributes: ["status", "date_approved"],
             },
             {
               model: User,
-              attributes: ["user_id","name", "email", "carnet"],
-              where: carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {},
+              attributes: ["user_id", "name", "email", "carnet"],
+              where: userWhereClause,
             },
           ],
         },
       ],
     });
 
-    if (reviewHistory.length === 0) {
-      return res.status(200).json({
-        message: "No hay historial de revisiones para este usuario",
-        reviews: [],
-      });
-    }
-
-    res.status(200).json({
-      message: "Historial de revisiones obtenido con éxito",
+    return res.status(reviewHistory.length ? 200 : 404).json({
+      message: reviewHistory.length
+        ? "Historial de revisiones obtenido con éxito"
+        : "No hay historial de revisiones para este usuario",
       reviews: reviewHistory,
     });
   } catch (error) {
     console.error("Error al obtener el historial de revisiones:", error);
-    res.status(500).json({
-      message: "Error interno del servidor al obtener el historial de revisiones",
-      details: `Ocurrió un error inesperado: ${error.message}. Por favor, contacta al administrador del sistema.`,
+    return res.status(500).json({
+      message:
+        "Error interno del servidor al obtener el historial de revisiones",
+      details: error.message,
     });
   }
 };

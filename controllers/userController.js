@@ -221,22 +221,19 @@ const createAdmin = async (req, res) => {
 
   // Validar campos requeridos
   if (!email || !name || !carnet || !sede_id) {
-    return res
-      .status(400)
-      .json({ message: "Todos los campos son obligatorios." });
+    return res.status(400).json({ message: "Todos los campos son obligatorios." });
   }
 
-  // Validar formato del código (carnet)
-  if (carnet) {
+  try {
+    // Validar formato del carnet
     const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/; // Ejemplo válido: 2024-01-1234
     if (!carnetRegex.test(carnet)) {
       return res.status(400).json({
         title: "Error",
-        message: "Carnet inválido, ingrese codigo completo",
+        message: "Carnet inválido, ingrese el código completo",
       });
     }
-  }
-  try {
+
     // Validar dominio del correo
     if (!email.endsWith("@miumg.edu.gt")) {
       return res.status(400).json({
@@ -253,23 +250,17 @@ const createAdmin = async (req, res) => {
     // Verificar si la sede existe
     const sede = await Sede.findByPk(sede_id);
     if (!sede) {
-      return res
-        .status(404)
-        .json({ message: "La sede especificada no existe." });
+      return res.status(404).json({ message: "La sede especificada no existe." });
     }
 
     // Validar que no haya más de 3 administradores por sede
     const adminCount = await User.count({
-      where: {
-        rol_id: 3, // Rol de administrador
-        sede_id,
-      },
+      where: { rol_id: 3, sede_id },
     });
 
-    if (adminCount >= 2) {
+    if (adminCount >= 3) {
       return res.status(400).json({
-        message:
-          "Ya existen 2 administradores en esta sede. No se puede agregar más.",
+        message: "Ya existen 3 administradores en esta sede. No se puede agregar más.",
       });
     }
 
@@ -285,19 +276,6 @@ const createAdmin = async (req, res) => {
       where: { year: currentYear },
     });
 
-    // Enviar correo electrónico con la contraseña temporal
-    const templateVariables = {
-      nombre: name,
-      password: password,
-    };
-
-    /*     await sendEmailPassword(
-      "Registro exitoso",
-      `Hola ${name}, tu contraseña temporal es: ${password}`,
-      email,
-      templateVariables
-    );
- */
     // Crear el administrador
     const admin = await User.create({
       email,
@@ -309,15 +287,39 @@ const createAdmin = async (req, res) => {
       year_id: yearRecord.year_id,
     });
 
+    // Enviar correo electrónico con la contraseña temporal
+    const templateVariables = {
+      nombre: name,
+      password: password,
+    };
+
+    try {
+      await sendEmailPassword(
+        "Registro exitoso",
+        `Hola ${name}, tu contraseña temporal es: ${password}`,
+        email,
+        templateVariables
+      );
+      console.log("Correo enviado a:", email);
+    } catch (emailError) {
+      console.error("Error al enviar el correo:", emailError);
+      // En caso de error al enviar el correo, continuar con la creación
+      return res.status(500).json({
+        message: "Administrador creado, pero hubo un error al enviar el correo.",
+        error: emailError.message,
+      });
+    }
+
     console.log("Administrador creado:", admin.email, "password", password);
     res.status(201).json({
       message: "Administrador creado con éxito.",
     });
   } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ message: "Ocurrió un error al crear el administrador." });
+    console.error("Error al crear el administrador:", error);
+    res.status(500).json({
+      message: "Ocurrió un error al crear el administrador.",
+      error: error.message || error,
+    });
   }
 };
 
@@ -409,14 +411,12 @@ const listAllAdmins = async (req, res) => {
       attributes: ["user_id", "email", "name", "carnet", "profilePhoto"],
     });
 
-    // Verificar si hay administradores
-    if (admins.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No se encontraron administradores." });
+    // Verificar si se encontraron administradores
+    if (!admins || admins.length === 0) {
+      return res.status(404).json({ message: "No se encontraron administradores." });
     }
 
-    // Formatear respuesta
+    // Respuesta formateada directamente
     const formattedAdmins = admins.map((admin) => ({
       user_id: admin.user_id,
       email: admin.email,
@@ -459,57 +459,55 @@ const listAllAdmins = async (req, res) => {
  * reached, it returns a 400 status. In case of an error, it returns a 500 status with
  * an error message.
  */
-
 const assignAdminToSede = async (req, res) => {
   const { user_id, sede_id } = req.body;
 
   // Validar campos requeridos
   if (!user_id || !sede_id) {
-    return res
-      .status(400)
-      .json({ message: "Todos los campos son obligatorios." });
+    return res.status(400).json({
+      message: "Los campos 'user_id' y 'sede_id' son obligatorios.",
+    });
   }
 
   try {
     // Verificar si la sede existe
-    const sede = await Sede.findByPk(sede_id);
+    const sede = await Sede.findOne({ where: { sede_id } });
     if (!sede) {
-      return res
-        .status(404)
-        .json({ message: "La sede especificada no existe." });
+      return res.status(404).json({
+        message: "La sede especificada no existe.",
+      });
     }
 
     // Verificar si el usuario existe y tiene el rol de administrador
-    const user = await User.findOne({ where: { user_id, rol_id: 3 } });
+    const user = await User.findOne({
+      where: { user_id, rol_id: 3 },
+    });
+
     if (!user) {
       return res.status(404).json({
         message: "El usuario no existe o no tiene el rol de administrador.",
       });
     }
 
-    // Validar que no haya más de 3 administradores en la sede
+    // Validar que no haya más de 2 administradores en la sede
     const adminCount = await User.count({
-      where: {
-        rol_id: 3, // Rol de administrador
-        sede_id,
-      },
+      where: { rol_id: 3, sede_id },
     });
 
     if (adminCount >= 2) {
       return res.status(400).json({
-        message:
-          "Ya existen 2 administradores en esta sede. No se puede asignar más.",
+        message: "Ya existen 2 administradores en esta sede. No se puede asignar más.",
       });
     }
 
     // Asignar el usuario como administrador a la sede
-    await user.update({ rol_id: 3 });
+    await user.update({ sede_id });
 
     res.status(200).json({
       message: "Administrador asignado a la sede con éxito.",
     });
   } catch (error) {
-    console.error(error);
+    console.error("Error al asignar administrador:", error);
     res.status(500).json({
       message: "Ocurrió un error al asignar al administrador.",
       error: error.message,
@@ -535,48 +533,70 @@ const assignAdminToSede = async (req, res) => {
  * - If an error occurs during the process, it returns a 500 status with an error message.
  */
 const createUserNotlog = async (req, res) => {
+  const { email, name, carnet } = req.body;
+  const sede_id_token = req.sede_id;
+
   try {
-    const { email, name, carnet } = req.body;
-    const sede_id_token = req.sede_id;
+    // Validaciones iniciales
+    if (!email || !name || !carnet) {
+      return res.status(400).json({ message: "Todos los campos son requeridos" });
+    }
 
     // Verificar que el email termine con el dominio @miumg.edu.gt
     const emailDomain = "@miumg.edu.gt";
     if (!email.endsWith(emailDomain)) {
-      return res.status(400).json({ message: `Correo no valido` });
+      return res.status(400).json({ message: "Correo no válido" });
     }
 
-    // Verificar si el correo ya existe
-    const existingEmail = await User.findOne({ where: { email } });
+    // Comprobar si el correo o el carnet ya existen
+    const [existingEmail, existingCarnet] = await Promise.all([
+      User.findOne({ where: { email } }),
+      User.findOne({ where: { carnet } }),
+    ]);
+
     if (existingEmail) {
       return res.status(400).json({ message: "El correo ya está en uso" });
     }
 
-    // Verificar si el carnet ya existe
-    const existingCarnet = await User.findOne({ where: { carnet } });
     if (existingCarnet) {
       return res.status(400).json({ message: "El carnet ya está en uso" });
     }
 
-    // Generar una contraseña temporal y hashearla
+    // Generar y hashear una contraseña temporal
     const randomPassword = Math.random().toString(36).slice(-8);
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-    // Crear un nuevo usuario con los datos proporcionados
-    await User.create({
-      email,
-      password: hashedPassword,
-      name,
-      carnet,
-      sede_id: sede_id_token,
-      rol_id: 1, // Rol de estudiante
-      active: false, // Valor por defecto: No podra iniciar sesión hasta solo para historial
-    });
+    // Crear el usuario con una transacción para asegurar la integridad
+    const transaction = await User.sequelize.transaction();
+    
+    try {
+      await User.create(
+        {
+          email,
+          password: hashedPassword,
+          name,
+          carnet,
+          sede_id: sede_id_token,
+          rol_id: 1, // Rol de estudiante
+          active: false, // Valor por defecto: No podrá iniciar sesión
+        },
+        { transaction }
+      );
 
-    res.status(201).json({ message: "Usuario creado exitosamente" });
+      // Commit de la transacción
+      await transaction.commit();
+      
+      res.status(201).json({ message: "Usuario creado exitosamente" });
+    } catch (error) {
+      await transaction.rollback(); // En caso de error, deshacer la transacción
+      throw error;
+    }
+
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error al crear el usuario", error: error.message });
+    res.status(500).json({
+      message: "Error al crear el usuario",
+      error: error.message,
+    });
   }
 };
 

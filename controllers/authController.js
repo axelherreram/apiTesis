@@ -184,59 +184,55 @@ const loginUser = async (req, res) => {
  * @returns The `updatePassword` function is returning different responses based on the conditions:
  */
 const updatePassword = async (req, res) => {
-  const { currentPassword, newPassword } = req.body;
-  const user_id = req.user ? req.user.user_id : null;
-
-  if (!user_id) {
-    return res.status(401).json({ message: "Unauthorized" });
-  }
-
-  if (!currentPassword || !newPassword) {
-    return res.status(400).json({
-      message: "Se requieren la contraseña actual y la nueva contraseña",
-    });
-  }
-
   try {
-    const user = await User.findOne({ where: { user_id } });
+    const { currentPassword, newPassword } = req.body;
+    const user_id = req.user?.user_id;
 
+    if (!user_id) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        message: "Se requieren la contraseña actual y la nueva contraseña",
+      });
+    }
+
+    const user = await User.findByPk(user_id);
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    const isPasswordValid = await bcrypt.compare(
-      currentPassword,
-      user.password
-    );
-
+    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
     if (!isPasswordValid) {
-      return res
-        .status(400)
-        .json({ message: "La contraseña actual es incorrecta" });
+      return res.status(400).json({ message: "La contraseña actual es incorrecta" });
+    }
+
+    if (await bcrypt.compare(newPassword, user.password)) {
+      return res.status(400).json({
+        message: "La nueva contraseña no puede ser igual a la actual",
+      });
     }
 
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
 
-    await User.update(
-      { password: hashedNewPassword, passwordUpdate: true },
-      { where: { user_id } }
-    );
-
-    const updatedUser = await User.findOne({ where: { user_id } });
+    await user.update({ password: hashedNewPassword, passwordUpdate: true });
 
     await logActivity(
       user_id,
-      updatedUser.sede_id,
-      updatedUser.name,
-      `El usuario actualizó su contraseña`,
+      user.sede_id,
+      user.name,
+      "El usuario actualizó su contraseña",
       "Actualización de contraseña"
     );
 
-    res.json({ message: "Contraseña actualizada exitosamente" });
+    return res.json({ message: "Contraseña actualizada exitosamente" });
   } catch (err) {
-    res
-      .status(500)
-      .json({ message: "Error en el servidor", error: err.message });
+    console.error("Error al actualizar la contraseña:", err);
+    return res.status(500).json({
+      message: "Error en el servidor",
+      error: err.message,
+    });
   }
 };
 
@@ -331,59 +327,48 @@ const updateProfilePhoto = async (req, res) => {
  * it returns a generic server error message.
  */
 const requestPasswordRecovery = async (req, res) => {
-  const { email } = req.body;
-
-  if (!email) {
-    return res.status(400).json({
-      message: "Por favor, proporcione un correo electrónico",
-    });
-  }
-
   try {
-    // Buscar el usuario por el correo electrónico
-    const user = await User.findOne({ where: { email } });
+    const { email } = req.body;
 
+    if (!email) {
+      return res.status(400).json({ message: "Por favor, proporcione un correo electrónico." });
+    }
+
+    // Validar formato de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Correo electrónico no válido." });
+    }
+
+    // Buscar el usuario por correo electrónico
+    const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({
-        message: "No se encontró un usuario con ese correo electrónico",
-      });
+      return res.status(404).json({ message: "No se encontró un usuario con ese correo electrónico." });
     }
 
     // Generar una nueva contraseña aleatoria
     const newPassword = generateRandomPassword();
-
-    // Encriptar la nueva contraseña
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Actualizar la contraseña del usuario
-    await User.update(
-      { password: hashedPassword },
-      { where: { user_id: user.user_id } }
-    );
+    await user.update({ password: hashedPassword });
 
     // Enviar correo con la nueva contraseña
-    const templateVariables = {
-      nombre: user.name, // Nombre del usuario
-      newPassword: newPassword, // Nueva contraseña generada
-    };
-
     await sendEmailPasswordRecovery(
       "Recuperación de contraseña",
       `Tu nueva contraseña es: ${newPassword}`,
       email,
-      templateVariables
+      { nombre: user.name, newPassword }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Tu nueva contraseña ha sido enviada a tu correo electrónico.",
     });
   } catch (error) {
-    console.error(
-      "Error al solicitar la recuperación de la contraseña:",
-      error
-    );
-    res.status(500).json({
+    console.error("Error al solicitar la recuperación de la contraseña:", error);
+    return res.status(500).json({
       message: "Error en el servidor. Por favor, intenta nuevamente más tarde.",
+      error: error.message,
     });
   }
 };

@@ -272,29 +272,23 @@ const getRevisionsByUserId = async (req, res) => {
 const getPendingRevisions = async (req, res) => {
   try {
     const { order = "asc", carnet } = req.query;
+    const orderDirection = order.toLowerCase() === "desc" ? "DESC" : "ASC";
 
-    const orderDirection = order === "desc" ? "DESC" : "ASC";
+    const whereClause = {
+      active_process: true,
+      "$AssignedReviews.assigned_review_id$": null, 
+    };
 
-    const userWhereClause = {};
     if (carnet) {
-      const carnetRegex = /^\d{4}-\d{2}-\d{2,}$/;
-      if (!carnetRegex.test(carnet)) {
+      if (!/^\d{4}-\d{2}-\d{2,}$/.test(carnet)) {
         return res.status(400).json({ message: "Carnet inválido" });
       }
-
-      const carnetParts = carnet.split("-");
-      if (carnetParts[2].length < 2) {
-        return res
-          .status(400)
-          .json({ message: "Debe ingresar al menos 2 dígitos del carnet" });
-      }
-
-      userWhereClause.carnet = { [Op.like]: `%${carnet}%` };
+      whereClause["$User.carnet$"] = { [Op.like]: `%${carnet}%` };
     }
 
     const pendingRevisions = await RevisionThesis.findAll({
       attributes: ["revision_thesis_id", "date_revision"],
-      where: { active_process: true },
+      where: whereClause,
       include: [
         {
           model: ApprovalThesis,
@@ -304,7 +298,6 @@ const getPendingRevisions = async (req, res) => {
         {
           model: User,
           attributes: ["user_id", "name", "carnet"],
-          where: userWhereClause,
         },
         {
           model: AssignedReview,
@@ -312,35 +305,24 @@ const getPendingRevisions = async (req, res) => {
           required: false,
         },
       ],
-      where: {
-        "$AssignedReviews.assigned_review_id$": null,
-      },
       order: [["date_revision", orderDirection]],
+      limmit: 100,
     });
 
-    if (pendingRevisions.length === 0) {
-      return res.status(404).json({
-        message: "No hay revisiones de tesis pendientes sin asignar",
-      });
-    }
-
-    // Convertir el estado "pending" a "pendiente"
-    const formattedRevisions = pendingRevisions.map((revision) => ({
-      ...revision.toJSON(),
-      ApprovalThesis: {
-        ...revision.ApprovalThesis,
-        status: "pendiente",
-      },
-    }));
-
-    res.status(200).json({
-      message: "Revisiones de tesis pendientes sin asignar obtenidas con éxito",
+    return res.status(pendingRevisions.length ? 200 : 404).json({
+      message:
+        pendingRevisions.length > 0
+          ? "Revisiones de tesis pendientes sin asignar obtenidas con éxito"
+          : "No hay revisiones de tesis pendientes sin asignar",
       orden: orderDirection,
-      data: formattedRevisions,
+      data: pendingRevisions.map((revision) => ({
+        ...revision.toJSON(),
+        ApprovalThesis: { ...revision.ApprovalThesis, status: "pendiente" },
+      })),
     });
   } catch (error) {
     console.error("Error al obtener las revisiones pendientes:", error);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error al obtener las revisiones pendientes",
       error: error.message,
     });
