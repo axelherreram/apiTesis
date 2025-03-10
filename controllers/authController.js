@@ -6,26 +6,8 @@ const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
 const { sendEmailPasswordRecovery } = require("../services/emailService");
+const crypto = require("crypto");
 
-/**
- * The function generates a random password of a specified length using a set of characters.
- * @param [length=10] - The `length` parameter in the `generateRandomPassword` function specifies the
- * length of the password to be generated. By default, if no length is provided, the function will
- * generate a password of length 10 characters. You can also specify a custom length when calling the
- * function to generate a password of
- * @returns A randomly generated password of the specified length containing uppercase letters,
- * lowercase letters, numbers, and special characters from the characters string.
- */
-const generateRandomPassword = (length = 10) => {
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    const randomIndex = Math.floor(Math.random() * characters.length);
-    password += characters[randomIndex];
-  }
-  return password;
-};
 
 /**
  * The function `registerUser` handles the registration of a user by validating required fields,
@@ -119,24 +101,29 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    // Search for the user by email
     const user = await User.findOne({ where: { email } });
 
+    // Check if the user exists
     if (!user) {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
+    // Check if the user is active
     if (user.active == false) {
       return res
         .status(401)
         .json({ message: "Acceso denegado. El usuario está deshabilitado." });
     }
 
+    // Compare the provided password with the stored hashed password
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
       return res.status(401).json({ message: "Contraseña inválida" });
     }
 
+    // Generate JWT token for authentication
     const token = jwt.sign(
       {
         user: {
@@ -146,10 +133,11 @@ const loginUser = async (req, res) => {
         },
       },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "1h" } // Token expiration time
     );
 
-    if (user.role_id !== 4) {
+    // Log activity if the user is not a student (role_id !== 4 and role_id !== 6)
+    if (user.role_id !== 4 || user.role_id !== 6) {
       await logActivity(
         user.user_id,
         user.sede_id,
@@ -159,6 +147,7 @@ const loginUser = async (req, res) => {
       );
     }
 
+    // Send response with user details and token
     res.status(200).json({
       message: "Inicio de sesión exitoso",
       id: user.user_id,
@@ -345,9 +334,9 @@ const requestPasswordRecovery = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "No se encontró un usuario con ese correo electrónico." });
     }
-
+    // Generar una nueva contraseña aleatoria usando crypto
+    const newPassword = crypto.randomBytes(8).toString('hex');
     // Generar una nueva contraseña aleatoria
-    const newPassword = generateRandomPassword();
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Actualizar la contraseña del usuario
