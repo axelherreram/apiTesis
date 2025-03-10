@@ -90,6 +90,7 @@ const createAssignedReview = async (req, res) => {
   }
 };
 
+
 /**
  * The function `getAssignedReviewsByUser` retrieves the assigned reviews for a specific user, with optional
  * filtering by `carnet` and ordering by `date_assigned`.
@@ -133,7 +134,7 @@ const getAssignedReviewsByUser = async (req, res) => {
             },
             {
               model: User,
-              attributes: ["user_id", "name", "email", "carnet"],
+              attributes: ["user_id","name", "email", "carnet"],
               where: carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {}, // Filtro dentro de User
             },
           ],
@@ -175,6 +176,7 @@ const getAssignedReviewsByUser = async (req, res) => {
   }
 };
 
+
 /**
  * The function `getReviewHistoryByUser` retrieves the review history for a specific user, with optional
  * filtering by `carnet` and ordering by `date_assigned`.
@@ -193,9 +195,7 @@ const getReviewHistoryByUser = async (req, res) => {
 
     // Construcción dinámica de filtros
     const whereClause = { user_id };
-    const userWhereClause = carnet
-      ? { carnet: { [Op.like]: `%${carnet}%` } }
-      : {};
+    const userWhereClause = carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {};
 
     // Obtener historial de revisiones
     const reviewHistory = await AssignedReview.findAll({
@@ -230,12 +230,12 @@ const getReviewHistoryByUser = async (req, res) => {
   } catch (error) {
     console.error("Error al obtener el historial de revisiones:", error);
     return res.status(500).json({
-      message:
-        "Error interno del servidor al obtener el historial de revisiones",
+      message: "Error interno del servidor al obtener el historial de revisiones",
       details: error.message,
     });
   }
 };
+
 
 module.exports = {
   createAssignedReview,
