@@ -71,10 +71,6 @@ associateModels();
 
 // Configurar CORS
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://127.0.0.1:5500',
-  'http://localhost:3000', 
   process.env.APP_PRODUCTION,
 ];
 
@@ -134,8 +130,8 @@ sequelize.sync({ alter: false, force: false })
   .then(async () => {
     console.log('Base de datos sincronizada');
     await initializetables(); 
-    app.listen(3000, () => {
-      console.log('Servidor ejecutándose en el puerto 3000', 'http://localhost:3000/api-docs');
+    app.listen(process.env.PORT || 3004, () => {
+      console.log('Servidor ejecutándose en el puerto 3000');
     });
   })
   .catch(error => {
