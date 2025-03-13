@@ -8,7 +8,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const admin = verifyRole([3]); // Solo Admin
-
+const coordinador_sede = verifyRole([4]); // Solo cordinador de sede
 /**
  * @swagger
  * tags:
@@ -98,7 +98,7 @@ router.post(
 router.post(
   "/catedraticos/cargaMasiva",
   authMiddleware,
-  admin,
+  coordinador_sede,
   extractSedeIdMiddleware,
   upload.single("archivo"),
   bulkUploadCatedratico

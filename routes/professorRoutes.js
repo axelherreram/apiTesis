@@ -11,8 +11,7 @@ const getUserIdToken = require("../middlewares/getUserIdToken");
 const verifyRole = require("../middlewares/roleMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
-const admin = verifyRole([3]); // Solo Admin
-const adminOrDecan = verifyRole([3, 6]); // Admin o Decano
+const coordinador_sede = verifyRole([4]); // Solo Admin
 /**
  * @swagger
  * tags:
@@ -53,7 +52,7 @@ const adminOrDecan = verifyRole([3, 6]); // Admin o Decano
 router.get(
   "/professors",
   authMiddleware,
-  admin,
+  coordinador_sede,
   extractSedeIdMiddleware,
   listProfessors
 );
@@ -97,7 +96,7 @@ router.get(
 router.get(
   "/professors/activos",
   authMiddleware,
-  admin,
+  coordinador_sede,
   extractSedeIdMiddleware,
   listActiveProfessors
 );
@@ -147,7 +146,7 @@ router.get(
 router.patch(
   "/professors/:user_id/active",
   authMiddleware,
-  adminOrDecan,
+  coordinador_sede,
   extractSedeIdMiddleware,
   updateProfessorStatus
 );
@@ -208,7 +207,7 @@ router.post(
   "/create/professor",
   authMiddleware,
   getUserIdToken,
-  admin,
+  coordinador_sede,
   extractSedeIdMiddleware,
   createProfessor
 );

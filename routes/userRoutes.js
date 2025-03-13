@@ -9,7 +9,7 @@ const router = express.Router();
 
 const adminOrTerna = verifyRole([2, 3]); // Roles permitidos: Terna (2), Admin (3)
 const admin = verifyRole([3]); // Solo Admin
-const superAdmin = verifyRole([4]); // Solo Admin
+const coordinador_sede = verifyRole([4]); // Solo Admin
 const adminOrSuperAdmin = verifyRole([3, 4]); // Solo Admin
 
 /**
@@ -156,7 +156,7 @@ router.get(
 router.post(
   "/admin/create",
   authMiddleware,
-  superAdmin,
+  coordinador_sede,
   userController.createAdmin
 );
 /**
@@ -205,7 +205,7 @@ router.post(
 router.post(
   "/admin/assign",
   authMiddleware,
-  superAdmin,
+  coordinador_sede,
   userController.assignAdminToSede
 );
 
@@ -245,7 +245,7 @@ router.post(
 router.put(
   "/admin/remove",
   authMiddleware,
-  superAdmin,
+  coordinador_sede,
   userController.removeAdmin
 );
 
@@ -294,9 +294,9 @@ router.put(
  */
 router.get(
   "/admins",
-  authMiddleware, // Middleware de autenticación
-  superAdmin, // Middleware de roles (opcional, si solo superadmin puede acceder)
-  userController.listAllAdmins // Método en el controlador
+  authMiddleware, 
+  coordinador_sede, 
+  userController.listAllAdmins 
 );
 
 /**
