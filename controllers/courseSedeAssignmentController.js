@@ -21,39 +21,60 @@ const moment = require("moment");
  * exceptions during the process, it returns an appropriate error response with a relevant message.
  */
 const createSedeAssignment = async (req, res) => {
-  const { course_id, sede_id } = req.body;
+  const { course_id } = req.body;
+  const { sede_id, user_id } = req;
 
   try {
+
+    const user = await User.findByPk(user_id);
+
+    if(user.sede_id !== sede_id){
+      return res.status(403).json({
+        message: `No tienes permisos para asignar cursos a esta sede.`
+      });
+    }
+
     // Obtener el año y mes actual
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
     const currentMonth = currentDate.getMonth() + 1;
 
     // Validar que PG1 solo se pueda asignar en los primeros 6 meses y PG2 en los otros 6 meses
-    if ((course_id === 1 && currentMonth > 6) || (course_id === 2 && currentMonth <= 6)) {
+    if (
+      (course_id === 1 && currentMonth > 6) ||
+      (course_id === 2 && currentMonth <= 6)
+    ) {
       return res.status(400).json({
-        message: course_id === 1 
-          ? "PG1 solo se puede asignar en los primeros 6 meses del año."
-          : "PG2 solo se puede asignar en los últimos 6 meses del año."
+        message:
+          course_id === 1
+            ? "PG1 solo se puede asignar en los primeros 6 meses del año."
+            : "PG2 solo se puede asignar en los últimos 6 meses del año.",
       });
     }
 
     // Obtener el año actual y la sede de manera más eficiente
     const [yearRecord, course, sede] = await Promise.all([
-      Year.findOrCreate({ where: { year: currentYear }, defaults: { year: currentYear } }),
+      Year.findOrCreate({
+        where: { year: currentYear },
+        defaults: { year: currentYear },
+      }),
       Course.findByPk(course_id),
       Sede.findByPk(sede_id),
     ]);
 
-    if (!course) return res.status(404).json({ message: `No se encontró un curso.` });
-    if (!sede) return res.status(404).json({ message: `No se encontró una sede` });
+    if (!course)
+      return res.status(404).json({ message: `No se encontró un curso.` });
+    if (!sede)
+      return res.status(404).json({ message: `No se encontró una sede` });
 
     const year_id = yearRecord[0].year_id;
     const course_name = course.courseName;
     const sedeName = sede.nameSede;
 
     // Verificar si ya existe una asignación para el curso en la sede y año actual
-    const existingAssignment = await CourseSedeAssignment.findOne({ where: { course_id, sede_id, year_id } });
+    const existingAssignment = await CourseSedeAssignment.findOne({
+      where: { course_id, sede_id, year_id },
+    });
     if (existingAssignment) {
       return res.status(400).json({
         message: `La asignación del curso ${course_name} a la sede ${sedeName} ya existe.`,
@@ -70,7 +91,9 @@ const createSedeAssignment = async (req, res) => {
 
     if (course_id === 1) {
       const previousYear = currentYear - 1;
-      const previousYearRecord = await Year.findOne({ where: { year: previousYear } });
+      const previousYearRecord = await Year.findOne({
+        where: { year: previousYear },
+      });
 
       if (previousYearRecord) {
         const previousYear_id = previousYearRecord.year_id;
@@ -82,10 +105,18 @@ const createSedeAssignment = async (req, res) => {
     }
 
     // Crear nueva asignación de curso y sede con courseActive en true
-    await CourseSedeAssignment.create({ course_id, sede_id, year_id, courseActive: true });
+    await CourseSedeAssignment.create({
+      course_id,
+      sede_id,
+      year_id,
+      courseActive: true,
+    });
 
     // Obtener el correo del administrador de la sede
-    const adminUser = await User.findOne({ where: { sede_id, rol_id: 3 }, attributes: ["email"] });
+    const adminUser = await User.findOne({
+      where: { sede_id, rol_id: 3 },
+      attributes: ["email"],
+    });
 
     if (adminUser?.email) {
       const templateVariables = {
@@ -93,7 +124,7 @@ const createSedeAssignment = async (req, res) => {
         course_name: course_name,
         date_assing: moment().format("YYYY-MM-DD"),
       };
-      
+
       // Enviar correo al administrador de la sede
       await sendEmailActiveCouser(
         "Nuevo curso asignado a la sede",
@@ -101,7 +132,9 @@ const createSedeAssignment = async (req, res) => {
         templateVariables
       );
     } else {
-      console.warn(`No se encontró un administrador para la sede con ID ${sede_id}`);
+      console.warn(
+        `No se encontró un administrador para la sede con ID ${sede_id}`
+      );
     }
 
     // Respuesta exitosa
@@ -116,7 +149,6 @@ const createSedeAssignment = async (req, res) => {
     });
   }
 };
-
 
 /**
  * The function `getCoursesBySede` retrieves courses assigned to a specific location and year, handling
@@ -155,7 +187,7 @@ const getCoursesBySede = async (req, res) => {
       });
     }
 
-/*     // Verificar que la sede en el token coincida con la sede solicitada (si es necesario)
+    /*     // Verificar que la sede en el token coincida con la sede solicitada (si es necesario)
     if (tokenSedeId !== sede_id) {
       return res.status(403).json({
         message: `No tienes permisos para acceder a los cursos de esta sede.`,
@@ -210,7 +242,6 @@ const getCoursesBySede = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   createSedeAssignment,

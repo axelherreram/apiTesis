@@ -1,13 +1,16 @@
 const express = require("express");
-const { createSedeAssignment, getCoursesBySede } = require("../controllers/courseSedeAssignmentController");
+const {
+  createSedeAssignment,
+  getCoursesBySede,
+} = require("../controllers/courseSedeAssignmentController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const getUserIdToken = require("../middlewares/getUserIdToken");
 const verifyRole = require("../middlewares/roleMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
-const SuperAdmin = verifyRole([4]);
-const adminOrSuperadmin = verifyRole([1,3,4]);
+const coordinador_sede = verifyRole([4]);
+const adminOrSuperadmin = verifyRole([1, 3, 4]);
 
 /**
  * @swagger
@@ -35,10 +38,6 @@ const adminOrSuperadmin = verifyRole([1,3,4]);
  *                 type: integer
  *                 description: ID del curso
  *                 example: 1
- *               sede_id:
- *                 type: integer
- *                 description: ID de la sede
- *                 example: 1
  *     responses:
  *       201:
  *         description: Asignación de curso a sede creada exitosamente
@@ -59,7 +58,8 @@ router.post(
   "/crearAsignacionSedeCurso",
   authMiddleware,
   getUserIdToken,
-  SuperAdmin,
+  coordinador_sede,
+  extractSedeIdMiddleware,
   createSedeAssignment
 );
 
@@ -100,7 +100,7 @@ router.post(
  */
 router.get(
   "/cursosPorSede/:sede_id/:year",
-  authMiddleware, 
+  authMiddleware,
   getUserIdToken,
   adminOrSuperadmin,
   extractSedeIdMiddleware,
