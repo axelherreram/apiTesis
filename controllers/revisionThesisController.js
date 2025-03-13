@@ -69,11 +69,6 @@ const uploadRevisionThesis = async (req, res) => {
     }
 
     // Verificar si el usuario ya tiene una revisión activa
-    const userRevision = await RevisionThesis.findAll({
-      where: { user_id },
-    });
-
-    // Verificar si el usuario ya tiene una revisión activa
     const userRevisions = await RevisionThesis.findAll({
       where: { user_id },
     });

@@ -44,7 +44,7 @@ const createCommentRevision = async (req, res) => {
 
     // Validar que la revisión de tesis exista
     const revisionThesis = await RevisionThesis.findByPk(revision_thesis_id, {
-      include: [{ model: AssignedReview, attributes: ["assigned_review_id"] }],
+      include: [{ model: AssignedReview, attributes: ["assigned_review_id", "user_id"] }],
       transaction,
     });
 
@@ -57,11 +57,12 @@ const createCommentRevision = async (req, res) => {
 
     const assigned_review_id =
       revisionThesis.AssignedReviews[0].assigned_review_id;
-
+    console.log(assigned_review_id);
     if (revisionThesis.AssignedReviews[0].user_id !== revisor_id) {
       await transaction.rollback();
       return res.status(403).json({
-        message: "No tienes permiso para comentar esta revisión. Solo la persona asignada puede comentar.",
+        message:
+          "No tienes permiso para comentar esta revisión. Solo la persona asignada puede comentar.",
       });
     }
 
