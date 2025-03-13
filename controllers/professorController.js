@@ -6,7 +6,7 @@ const { sequelize } = require("../config/database");
 const bcrypt = require("bcrypt");
 require("dotenv").config(); // Asegúrate de cargar las variables de entorno
 const { sendEmailCatedratico } = require("../services/emailService");
-
+const crypto = require("crypto");
 /**
  * The function `updateProfessorStatus` updates the active status of a user, logs the activity, and
  * returns a message based on the status change.
@@ -287,8 +287,9 @@ const createProfessor = async (req, res) => {
       });
     }
 
+
     // Generar una contraseña aleatoria
-    const randomPassword = Math.random().toString(36).slice(-8);
+    const randomPassword = crypto.randomBytes(4).toString("hex");
     console.log(`Contraseña generada para ${email}: ${randomPassword}`);
 
     // Hashear la contraseña generada
