@@ -10,7 +10,7 @@ const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware"
 const router = express.Router();
 
 // Middleware para verificar el rol de administrador
-const admin = verifyRole([3]);
+const admin = verifyRole([3,4 ]);
 
 /**
  * @swagger
