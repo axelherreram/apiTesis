@@ -155,13 +155,13 @@ const getCoursesBySede = async (req, res) => {
       });
     }
 
-    // Verificar que la sede en el token coincida con la sede solicitada (si es necesario)
+/*     // Verificar que la sede en el token coincida con la sede solicitada (si es necesario)
     if (tokenSedeId !== sede_id) {
       return res.status(403).json({
         message: `No tienes permisos para acceder a los cursos de esta sede.`,
       });
     }
-
+ */
     // Buscar el año en la base de datos
     const yearRecord = await Year.findOne({
       where: { year: year },
