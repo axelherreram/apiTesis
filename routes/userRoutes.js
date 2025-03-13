@@ -125,14 +125,10 @@ router.get(
  *               carnet:
  *                 type: string
  *                 description: Carnet del administrador
- *               sede_id:
- *                 type: integer
- *                 description: ID de la sede del administrador
  *             required:
  *               - email
  *               - name
  *               - carnet
- *               - sede_id
  *     responses:
  *       201:
  *         description: Administrador creado exitosamente
@@ -156,6 +152,7 @@ router.get(
 router.post(
   "/admin/create",
   authMiddleware,
+  extractSedeIdMiddleware,
   coordinador_sede,
   userController.createAdmin
 );

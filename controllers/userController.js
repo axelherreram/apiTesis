@@ -203,16 +203,15 @@ const listuserbytoken = async (req, res) => {
  * appropriate error message.
  */
 const createAdmin = async (req, res) => {
-  const { email, name, carnet, sede_id } = req.body;
+  const { email, name, carnet } = req.body;
+  const { sede_id } = req;
 
-  // Validar campos requeridos
   if (!email || !name || !carnet || !sede_id) {
     return res.status(400).json({ message: "Todos los campos son obligatorios." });
   }
 
   try {
-    // Validar formato del carnet
-    const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/; // Ejemplo válido: 2024-01-1234
+    const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/;
     if (!carnetRegex.test(carnet)) {
       return res.status(400).json({
         title: "Error",
@@ -220,86 +219,72 @@ const createAdmin = async (req, res) => {
       });
     }
 
-    // Validar dominio del correo
     if (!email.endsWith("@miumg.edu.gt")) {
       return res.status(400).json({
         message: "El correo debe tener el dominio @miumg.edu.gt.",
       });
     }
 
-    // Verificar si el correo ya existe
-    const existingUser = await User.findOne({ where: { email } });
+    const existingUser = await User.findOne({ where: { [Op.or]: [{ email }, { carnet }] } });
+    
     if (existingUser) {
-      return res.status(400).json({ message: "El correo ya está registrado." });
+      if (existingUser.sede_id === sede_id) {
+        if (existingUser.rol_id !== 3) {
+          await existingUser.update({ rol_id: 3 });
+          return res.status(200).json({
+            message: "El usuario ya existía y se actualizó su rol a administrador.",
+          });
+        }
+        return res.status(400).json({ message: "El usuario ya es administrador en esta sede." });
+      }
+      return res.status(400).json({ message: "El correo o carnet ya está registrado en otra sede." });
     }
 
-    // Verificar si la sede existe
     const sede = await Sede.findByPk(sede_id);
     if (!sede) {
       return res.status(404).json({ message: "La sede especificada no existe." });
     }
 
-    // Validar que no haya más de 3 administradores por sede
-    const adminCount = await User.count({
-      where: { rol_id: 3, sede_id },
-    });
-
+    const adminCount = await User.count({ where: { rol_id: 3, sede_id } });
     if (adminCount >= 3) {
       return res.status(400).json({
         message: "Ya existen 3 administradores en esta sede. No se puede agregar más.",
       });
-    } 
+    }
 
-    // Generar contraseña aleatoria
     const password = crypto.randomBytes(8).toString("hex");
-
-    // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Obtener o crear el año actual
     const currentYear = new Date().getFullYear();
-    const [yearRecord] = await Year.findOrCreate({
-      where: { year: currentYear },
-    });
+    const [yearRecord] = await Year.findOrCreate({ where: { year: currentYear } });
 
-    // Crear el administrador
     const admin = await User.create({
       email,
       name,
       carnet,
       sede_id,
       password: hashedPassword,
-      rol_id: 3, // Rol de administrador
+      rol_id: 3,
       year_id: yearRecord.year_id,
     });
 
-    // Enviar correo electrónico con la contraseña temporal
-    const templateVariables = {
-      nombre: name,
-      password: password,
-    };
-
     try {
-      await sendEmailPassword(
+       await sendEmailPassword(
         "Registro exitoso",
         `Hola ${name}, tu contraseña temporal es: ${password}`,
         email,
-        templateVariables
-      );
+        { nombre: name, password }
+      ); 
       console.log("Correo enviado a:", email);
     } catch (emailError) {
       console.error("Error al enviar el correo:", emailError);
-      // En caso de error al enviar el correo, continuar con la creación
       return res.status(500).json({
         message: "Administrador creado, pero hubo un error al enviar el correo.",
         error: emailError.message,
       });
     }
 
-    console.log("Administrador creado:", admin.email, "password", password);
-    res.status(201).json({
-      message: "Administrador creado con éxito.",
-    });
+    console.log("Administrador creado:", admin.email);
+    res.status(201).json({ message: "Administrador creado con éxito." });
   } catch (error) {
     console.error("Error al crear el administrador:", error);
     res.status(500).json({
@@ -308,6 +293,7 @@ const createAdmin = async (req, res) => {
     });
   }
 };
+
 
 /**
  * The function `removeAdmin` removes an administrator role from a user, ensuring that at
