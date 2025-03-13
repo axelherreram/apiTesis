@@ -268,12 +268,12 @@ const createAdmin = async (req, res) => {
     });
 
     try {
-       await sendEmailPassword(
+     /*   await sendEmailPassword(
         "Registro exitoso",
         `Hola ${name}, tu contraseña temporal es: ${password}`,
         email,
         { nombre: name, password }
-      ); 
+      );  */
       console.log("Correo enviado a:", email);
     } catch (emailError) {
       console.error("Error al enviar el correo:", emailError);
@@ -309,7 +309,17 @@ const createAdmin = async (req, res) => {
  * a relevant status code (400, 404, or 500) with an appropriate error message.
  */
 const removeAdmin = async (req, res) => {
-  const { user_id, sede_id } = req.body;
+  const { user_id } = req.body;
+  const {sede_id} = req;
+
+
+  const userExist = await User.findOne({ where: { user_id } });
+
+  if (userExist.sede_id !== sede_id) {
+    return res.status(400).json({
+      message: "El usuario no pertenece a la sede.",
+    });
+  }
 
   // Validar campos requeridos
   if (!user_id || !sede_id) {

@@ -156,6 +156,7 @@ router.post(
   coordinador_sede,
   userController.createAdmin
 );
+
 /**
  * @swagger
  * /api/admin/assign:
@@ -225,12 +226,8 @@ router.post(
  *               user_id:
  *                 type: integer
  *                 description: ID del administrador a eliminar
- *               sede_id:
- *                 type: integer
- *                 description: ID de la sede de la que se eliminará al administrador
  *             required:
  *               - user_id
- *               - sede_id
  *     responses:
  *       200:
  *         description: Administrador eliminado exitosamente
@@ -242,6 +239,7 @@ router.post(
 router.put(
   "/admin/remove",
   authMiddleware,
+  extractSedeIdMiddleware,
   coordinador_sede,
   userController.removeAdmin
 );
