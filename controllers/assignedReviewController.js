@@ -126,6 +126,7 @@ const getAssignedReviewsByUser = async (req, res) => {
         {
           model: RevisionThesis,
           attributes: ["revision_thesis_id", "date_revision", "active_process"],
+          where: { active_process: true },
           include: [
             {
               model: ApprovalThesis,
