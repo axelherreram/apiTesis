@@ -165,13 +165,9 @@ const bulkUploadUsers = async (req, res) => {
       const existingAssignmentForCourse = await CourseAssignment.findOne({
         where: {
           student_id: existingUser.user_id,
+          asigCourse_id, // Asegura que la asignación sea específica por sede y curso
+          year_id, // Agregamos el año actual para permitir múltiples inscripciones en años diferentes
         },
-        include: [
-          {
-            model: CourseSedeAssignment,
-            where: { course_id }, // Verifica específicamente el curso actual (course_id)
-          },
-        ],
       });
 
       if (existingAssignmentForCourse) {
@@ -183,14 +179,14 @@ const bulkUploadUsers = async (req, res) => {
       const existingAssignment = await CourseAssignment.findOne({
         where: {
           student_id: existingUser.user_id,
-          asigCourse_id, // Usar el ID de la asignación de curso
+          asigCourse_id,
         },
       });
 
       if (!existingAssignment) {
         await CourseAssignment.create({
           student_id: existingUser.user_id,
-          asigCourse_id, // Asociar con la asignación de curso, sede y año
+          asigCourse_id, 
           year_id,
         });
       }

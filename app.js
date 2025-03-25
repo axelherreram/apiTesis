@@ -59,6 +59,7 @@ const AssignedReviewRoutes = require('./routes/assignedReviewRoutes');
 const GraphicThesisRoutes = require('./routes/graphicThesisRoutes');
 const CommentRevision = require('./routes/commentRevisionRoutes');
 
+const morgan = require('morgan');
 const path = require('path');
 const cors = require('cors');
 
@@ -90,11 +91,24 @@ app.use(cors({
   credentials: true,
 }));
 
+// Configurar body-parser para analizar JSON
+app.use(bodyParser.json());
+
+// Configurar Morgan para el registro de solicitudes HTTP
+app.use(morgan('dev'));
+
+// middleware para loggear las solicitudes manuales
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  console.log("Body:", req.body);
+  console.log("Headers:", req.headers);
+  next();
+});
+
 // Servir archivos estáticos
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
-// Configurar body-parser para analizar JSON
-app.use(bodyParser.json());
+
 
 // Configurar Swagger para la documentación de la API
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
