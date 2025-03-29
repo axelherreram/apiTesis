@@ -101,11 +101,13 @@ const bulkUploadCatedratico = async (req, res) => {
           active: false,
         });
 
-/*         // Enviar correo con las credenciales al profesor
-        await sendEmailCatedratico("Bienvenido a MyOnlineProject", email, {
+        // Enviar correo con las credenciales al profesor
+        await sendEmailCatedratico(
+          "Bienvenido a MyOnlineProject",
+          email, {
           nombre: nombre,
           password: randomPassword,
-        }); */
+        });
       }
     }
 

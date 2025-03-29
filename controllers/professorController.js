@@ -287,7 +287,6 @@ const createProfessor = async (req, res) => {
       });
     }
 
-
     // Generar una contraseña aleatoria
     const randomPassword = crypto.randomBytes(4).toString("hex");
     console.log(`Contraseña generada para ${email}: ${randomPassword}`);

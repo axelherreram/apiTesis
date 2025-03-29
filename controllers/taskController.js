@@ -169,7 +169,7 @@ const createTask = async (req, res) => {
       }
 
       for (const userEmail of studentsAndEmails) {
-        /*       const templateVariables = {
+         const templateVariables = {
           nombre: userEmail.name,
           titulo: title,
           descripcion: description,
@@ -182,7 +182,7 @@ const createTask = async (req, res) => {
           `Se ha creado una nueva tarea en la plataforma MyOnlineProject con el título: ${title}`,
           userEmail.email,
           templateVariables
-        ); */
+        ); 
 
         const course = await Course.findByPk(courseSedeAssignment.course_id);
 
