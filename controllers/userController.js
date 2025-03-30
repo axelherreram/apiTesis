@@ -187,7 +187,6 @@ const listuserbytoken = async (req, res) => {
   }
 };
 
-
 /**
  * The function `createAdmin` registers a new administrator user, ensuring email uniqueness,
  * role limitations per location, and secure password handling.
@@ -207,7 +206,9 @@ const createAdmin = async (req, res) => {
   const { sede_id } = req;
 
   if (!email || !name || !carnet || !sede_id) {
-    return res.status(400).json({ message: "Todos los campos son obligatorios." });
+    return res
+      .status(400)
+      .json({ message: "Todos los campos son obligatorios." });
   }
 
   try {
@@ -225,41 +226,53 @@ const createAdmin = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({ where: { [Op.or]: [{ email }, { carnet }] } });
-    
+    const existingUser = await User.findOne({
+      where: { [Op.or]: [{ email }, { carnet }] },
+    });
+
     if (existingUser) {
       if (existingUser.sede_id === sede_id) {
         if (existingUser.rol_id !== 3) {
           await existingUser.update({ rol_id: 3 });
           return res.status(200).json({
-            message: "El usuario ya existía y se actualizó su rol a administrador.",
+            message:
+              "El usuario ya existía y se actualizó su rol a administrador.",
           });
         }
-        return res.status(400).json({ message: "El usuario ya es administrador en esta sede." });
+        return res
+          .status(400)
+          .json({ message: "El usuario ya es administrador en esta sede." });
       }
-      return res.status(400).json({ message: "El correo o carnet ya está registrado en otra sede." });
+      return res.status(400).json({
+        message: "El correo o carnet ya está registrado en otra sede.",
+      });
     }
 
     const sede = await Sede.findByPk(sede_id);
     if (!sede) {
-      return res.status(404).json({ message: "La sede especificada no existe." });
+      return res
+        .status(404)
+        .json({ message: "La sede especificada no existe." });
     }
 
     const adminCount = await User.count({ where: { rol_id: 3, sede_id } });
     if (adminCount >= 3) {
       return res.status(400).json({
-        message: "Ya existen 3 administradores en esta sede. No se puede agregar más.",
+        message:
+          "Ya existen 3 administradores en esta sede. No se puede agregar más.",
       });
     }
 
     const password = crypto.randomBytes(8).toString("hex");
     const hashedPassword = await bcrypt.hash(password, 10);
     const currentYear = new Date().getFullYear();
-    const [yearRecord] = await Year.findOrCreate({ where: { year: currentYear } });
-
+    const [yearRecord] = await Year.findOrCreate({
+      where: { year: currentYear },
+    });
+    const nameUpper = name.toUpperCase();
     const admin = await User.create({
       email,
-      name,
+      name: nameUpper,
       carnet,
       sede_id,
       password: hashedPassword,
@@ -268,16 +281,16 @@ const createAdmin = async (req, res) => {
     });
 
     try {
-        await sendEmailPassword(
-        "Registro exitoso",
-        email,
-        { nombre: name, password }
-      );  
+      await sendEmailPassword("Registro exitoso", email, {
+        nombre: nameUpper,
+        password,
+      });
       console.log("Correo enviado a:", email);
     } catch (emailError) {
       console.error("Error al enviar el correo:", emailError);
       return res.status(500).json({
-        message: "Administrador creado, pero hubo un error al enviar el correo.",
+        message:
+          "Administrador creado, pero hubo un error al enviar el correo.",
         error: emailError.message,
       });
     }
@@ -292,7 +305,6 @@ const createAdmin = async (req, res) => {
     });
   }
 };
-
 
 /**
  * The function `removeAdmin` removes an administrator role from a user, ensuring that at
@@ -309,8 +321,7 @@ const createAdmin = async (req, res) => {
  */
 const removeAdmin = async (req, res) => {
   const { user_id } = req.body;
-  const {sede_id} = req;
-
+  const { sede_id } = req;
 
   const userExist = await User.findOne({ where: { user_id } });
 
@@ -394,7 +405,9 @@ const listAllAdmins = async (req, res) => {
 
     // Verificar si se encontraron administradores
     if (!admins || admins.length === 0) {
-      return res.status(404).json({ message: "No se encontraron administradores." });
+      return res
+        .status(404)
+        .json({ message: "No se encontraron administradores." });
     }
 
     // Respuesta formateada directamente
@@ -477,7 +490,8 @@ const assignAdminToSede = async (req, res) => {
 
     if (adminCount >= 2) {
       return res.status(400).json({
-        message: "Ya existen 2 administradores en esta sede. No se puede asignar más.",
+        message:
+          "Ya existen 2 administradores en esta sede. No se puede asignar más.",
       });
     }
 
@@ -520,7 +534,9 @@ const createUserNotlog = async (req, res) => {
   try {
     // Validaciones iniciales
     if (!email || !name || !carnet) {
-      return res.status(400).json({ message: "Todos los campos son requeridos" });
+      return res
+        .status(400)
+        .json({ message: "Todos los campos son requeridos" });
     }
 
     // Verificar que el email termine con el dominio @miumg.edu.gt
@@ -546,16 +562,16 @@ const createUserNotlog = async (req, res) => {
     // Generar y hashear una contraseña temporal
     const randomPassword = crypto.randomBytes(8).toString("hex");
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
+    const nameMayusculas = name.toUpperCase();
     // Crear el usuario con una transacción para asegurar la integridad
     const transaction = await User.sequelize.transaction();
-    
+
     try {
       await User.create(
         {
           email,
           password: hashedPassword,
-          name,
+          name: nameMayusculas,
           carnet,
           sede_id: sede_id_token,
           rol_id: 1, // Rol de estudiante
@@ -566,13 +582,12 @@ const createUserNotlog = async (req, res) => {
 
       // Commit de la transacción
       await transaction.commit();
-      
+
       res.status(201).json({ message: "Usuario creado exitosamente" });
     } catch (error) {
       await transaction.rollback(); // En caso de error, deshacer la transacción
       throw error;
     }
-
   } catch (error) {
     res.status(500).json({
       message: "Error al crear el usuario",

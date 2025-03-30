@@ -293,12 +293,12 @@ const createProfessor = async (req, res) => {
 
     // Hashear la contraseña generada
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
+    const nameUpper = name.toUpperCase(); // Convertir el nombre a mayúsculas
     // Crear el nuevo usuario (profesor)
     const user = await User.create({
       email,
       password: hashedPassword,
-      name,
+      name: nameUpper,
       carnet,
       sede_id,
       rol_id: 2, // Rol de profesor
@@ -310,14 +310,14 @@ const createProfessor = async (req, res) => {
     await logActivity(
       userToken.user_id,
       userToken.sede_id,
-      userToken.name,
+      userToken.nameUpper,
       "Profesor creado",
       `Creación de profesor: ${user.name}`
     );
 
     // Enviar correo con las credenciales al profesor
     await sendEmailCatedratico("Bienvenido a MyOnlineProject", email, {
-      nombre: name,
+      nombre: nameUpper,
       password: randomPassword,
     });
     console.log("email: ", email, "  password: ", randomPassword);

@@ -123,6 +123,9 @@ const bulkUploadUsers = async (req, res) => {
     for (const user of usersData) {
       const { email, nombre, carnet } = user;
 
+      // Convertir el nombre a mayúsculas
+      const nameUpper = nombre.toUpperCase();
+
       // Paso 11: Verificar si el usuario ya existe
       let existingUser = await User.findOne({ where: { email } });
 
@@ -140,7 +143,7 @@ const bulkUploadUsers = async (req, res) => {
         existingUser = await User.create({
           email,
           password: hashedPassword,
-          name: nombre,
+          name: nameUpper,
           carnet,
           rol_id: 1, // Rol de estudiante
           sede_id,
@@ -149,15 +152,11 @@ const bulkUploadUsers = async (req, res) => {
 
         // Paso 14: Enviar correo electrónico con la contraseña temporal
         const templateVariables = {
-          nombre: nombre,
+          nombre: nameUpper,
           password: randomPassword,
         };
-         
-        await sendEmailPassword(
-          "Registro exitoso",
-          email,
-          templateVariables
-        ); 
+
+        await sendEmailPassword("Registro exitoso", email, templateVariables);
       }
 
       // Paso 15: Verificar si el usuario ya está asignado al curso actual
@@ -184,7 +183,7 @@ const bulkUploadUsers = async (req, res) => {
       if (!existingAssignment) {
         await CourseAssignment.create({
           student_id: existingUser.user_id,
-          asigCourse_id, 
+          asigCourse_id,
         });
       }
     }
