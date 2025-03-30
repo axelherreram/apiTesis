@@ -95,16 +95,16 @@ app.use(cors({
 app.use(bodyParser.json());
 
 // Configurar Morgan para el registro de solicitudes HTTP
-app.use(morgan('dev'));
+// app.use(morgan('dev'));
 
 // middleware para loggear las solicitudes manuales
-app.use((req, res, next) => {
+/* app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   console.log("Body:", req.body);
   console.log("Headers:", req.headers);
   next();
 });
-
+ */
 // Servir archivos estáticos
 app.use('/public', express.static(path.join(__dirname, 'public')));
 

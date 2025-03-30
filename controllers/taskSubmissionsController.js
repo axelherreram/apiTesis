@@ -31,7 +31,11 @@ const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
 
   try {
+    // Verificar si el usuario existe
     const userExist = await User.findByPk(user_id);
+    if (!userExist) {
+      return res.status(404).json({ message: "El usuario no existe" });
+    }
 
     // Verificar si la tarea existe
     const taskExist = await Task.findByPk(task_id);
@@ -61,99 +65,82 @@ const createTaskSubmission = async (req, res) => {
 
     if (!isDateValid || !isTimeValid) {
       return res.status(400).json({
-        message:
-          "La tarea no puede ser entregada fuera del rango de fecha permitido",
-        debug: {
-          currentDate: currentDate.format("YYYY-MM-DD HH:mm:ss"),
-          taskStart: taskStart.format("YYYY-MM-DD HH:mm:ss"),
-          endTask: endTask.format("YYYY-MM-DD HH:mm:ss"),
-          currentTime: currentTime.format("HH:mm:ss"),
-          startTime: startTime.format("HH:mm:ss"),
-          endTime: endTime.format("HH:mm:ss"),
-        },
+        message: "La tarea no puede ser entregada fuera del rango de fecha permitido",
       });
     }
 
-    // Verificar si ya existe una entrega
-    const taskSubmissionExist = await TaskSubmission.findOne({
+    // Buscar si ya existe una entrega
+    let taskSubmissionExist = await TaskSubmission.findOne({
       where: { user_id, task_id },
     });
 
-    if (taskSubmissionExist.submission_complete) {
-      return res.status(400).json({
-        message: "La tarea ya ha sido entregada",
-      });
+    if (taskSubmissionExist?.submission_complete) {
+      return res.status(400).json({ message: "La tarea ya ha sido entregada" });
     }
 
-    if (taskSubmissionExist) {
+    // Si no existe, crear la entrega
+    if (!taskSubmissionExist) {
+      taskSubmissionExist = await TaskSubmission.create({
+        user_id,
+        task_id,
+        submission_complete: true,
+        date: new Date(),
+      });
+    } else {
+      // Si ya existe, actualizar la entrega
       await taskSubmissionExist.update({
         submission_complete: true,
         date: new Date(),
       });
+    }
 
-      await addTimeline(
-        userExist.user_id,
-        "Tarea de envío actualizada",
-        `Confirmación de entrega para la tarea`,
-        taskExist.task_id
-      );
+    // Crear la línea de tiempo
+    await addTimeline(
+      userExist.user_id,
+      "Tarea de envío confirmada",
+      `Confirmación de entrega para la tarea: ${taskExist.title}`,
+      taskExist.task_id
+    );
 
-      await createNotification(
-        `El estudiante ${userExist.name} ha confimado la entrega de la tarea: ${taskExist.title}`,
-        userExist.sede_id,
-        user_id,
-        task_id,
-        "general"
-      );
+    // Crear la notificación
+    await createNotification(
+      `El estudiante ${userExist.name} ha confirmado la entrega de la tarea: ${taskExist.title}`,
+      userExist.sede_id,
+      user_id,
+      task_id,
+      "general"
+    );
 
-      // recuperar administrador/catedratico de la sede
-      const teacher = await User.findOne({
-        where: { sede_id: userExist.sede_id, rol_id: 3 },
-      });
+    // Recuperar administrador/catedrático de la sede
+    const teacher = await User.findOne({
+      where: { sede_id: userExist.sede_id, rol_id: 3 },
+    });
 
+    if (teacher) {
       // Enviar correo electrónico de confirmación de entrega
       const templateVariables = {
         catedraticoNombre: teacher.name,
         studentName: userExist.name,
         chapterTitle: taskExist.title,
-        deliveryDate: new Date().toLocaleString(),
+        deliveryDate: new Date(),
         stateDelivery: "Entregado",
       };
-   
+
       await sendEmailConfirmDelivery(
         "Confirmación de Entrega",
         teacher.email,
         templateVariables
       );
-
-      return res.status(200).json({
-        message: "Tarea de envío actualizada exitosamente",
-        debug: {
-          currentDate: currentDate.format("YYYY-MM-DD HH:mm:ss"),
-          taskStart: taskStart.format("YYYY-MM-DD HH:mm:ss"),
-          endTask: endTask.format("YYYY-MM-DD HH:mm:ss"),
-          currentTime: currentTime.format("HH:mm:ss"),
-          startTime: startTime.format("HH:mm:ss"),
-          endTime: endTime.format("HH:mm:ss"),
-        },
-      });
     }
 
-    // Crear nueva entrega
-    await TaskSubmission.create({
-      user_id,
-      task_id,
-      submission_complete: true,
-      date: new Date(),
+    return res.status(taskSubmissionExist ? 200 : 201).json({
+      message: taskSubmissionExist ? "Tarea de envío actualizada exitosamente" : "Tarea de envío creada exitosamente",
     });
 
-    res.status(201).json({
-      message: "Tarea de envío creada exitosamente",
-    });
   } catch (error) {
-    console.error("Error al crear la tarea de envío:", error);
+    console.error("Error al procesar la entrega de tarea:", error);
     res.status(500).json({
-      message: "Error en el servidor al crear la tarea de envío",
+      message: "Error en el servidor al procesar la entrega de la tarea",
       error: error.message,
     });
   }

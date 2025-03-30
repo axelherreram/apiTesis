@@ -165,7 +165,6 @@ const bulkUploadUsers = async (req, res) => {
         where: {
           student_id: existingUser.user_id,
           asigCourse_id, // Asegura que la asignación sea específica por sede y curso
-          year_id, // Agregamos el año actual para permitir múltiples inscripciones en años diferentes
         },
       });
 
@@ -186,7 +185,6 @@ const bulkUploadUsers = async (req, res) => {
         await CourseAssignment.create({
           student_id: existingUser.user_id,
           asigCourse_id, 
-          year_id,
         });
       }
     }

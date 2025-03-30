@@ -78,7 +78,6 @@ const sendEmailPassword = async (subject, to, templateVariables) => {
       from: process.env.EMAIL_USER,
       to: to,
       subject: subject,
-      text: text,
       html: htmlContent,
     };
 
@@ -99,7 +98,7 @@ const sendEmailPassword = async (subject, to, templateVariables) => {
  * @example
  * sendEmailTask('Task Notification', 'You have a new task.', 'user@example.com', { taskName: 'Math Homework' });
  */
-const sendEmailTask = async (subject, text, to, templateVariables) => {
+const sendEmailTask = async (subject, to, templateVariables) => {
   try {
     const templatePath = path.join(
       __dirname,
@@ -111,7 +110,6 @@ const sendEmailTask = async (subject, text, to, templateVariables) => {
       from: process.env.EMAIL_USER,
       to: to,
       subject: subject,
-      text: text,
       html: htmlContent,
     };
 

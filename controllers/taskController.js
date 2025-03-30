@@ -91,17 +91,33 @@ const createTask = async (req, res) => {
       });
     }
 
-    const assignedCourseId = courseSedeAssignment.course_id;
+    const asigCourse_id = courseSedeAssignment.asigCourse_id;
+
+    // 🔹 **Nueva validación**: Verificar si hay estudiantes asignados antes de crear la tarea
+    const studentsAndEmails = await User.findAll({
+      where: { rol_id: 1, sede_id },
+      include: [
+        {
+          model: CourseAssignment,
+          where: { asigCourse_id },
+        },
+      ],
+      attributes: ["user_id", "name", "email"],
+    });
+
+    if (studentsAndEmails.length === 0) {
+      return res.status(400).json({
+        message: "No se puede crear la tarea porque no hay estudiantes asignados al curso.",
+      });
+    }
 
     // Paso 7: Validar si el tipo de tarea es "Propuesta de tesis" y el curso no permite este tipo de tarea
-    if (typeTask_id === 1 && assignedCourseId === 2) {
+    if (typeTask_id === 1 && courseSedeAssignment.course_id === 2) {
       return res.status(404).json({
         message:
           "No se puede crear una tarea de propuesta de tesis en este curso.",
       });
     }
-
-    const asigCourse_id = courseSedeAssignment.asigCourse_id;
 
     // Paso 8: Validar si ya existe una tarea de tipo "Propuesta de tesis"
     if (typeTask_id === 1) {
@@ -130,83 +146,57 @@ const createTask = async (req, res) => {
       year_id,
     });
 
-    // Paso 10: Registrar actividad del usuario
-    /*     const user = await User.findByPk(user_id);
-    await logActivity(
-      user_id,
-      user.sede_id,
-      user.name,
-      `Nueva tarea con título: ${title}`,
-      "Creación de tarea"
-    ); */
-
-    // Paso 11: Obtener la tarea anterior
     const newTaskId = newTask.task_id;
 
-    if (newTaskId) {
-      // Paso 12 y 14: Obtener todos los estudiantes asignados al curso y enviar notificaciones
-      const studentsAndEmails = await User.findAll({
-        where: { rol_id: 1, sede_id, year_id },
-        include: [
-          {
-            model: CourseAssignment,
-            where: { asigCourse_id },
-          },
-        ],
-        attributes: ["user_id", "name", "email"],
-      });
-
-      // Validar si la tarea es "Propuesta de tesis", no crear los registros de TaskSubmissions
-      if (typeTask_id !== 1) {
-        // Paso 13: Asignar la nueva tarea a todos los estudiantes
-        for (const student of studentsAndEmails) {
-          await TaskSubmissions.create({
-            user_id: student.user_id,
-            task_id: newTaskId,
-            submission_complete: false,
-          });
-        }
-      }
-
-      for (const userEmail of studentsAndEmails) {
-         const templateVariables = {
-          nombre: userEmail.name,
-          titulo: title,
-          descripcion: description,
-          fecha: new Date().toLocaleString(),
-          autor: user.name,
-        };
-
-        await sendEmailTask(
-          "Nueva tarea creada: " + title,
-          `Se ha creado una nueva tarea en la plataforma MyOnlineProject con el título: ${title}`,
-          userEmail.email,
-          templateVariables
-        ); 
-
-        const course = await Course.findByPk(courseSedeAssignment.course_id);
-
-        await addTimeline(
-          userEmail.user_id,
-          "Tarea creada",
-          `Se ha creado una nueva tarea en el curso: ${course.courseName} con el título: ${title}`,
-          newTask.task_id
-        );
+    // Paso 10: Asignar la nueva tarea a todos los estudiantes (si no es propuesta de tesis)
+    if (typeTask_id === 2) {
+      for (const student of studentsAndEmails) {
+        await TaskSubmissions.create({
+          user_id: student.user_id,
+          task_id: newTaskId,
+          submission_complete: false,
+        });
       }
     }
 
-    // Paso 15: Enviar respuesta de éxito
+    // Paso 11: Enviar notificaciones a los estudiantes
+    for (const userEmail of studentsAndEmails) {
+      const templateVariables = {
+        nombre: userEmail.name,
+        titulo: title,
+        descripcion: description,
+        fecha: new Date().toLocaleString(),
+      };
+
+      await sendEmailTask(
+        "Nueva tarea creada: " + title,
+        userEmail.email,
+        templateVariables
+      );
+
+      const course = await Course.findByPk(courseSedeAssignment.course_id);
+
+      await addTimeline(
+        userEmail.user_id,
+        "Tarea creada",
+        `Se ha creado una nueva tarea en el curso: ${course.courseName} con el título: ${title}`,
+        newTask.task_id
+      );
+    }
+
+    // Paso 12: Respuesta de éxito
     res.status(201).json({
       message: "La tarea ha sido creada exitosamente.",
     });
   } catch (error) {
-    // Paso 16: Manejar errores y enviar respuesta de error
+    // Paso 13: Manejo de errores
     res.status(500).json({
       message: "Error al crear la tarea",
       error: error.message || error,
     });
   }
 };
+
 
 /**
  * The function `listTasks` retrieves tasks associated with a specific year, location, and user,
@@ -465,7 +455,8 @@ const listTasksByCourse = async (req, res) => {
  */
 const updateTask = async (req, res) => {
   const { task_id } = req.params;
-  const { title, description, taskStart, endTask, startTime, endTime } = req.body;
+  const { title, description, taskStart, endTask, startTime, endTime } =
+    req.body;
   const user_id = req.user_id;
   const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
 
@@ -550,7 +541,6 @@ const updateTask = async (req, res) => {
     });
   }
 };
-
 
 module.exports = {
   createTask,
