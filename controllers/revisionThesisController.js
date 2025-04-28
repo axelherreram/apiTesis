@@ -438,11 +438,7 @@ const getInforRevisionsByUserId = async (req, res) => {
         {
           model: AssignedReview,
           attributes: ["assigned_review_id", "date_assigned"], // Información de la asignación
-<<<<<<< HEAD
           required: false, 
-=======
-          required: false, // No es obligatorio que haya asignaciones
->>>>>>> bd5437b3ebd01d6d4bf266c5731577d7278ed87c
           include: [
             {
               model: User,
@@ -476,13 +472,9 @@ const getInforRevisionsByUserId = async (req, res) => {
           required: false,
         },
       ],
-<<<<<<< HEAD
       order: [[AssignedReview, "date_assigned", "DESC"]], // Corrección del ordenamiento
     });
     
-=======
-    });
->>>>>>> bd5437b3ebd01d6d4bf266c5731577d7278ed87c
 
     // Si no hay revisiones para el usuario
     if (revisions.length === 0) {
