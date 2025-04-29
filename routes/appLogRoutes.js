@@ -9,8 +9,9 @@ const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware"
 
 const router = express.Router();
 
-// Middleware para verificar el rol de administrador
-const admin = verifyRole([3,4 ]);
+// Middleware para verificar el rol de administrador, coordinador sede y coordinador general
+// (roles 3, 4 y 5 respectivamente)
+const allowed = verifyRole([3, 4, 5]);
 
 /**
  * @swagger
@@ -49,7 +50,7 @@ const admin = verifyRole([3,4 ]);
  *       500:
  *         description: Error en el servidor
  */
-router.get("/bitacoraxuser/:user_id", authMiddleware, admin, listLogsByUser);
+router.get("/bitacoraxuser/:user_id", authMiddleware, allowed, listLogsByUser);
 /**
  * @swagger
  * /api/bitacora/{sede_id}:
@@ -83,7 +84,7 @@ router.get("/bitacoraxuser/:user_id", authMiddleware, admin, listLogsByUser);
 router.get(
   "/bitacora/:sede_id",
   authMiddleware,
-  admin,
+  allowed,
   extractSedeIdMiddleware,
   listAllLogs
 );

@@ -13,7 +13,7 @@ const getUserIdToken = require("../middlewares/getUserIdToken");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
-const admin = verifyRole([3]);
+const admin = verifyRole([3, 5]);
 
 /**
  * @swagger

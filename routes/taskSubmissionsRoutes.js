@@ -11,9 +11,10 @@ const verifyRole = require("../middlewares/roleMiddleware");
 const getUserIdToken = require("../middlewares/getUserIdToken");
 const validateUser = require("../middlewares/validateUser");
 
-const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
+const admin = verifyRole([3, 5]); // Permitir solo a usuarios con rol de administrador
 const student = verifyRole([1]); // Permitir solo a usuarios con rol de estudiante
-const adminOrStudent = verifyRole([1, 3]); // Permitir solo a usuarios con rol de estudiante o administrador
+const adminOrStudent = verifyRole([1, 3, 5]); // Permitir solo a usuarios con rol de estudiante o administrador
+
 // Ruta para obtener detalles del curso
 /**
  * @swagger

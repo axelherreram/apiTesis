@@ -8,7 +8,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 const router = express.Router();
-const adminOrDecano = verifyRole([1,3]);
+const adminOrDecano = verifyRole([1,3, 5]);
 
 // Swagger: Obtener todos los eventos de un usuario
 /**

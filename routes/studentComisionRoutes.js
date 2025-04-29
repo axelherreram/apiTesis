@@ -6,7 +6,7 @@ const router = express.Router();
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
 
-const admin = verifyRole([3]);
+const admin = verifyRole([3, 5]);
 
 /**
  * @swagger

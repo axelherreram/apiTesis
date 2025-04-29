@@ -6,8 +6,8 @@ const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware"
 
 const router = express.Router();
 
-const admin = verifyRole([3]); // Solo Admin
-const decano = verifyRole([5]); // Solo Decano
+const admin = verifyRole([3, 5]); 
+const cordGeneral = verifyRole([5]);
 
 // Ruta para buscar estudiantes por carnet
 /**
@@ -157,7 +157,7 @@ router.get(
 router.get(
   "/students/search",
   authMiddleware, 
-  decano,
+  cordGeneral,
   searchController.searchStudentByCarnetWithoutSede
 );
 module.exports = router;

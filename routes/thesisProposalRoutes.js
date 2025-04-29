@@ -5,7 +5,7 @@ const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 
 const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
-const adminOrStudent = verifyRole([1, 3]); // Permitir solo a usuarios con rol de estudiante o administrador
+const adminOrStudent = verifyRole([1, 3, 5]); // Permitir solo a usuarios con rol de estudiante o administrador
 /**
  * @swagger
  * /api/thesis-submission/{thesisSubmissions_id}/{user_id}/update-approved-proposal:

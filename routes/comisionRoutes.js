@@ -10,7 +10,8 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
-const admin = verifyRole([3]); // Permitir solo a usuarios con rol de administrador
+// Middleware para verificar el rol de administrador y coordinador general
+const admin = verifyRole([3, 5]); 
 
 /**
  * @swagger

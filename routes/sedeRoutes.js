@@ -5,8 +5,8 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const getUserIdToken = require('../middlewares/getUserIdToken');
 
 const router = express.Router();
-const adminOrTerna = verifyRole([2, 3]);
-const superAdmin = verifyRole([4]);
+const adminOrTerna = verifyRole([2, 3, 5]);
+const superAdmin = verifyRole([4, 5]);
 
 /**
  * @swagger

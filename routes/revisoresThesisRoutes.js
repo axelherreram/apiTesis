@@ -10,7 +10,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const router = Router();
 
 // Middleware para verificar el rol de coordinador de tesis
-const cordThesis = verifyRole([6]);
+const cordThesis = verifyRole([5,6]);
 /**
  * @swagger
  * /api/reviewers:

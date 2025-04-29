@@ -14,8 +14,8 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const router = Router();
 
 // Middleware para verificar el rol de coordinador de tesis
-const cordThesis = verifyRole([6, 7]);
-const admin = verifyRole([3]);
+const cordThesis = verifyRole([5, 6, 7]);
+const allowed = verifyRole([3, 5]);
 
 /**
  * @swagger
@@ -65,7 +65,7 @@ const admin = verifyRole([3]);
 router.post(
   "/revision-thesis",
   authMiddleware,
-  admin,
+  allowed,
   uploadFilesMiddleware,
   uploadRevisionThesis
 );

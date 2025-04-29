@@ -11,7 +11,8 @@ const getUserIdToken = require("../middlewares/getUserIdToken");
 const verifyRole = require("../middlewares/roleMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
-const coordinador_sede = verifyRole([4]); // Solo Admin
+// Middleware para verificar el rol de coordinador de sede y coordinador general
+const allowed = verifyRole([4,5]); 
 /**
  * @swagger
  * tags:
@@ -52,7 +53,7 @@ const coordinador_sede = verifyRole([4]); // Solo Admin
 router.get(
   "/professors",
   authMiddleware,
-  coordinador_sede,
+  allowed,
   extractSedeIdMiddleware,
   listProfessors
 );
@@ -96,7 +97,7 @@ router.get(
 router.get(
   "/professors/activos",
   authMiddleware,
-  coordinador_sede,
+  allowed,
   extractSedeIdMiddleware,
   listActiveProfessors
 );
@@ -146,7 +147,7 @@ router.get(
 router.patch(
   "/professors/:user_id/active",
   authMiddleware,
-  coordinador_sede,
+  allowed,
   extractSedeIdMiddleware,
   updateProfessorStatus
 );
@@ -207,7 +208,7 @@ router.post(
   "/create/professor",
   authMiddleware,
   getUserIdToken,
-  coordinador_sede,
+  allowed,
   extractSedeIdMiddleware,
   createProfessor
 );
