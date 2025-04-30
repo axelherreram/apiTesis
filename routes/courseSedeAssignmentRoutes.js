@@ -12,6 +12,7 @@ const router = express.Router();
 
 // Middleware para verificar el rol de coordinador de sede y coordinador general
 const coordinador_sede = verifyRole([4, 5]);
+
 const adminOrSuperadmin = verifyRole([1, 3, 4, 5]);
 
 /**
