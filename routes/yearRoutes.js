@@ -4,9 +4,6 @@ const { listYears } = require("../controllers/yearController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 
-// Verificar si el usuario tiene el rol de admin (rol_id: 3)
-const adminOrSuper = verifyRole([3]);
-
 /**
  * @swagger
  * tags:
@@ -39,6 +36,6 @@ const adminOrSuper = verifyRole([3]);
  *       500:
  *         description: Error en el servidor al obtener los años
  */
-router.get("/years", authMiddleware, adminOrSuper, listYears);
+router.get("/years", authMiddleware, listYears);
 
 module.exports = router;

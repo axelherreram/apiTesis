@@ -34,24 +34,6 @@ const createSedeAssignment = async (req, res) => {
       });
     }
 
-    // Obtener el año y mes actual
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
-
-    // Validar que PG1 solo se pueda asignar en los primeros 6 meses y PG2 en los otros 6 meses
-    if (
-      (course_id === 1 && currentMonth > 6) ||
-      (course_id === 2 && currentMonth <= 6)
-    ) {
-      return res.status(400).json({
-        message:
-          course_id === 1
-            ? "PG1 solo se puede asignar en los primeros 6 meses del año."
-            : "PG2 solo se puede asignar en los últimos 6 meses del año.",
-      });
-    }
-
     // Obtener el año actual y la sede de manera más eficiente
     const [yearRecord, course, sede] = await Promise.all([
       Year.findOrCreate({
