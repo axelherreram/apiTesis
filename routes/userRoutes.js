@@ -7,10 +7,10 @@ const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware"
 
 const router = express.Router();
 
-const adminOrTerna = verifyRole([2, 3]); // Roles permitidos: Terna (2), Admin (3)
+const adminOrTerna = verifyRole([2, 3, 5]); // Roles permitidos: Terna (2), Admin (3)
 const admin = verifyRole([3]); // Solo Admin
-const coordinador_sede = verifyRole([4]); // Solo Admin
-const adminOrSuperAdmin = verifyRole([3, 4]); // Solo Admin
+const coordinador_sede = verifyRole([4, 5]); // Solo Admin
+const adminOrSuperAdmin = verifyRole([3, 4, 5]); // Solo Admin
 
 /**
  * @swagger

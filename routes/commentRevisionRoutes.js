@@ -6,7 +6,9 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 const router = express.Router();
 const getUseridMiddleware = require('../middlewares/getUserIdToken');
-const cordThesis = verifyRole([6, 7]);
+
+// Middleware para verificar el rol de coordinador de tesis y coordinador general
+const cordThesis = verifyRole([5, 6, 7]);
 
 /**
  * @swagger

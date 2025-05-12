@@ -4,7 +4,7 @@ const verifyRole = require('../middlewares/roleMiddleware');
 const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
-const adminOrTerna = verifyRole([3]);
+const adminOrTerna = verifyRole([3, 5]);
 
 /**
  * @swagger

@@ -26,6 +26,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const { sequelize } = require('./config/database'); 
+const associateModels = require("./models/asociaciones");
 const authRoutes = require('./routes/authRoutes');
 const { swaggerUi, swaggerDocs } = require('./docs/swagger'); 
 const userRoutes = require('./routes/userRoutes');
@@ -66,6 +67,8 @@ require('dotenv').config();
 const app = express();
 
 
+// Asociar modelos
+associateModels();
 
 // Configurar CORS
 const allowedOrigins = [

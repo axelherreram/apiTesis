@@ -8,9 +8,9 @@ const {
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 
-// Middleware para verificar el rol de coordinador de tesis
-const cordThesis = verifyRole([6]);
-const reviewAndCord = verifyRole([6, 7]);
+// Middleware para verificar el rol de coordinador de tesis, Y coordinador general
+const cordThesis = verifyRole([5, 6]);
+const reviewAndCord = verifyRole([5, 6, 7]);
 
 /**
  * @swagger
@@ -21,7 +21,7 @@ const reviewAndCord = verifyRole([6, 7]);
  *     tags:
  *       - Asignación de Revisiones
  *     security:
- *       - bearerAuth: []  
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -131,8 +131,6 @@ router.get(
   getAssignedReviewsByUser
 );
 
-
-
 /**
  * @swagger
  * /api/assigned-review/history/{user_id}:
@@ -232,6 +230,5 @@ router.get(
   reviewAndCord,
   getReviewHistoryByUser
 );
-
 
 module.exports = router;

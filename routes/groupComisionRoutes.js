@@ -8,7 +8,7 @@ const authMiddleware = require("../middlewares/authMiddleware"); // JWT middlewa
 const verifyRole = require("../middlewares/roleMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
-const admin = verifyRole([3]);
+const admin = verifyRole([3, 5]);
 /**
  * @swagger
  * tags:

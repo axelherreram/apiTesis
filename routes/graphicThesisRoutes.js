@@ -8,7 +8,7 @@ const {
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 
-const cordThesis = verifyRole([6]);
+const cordThesis = verifyRole([5, 6]);
 
 /**
  * @swagger
@@ -210,9 +210,8 @@ router.get(
 router.get(
   "/revision-thesis/statistics-by-date-range",
   authMiddleware,
-  cordThesis, 
+  cordThesis,
   getRevisionStatisticsByDateRange
 );
 
 module.exports = router;
-
