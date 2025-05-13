@@ -40,7 +40,7 @@ const listSede = async (req, res) => {
  */
 const createSede = async (req, res) => {
   try {
-    const { nameSede } = req.body;
+    const { nameSede, address } = req.body;
     const user_id = req.user_id;
 
     if (!nameSede) {
@@ -60,7 +60,7 @@ const createSede = async (req, res) => {
     const user = await User.findByPk(user_id);
 
     // Crear la nueva sede
-    await Sede.create({ nameSede });
+    await Sede.create({ nameSede, address });
 
     res.status(201).json({ message: "Sede creada satisfactoriamente" });
   } catch (error) {
@@ -85,7 +85,7 @@ const createSede = async (req, res) => {
 const editSede = async (req, res) => {
   try {
     const { sede_id } = req.params;
-    const { nameSede } = req.body;
+    const { nameSede, address } = req.body;
 
     if (!nameSede) {
       return res
@@ -101,6 +101,7 @@ const editSede = async (req, res) => {
 
     // Actualizar el nombre de la sede
     sede.nameSede = nameSede;
+    sede.address = address || sede.address; // Update address if provided
     await sede.save();
 
     res.status(200).json({ message: "Sede actualizada satisfactoriamente" });

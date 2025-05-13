@@ -267,6 +267,11 @@ const swaggerOptions = {
               description: "Nombre de la sede",
               example: "Sede Centro",
             },
+            address: {
+              type: "string",
+              description: "Dirección de la sede",
+              example: "Calle Principal, Ciudad",
+            },
           },
           required: ["nameSede"],
         },

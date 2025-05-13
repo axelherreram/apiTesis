@@ -15,10 +15,10 @@ module.exports = {
         allowNull: false,
         unique: true,
       },
-      // address: {
-      //   type: Sequelize.STRING,
-      //   allowNull: true,
-      // },
+       address: {
+         type: Sequelize.STRING,
+         allowNull: true,
+       },
     });
   },
 

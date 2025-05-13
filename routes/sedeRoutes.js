@@ -5,8 +5,7 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const getUserIdToken = require('../middlewares/getUserIdToken');
 
 const router = express.Router();
-const adminOrTerna = verifyRole([2, 3, 5]);
-const superAdmin = verifyRole([4, 5]);
+const superAdmin = verifyRole([5]);
 
 /**
  * @swagger
@@ -84,6 +83,10 @@ const superAdmin = verifyRole([4, 5]);
  *                 type: string
  *                 example: "Nueva Sede"
  *                 description: Nuevo nombre de la sede
+ *               address:
+ *                 type: string
+ *                 example: "Calle Falsa 123"
+ *                 description: Nueva dirección de la sede
  *     responses:
  *       200:
  *         description: Sede actualizada satisfactoriamente.
