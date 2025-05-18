@@ -51,6 +51,8 @@ const thesisSubmissionsRoutes = require('./routes/thesisSubmissionsRoutes');
 const TaskSubmissionRoutes = require('./routes/taskSubmissionsRoutes'); 
 const GraphicsRoutes = require('./routes/graphicRoutes'); 
 const notificationRoutes = require('./routes/notificationRoutes');
+const updateNoteRoutes = require('./routes/updateNoteRoutes');
+const rateLimit = require('express-rate-limit');
 
 const RevisoresThesisRoutes = require('./routes/revisoresThesisRoutes');
 const RevisionThesisRoutes = require('./routes/revisionThesisRoutes');
@@ -66,6 +68,17 @@ require('dotenv').config();
 
 const app = express();
 
+// Configure rate limiter
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
+
+// Apply rate limiting to all routes
+app.use(limiter);
 
 // Asociar modelos
 associateModels();
@@ -142,6 +155,7 @@ app.use('/api', RevisionThesisRoutes);
 app.use('/api', AssignedReviewRoutes);
 app.use('/api', GraphicThesisRoutes);
 app.use('/api', CommentRevision);
+app.use('/api', updateNoteRoutes)
 
 // Sincronizar la base de datos y arrancar el servidor
 sequelize.sync({ alter: false, force: false })
