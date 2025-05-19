@@ -68,7 +68,7 @@ require('dotenv').config();
 
 const app = express();
 
-// Configure rate limiter
+/* // Configure rate limiter
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
@@ -78,7 +78,7 @@ const limiter = rateLimit({
 });
 
 // Apply rate limiting to all routes
-app.use(limiter);
+app.use(limiter); */
 
 // Asociar modelos
 associateModels();
