@@ -52,6 +52,7 @@ const TaskSubmissionRoutes = require('./routes/taskSubmissionsRoutes');
 const GraphicsRoutes = require('./routes/graphicRoutes'); 
 const notificationRoutes = require('./routes/notificationRoutes');
 const updateNoteRoutes = require('./routes/updateNoteRoutes');
+const createCorSedeRoutes = require('./routes/createCorSedeRoutes');
 const rateLimit = require('express-rate-limit');
 
 const RevisoresThesisRoutes = require('./routes/revisoresThesisRoutes');
@@ -155,7 +156,8 @@ app.use('/api', RevisionThesisRoutes);
 app.use('/api', AssignedReviewRoutes);
 app.use('/api', GraphicThesisRoutes);
 app.use('/api', CommentRevision);
-app.use('/api', updateNoteRoutes)
+app.use('/api', updateNoteRoutes);
+app.use('/api', createCorSedeRoutes);
 
 // Sincronizar la base de datos y arrancar el servidor
 sequelize.sync({ alter: false, force: false })
