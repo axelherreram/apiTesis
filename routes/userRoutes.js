@@ -246,51 +246,66 @@ router.put(
 
 /**
  * @swagger
- * /api/admins:
+ * /api/admins/{sede_id}:
  *   get:
- *     summary: Listar todos los administradores registrados
+ *     summary: Listar todos los administradores registrados de una sede específica
  *     tags: [Administradores]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: sede_id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID de la sede
  *     responses:
  *       200:
  *         description: Lista de administradores obtenida exitosamente
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   user_id:
- *                     type: integer
- *                   email:
- *                     type: string
- *                   name:
- *                     type: string
- *                   carnet:
- *                     type: string
- *                   sede:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 admins:
+ *                   type: array
+ *                   items:
  *                     type: object
  *                     properties:
- *                       sede_id:
+ *                       user_id:
  *                         type: integer
- *                       nombre:
+ *                       email:
  *                         type: string
- *                   profilePhoto:
- *                     type: string
- *                     nullable: true
+ *                       name:
+ *                         type: string
+ *                       carnet:
+ *                         type: string
+ *                       sede:
+ *                         type: object
+ *                         properties:
+ *                           sede_id:
+ *                             type: integer
+ *                           nombre:
+ *                             type: string
+ *                       profilePhoto:
+ *                         type: string
+ *                         nullable: true
  *       401:
  *         description: No autorizado
+ *       403:
+ *         description: No tienes acceso a los administradores de esta sede
  *       404:
- *         description: No se encontraron administradores
+ *         description: No se encontraron administradores en esta sede
  *       500:
  *         description: Error en el servidor
  */
 router.get(
-  "/admins",
+  "/admins/:sede_id",
   authMiddleware, 
   coordinador_sede, 
+  extractSedeIdMiddleware,
   userController.listAllAdmins 
 );
 

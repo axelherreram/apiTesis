@@ -378,9 +378,22 @@ const removeAdmin = async (req, res) => {
  * with an error message.
  */
 const listAllAdmins = async (req, res) => {
+  const { sede_id } = req.params;
+  const { sede_id: tokenSedeId } = req;
+
   try {
+    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res
+        .status(403)
+        .json({ message: "No tienes acceso a los administradores de esta sede" });
+    }
+
     const admins = await User.findAll({
-      where: { rol_id: 3 },
+      where: { 
+        rol_id: 3,
+        sede_id: sede_id 
+      },
       include: [
         {
           model: Sede,
@@ -395,7 +408,7 @@ const listAllAdmins = async (req, res) => {
     if (!admins || admins.length === 0) {
       return res
         .status(404)
-        .json({ message: "No se encontraron administradores." });
+        .json({ message: "No se encontraron administradores en esta sede." });
     }
 
     // Respuesta formateada directamente
