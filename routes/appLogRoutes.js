@@ -6,6 +6,7 @@ const {
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
+const getUserIdToken = require("../middlewares/getUserIdToken");
 
 const router = express.Router();
 
@@ -86,6 +87,7 @@ router.get(
   authMiddleware,
   allowed,
   extractSedeIdMiddleware,
+  getUserIdToken,
   listAllLogs
 );
 
