@@ -99,7 +99,7 @@ const createCorSede = async (req, res) => {
     const hashedPassword = await bcrypt.hash(randomPassword, salt);
 
     // Create user
-    const newUser = await User.create({
+    await User.create({
       name,
       email,
       carnet,
@@ -108,29 +108,9 @@ const createCorSede = async (req, res) => {
       password: hashedPassword
     });
 
-    // Get all courses
-    const courses = await Course.findAll();
-
-    // Create course-sede assignments for each course
-    for (const course of courses) {
-      await CourseSedeAssignment.create({
-        course_id: course.course_id,
-        sede_id,
-        year_id: yearRecord.year_id,
-        courseActive: true
-      });
-    }
 
     res.status(201).json({
-      message: "Usuario y asignaciones de curso creados exitosamente",
-      user: {
-        user_id: newUser.user_id,
-        name: newUser.name,
-        email: newUser.email,
-        carnet: newUser.carnet,
-        sede_id: newUser.sede_id
-      },
-      temporaryPassword: randomPassword // Include the temporary password in the response
+      message: "Coordinador creado exitosamente ",
     });
 
   } catch (error) {
