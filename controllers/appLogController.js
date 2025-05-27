@@ -21,21 +21,48 @@ const User = require("../models/user");
 const listAllLogs = async (req, res) => {
   const { sede_id: requestSedeId } = req.params; // Sede desde el parámetro de la solicitud
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
+  const user_id = req.user_id; // ID del usuario que hace la solicitud
 
   try {
-    // Validar si la sede del token coincide con la sede de la solicitud
-    if (parseInt(requestSedeId, 10) !== parseInt(tokenSedeId, 10)) {
-      return res.status(403).json({
-        message: "No tienes permiso para acceder a los registros de esta sede.",
+    // Obtener el usuario solicitante para verificar su rol
+    const requestingUser = await User.findOne({
+      where: { user_id },
+      include: [
+        {
+          model: Roles,
+          as: "role",
+          attributes: ["name"],
+        },
+      ],
+    });
+
+    if (!requestingUser) {
+      return res.status(404).json({
+        message: "No se encontró el usuario solicitante.",
       });
     }
 
+    // Solo validar acceso a sede si el rol no es 5 (coordinador general)
+    if (requestingUser.rol_id !== 5) {
+      // Validar si la sede del token coincide con la sede de la solicitud
+      if (parseInt(requestSedeId, 10) !== parseInt(tokenSedeId, 10)) {
+        return res.status(403).json({
+          message: "No tienes permiso para acceder a los registros de esta sede.",
+        });
+      }
+    }
+
+    // Construir la condición where basada en el rol
+    const whereCondition = requestingUser.rol_id === 5 
+      ? {} // Coordinador general ve todos los logs
+      : { sede_id: requestSedeId }; // Otros roles solo ven logs de su sede
+
     const logs = await AppLog.findAndCountAll({
-      where: { sede_id: requestSedeId },
+      where: whereCondition,
       include: [
         {
           model: User,
-          attributes: ["name", "rol_id"],
+          attributes: ["name", "rol_id", "sede_id"],
           include: [
             {
               model: Roles,
@@ -46,12 +73,12 @@ const listAllLogs = async (req, res) => {
         },
       ],
       order: [["date", "DESC"]],
-      limmit: 100,
+      limit: 100,
     });
 
-    if (!logs || logs.length === 0) {
+    if (!logs || logs.rows.length === 0) {
       return res.status(404).json({
-        message: "No se encontraron entradas de bitácora para esta sede.",
+        message: "No se encontraron entradas de bitácora.",
       });
     }
 
@@ -63,11 +90,13 @@ const listAllLogs = async (req, res) => {
       action: log.action,
       description: log.details,
       date: log.date,
+      sede_id: log.User.sede_id, // Incluir sede_id en la respuesta
     }));
 
     res.json({
       message: "Lista completa de bitácoras",
       logs: formattedLogs,
+      total: logs.count,
     });
   } catch (err) {
     console.error("Error al listar todas las bitácoras:", err);

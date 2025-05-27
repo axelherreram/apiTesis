@@ -125,7 +125,7 @@ const bulkUploadUsers = async (req, res) => {
 
       // Convertir el nombre a mayúsculas
       const nameUpper = nombre.toUpperCase();
-
+      const carnetLimpio = user.carnet.replace(/\s+/g, ""); // Elimina espacios del carnet
       // Paso 11: Verificar si el usuario ya existe
       let existingUser = await User.findOne({ where: { email } });
 
@@ -144,7 +144,7 @@ const bulkUploadUsers = async (req, res) => {
           email,
           password: hashedPassword,
           name: nameUpper,
-          carnet,
+          carnet: carnetLimpio,
           rol_id: 1, // Rol de estudiante
           sede_id,
           year_id,

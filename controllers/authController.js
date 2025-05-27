@@ -136,8 +136,8 @@ const loginUser = async (req, res) => {
       { expiresIn: "1h" } // Token expiration time
     );
 
-    // Log activity if the user is not a student (role_id !== 4 and role_id !== 6)
-    if (user.role_id !== 4 || user.role_id !== 6) {
+    // Log activity only for roles that are not 3, 4, or 5
+    if (![3, 4, 5].includes(user.rol_id)) {
       await logActivity(
         user.user_id,
         user.sede_id,

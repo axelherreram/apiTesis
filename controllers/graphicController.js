@@ -130,18 +130,33 @@ const dataGraphics = async (req, res) => {
         .status(403)
         .json({ message: "No tienes acceso a los grupos de esta sede" });
     }
-    // Total de revisiones aprobadas
+
+    // Total de revisiones aprobadas para la sede específica
     const totalApprovedRevisions = await ApprovalThesis.count({
-      where: { status: "approved" },
+      where: { 
+        status: "approved",
+        sede_id: sede_id 
+      },
     });
 
     const totalInRevisions = await ApprovalThesis.count({
-      where: { status: "in revision" },
+      where: { 
+        status: "in revision",
+        sede_id: sede_id 
+      },
     });
 
-    const totalStudents = await User.count({ where: { rol_id: 1 } });
+    // Total de estudiantes en la sede específica
     const totalStudentsSede = await User.count({
-      where: { rol_id: 1, sede_id },
+      where: { 
+        rol_id: 1, 
+        sede_id: sede_id 
+      },
+    });
+
+    // Total de estudiantes en todas las sedes
+    const totalStudents = await User.count({ 
+      where: { rol_id: 1 } 
     });
 
     res.status(200).json({

@@ -26,6 +26,11 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
+      note: {
+        type: Sequelize.FLOAT,
+        allowNull: true,
+        defaultValue: null,
+      }
     });
   },
 

@@ -29,13 +29,22 @@ const getUsersByCourse = async (req, res) => {
   const user_id = req.user_id;
   const { sede_id: tokenSedeId } = req;
   try {
-    // Verificar si el año existe
-
-    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
-    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+    // Obtener el usuario solicitante para verificar su rol
+    const requestingUser = await User.findByPk(user_id);
+    if (!requestingUser) {
       return res
-        .status(403)
-        .json({ message: "No tienes acceso a los grupos de esta sede" });
+        .status(404)
+        .json({ message: "No se encontró el usuario solicitante" });
+    }
+
+    // Solo validar acceso a sede si el rol no es 5
+    if (requestingUser.rol_id !== 5) {
+      // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+      if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+        return res
+          .status(403)
+          .json({ message: "No tienes acceso a los grupos de esta sede" });
+      }
     }
 
     const yearRecord = await Year.findOne({ where: { year } });
@@ -103,14 +112,6 @@ const getUsersByCourse = async (req, res) => {
       return res
         .status(404)
         .json({ message: "No se encontró el curso especificado" });
-    }
-
-    // Usuario solicitante
-    const requestingUser = await User.findByPk(user_id);
-    if (!requestingUser) {
-      return res
-        .status(404)
-        .json({ message: "No se encontró el usuario solicitante" });
     }
 
     /*     // Registrar actividad
@@ -377,9 +378,22 @@ const removeAdmin = async (req, res) => {
  * with an error message.
  */
 const listAllAdmins = async (req, res) => {
+  const { sede_id } = req.params;
+  const { sede_id: tokenSedeId } = req;
+
   try {
+    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+      return res
+        .status(403)
+        .json({ message: "No tienes acceso a los administradores de esta sede" });
+    }
+
     const admins = await User.findAll({
-      where: { rol_id: 3 },
+      where: { 
+        rol_id: 3,
+        sede_id: sede_id 
+      },
       include: [
         {
           model: Sede,
@@ -394,7 +408,7 @@ const listAllAdmins = async (req, res) => {
     if (!admins || admins.length === 0) {
       return res
         .status(404)
-        .json({ message: "No se encontraron administradores." });
+        .json({ message: "No se encontraron administradores en esta sede." });
     }
 
     // Respuesta formateada directamente
