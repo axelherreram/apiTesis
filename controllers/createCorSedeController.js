@@ -12,7 +12,8 @@ const bcrypt = require("bcryptjs");
  * @returns {string} Random password
  */
 const generateRandomPassword = (length = 8) => {
-  const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+  const charset =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
   let password = "";
   for (let i = 0; i < length; i++) {
     const randomIndex = Math.floor(Math.random() * charset.length);
@@ -34,7 +35,8 @@ const createCorSede = async (req, res) => {
     // Validate required fields
     if (!name || !email || !carnet || !sede_id) {
       return res.status(400).json({
-        message: "Todos los campos son obligatorios (name, email, carnet, sede_id)"
+        message:
+          "Todos los campos son obligatorios (name, email, carnet, sede_id)",
       });
     }
 
@@ -42,7 +44,7 @@ const createCorSede = async (req, res) => {
     const emailDomain = "@miumg.edu.gt";
     if (!email.endsWith(emailDomain)) {
       return res.status(400).json({
-        message: `El correo debe pertenecer al dominio ${emailDomain}`
+        message: `El correo debe pertenecer al dominio ${emailDomain}`,
       });
     }
 
@@ -50,7 +52,7 @@ const createCorSede = async (req, res) => {
     const sede = await Sede.findByPk(sede_id);
     if (!sede) {
       return res.status(404).json({
-        message: "La sede especificada no existe"
+        message: "La sede especificada no existe",
       });
     }
 
@@ -58,29 +60,26 @@ const createCorSede = async (req, res) => {
     const existingUserInSede = await User.findOne({
       where: {
         sede_id,
-        rol_id: 4 // Verificar que sea un coordinador de sede
-      }
+        rol_id: 4, // Verificar que sea un coordinador de sede
+      },
     });
 
     if (existingUserInSede) {
       return res.status(409).json({
-        message: "Ya existe un coordinador asignado a esta sede"
+        message: "Ya existe un coordinador asignado a esta sede",
       });
     }
 
     // Check if user already exists (by email or carnet)
     const existingUser = await User.findOne({
       where: {
-        [Op.or]: [
-          { email },
-          { carnet }
-        ]
-      }
+        [Op.or]: [{ email }, { carnet }],
+      },
     });
 
     if (existingUser) {
       return res.status(409).json({
-        message: "Ya existe un usuario con este correo o carnet"
+        message: "Ya existe un usuario con este correo o carnet",
       });
     }
 
@@ -88,12 +87,12 @@ const createCorSede = async (req, res) => {
     const currentYear = new Date().getFullYear();
     const [yearRecord] = await Year.findOrCreate({
       where: { year: currentYear },
-      defaults: { year: currentYear }
+      defaults: { year: currentYear },
     });
 
     // Generate random password
     const randomPassword = generateRandomPassword(12);
-    
+
     // Hash the password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(randomPassword, salt);
@@ -105,19 +104,17 @@ const createCorSede = async (req, res) => {
       carnet,
       sede_id,
       rol_id: 4,
-      password: hashedPassword
+      password: hashedPassword,
     });
-
 
     res.status(201).json({
       message: "Coordinador creado exitosamente ",
     });
-
   } catch (error) {
     console.error("Error al crear usuario y asignaciones:", error);
     res.status(500).json({
       message: "Error al crear usuario y asignaciones",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -132,23 +129,25 @@ const listSedeCoordinators = async (req, res) => {
   try {
     const coordinators = await User.findAll({
       where: { rol_id: 4 },
-      include: [{
-        model: Sede,
-        as: 'location',
-        attributes: ['nameSede']
-      }],
-      attributes: ['user_id', 'name', 'email', 'carnet', 'sede_id']
+      include: [
+        {
+          model: Sede,
+          as: "location",
+          attributes: ["nameSede"],
+        },
+      ],
+      attributes: ["user_id", "name", "email", "carnet", "sede_id"],
     });
 
     res.status(200).json({
       message: "Coordinadores de sede recuperados exitosamente",
-      data: coordinators
+      data: coordinators,
     });
   } catch (error) {
     console.error("Error al listar coordinadores de sede:", error);
     res.status(500).json({
       message: "Error al listar coordinadores de sede",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -166,7 +165,7 @@ const removeSedeCoordinator = async (req, res) => {
     // Validate required fields
     if (!user_id || !sede_id) {
       return res.status(400).json({
-        message: "Se requieren user_id y sede_id"
+        message: "Se requieren user_id y sede_id",
       });
     }
 
@@ -174,7 +173,7 @@ const removeSedeCoordinator = async (req, res) => {
     const sede = await Sede.findByPk(sede_id);
     if (!sede) {
       return res.status(404).json({
-        message: "La sede especificada no existe"
+        message: "La sede especificada no existe",
       });
     }
 
@@ -183,13 +182,14 @@ const removeSedeCoordinator = async (req, res) => {
       where: {
         user_id,
         rol_id: 4,
-        sede_id
-      }
+        sede_id,
+      },
     });
 
     if (!user) {
       return res.status(404).json({
-        message: "No se encontró un coordinador de sede con los datos proporcionados"
+        message:
+          "No se encontró un coordinador de sede con los datos proporcionados",
       });
     }
 
@@ -197,13 +197,13 @@ const removeSedeCoordinator = async (req, res) => {
     await user.update({ sede_id: null });
 
     res.status(200).json({
-      message: "Coordinador de sede removido exitosamente"
+      message: "Coordinador de sede removido exitosamente",
     });
   } catch (error) {
     console.error("Error al remover coordinador de sede:", error);
     res.status(500).json({
       message: "Error al remover coordinador de sede",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -221,7 +221,7 @@ const assignSedeCoordinator = async (req, res) => {
     // Validate required fields
     if (!user_id || !sede_id) {
       return res.status(400).json({
-        message: "Se requieren user_id y sede_id"
+        message: "Se requieren user_id y sede_id",
       });
     }
 
@@ -229,7 +229,7 @@ const assignSedeCoordinator = async (req, res) => {
     const sede = await Sede.findByPk(sede_id);
     if (!sede) {
       return res.status(404).json({
-        message: "La sede especificada no existe"
+        message: "La sede especificada no existe",
       });
     }
 
@@ -237,13 +237,14 @@ const assignSedeCoordinator = async (req, res) => {
     const user = await User.findOne({
       where: {
         user_id,
-        rol_id: 4
-      }
+        rol_id: 4,
+      },
     });
 
     if (!user) {
       return res.status(404).json({
-        message: "No se encontró un coordinador de sede con el ID proporcionado"
+        message:
+          "No se encontró un coordinador de sede con el ID proporcionado",
       });
     }
 
@@ -251,13 +252,13 @@ const assignSedeCoordinator = async (req, res) => {
     const existingCoordinator = await User.findOne({
       where: {
         sede_id,
-        rol_id: 4
-      }
+        rol_id: 4,
+      },
     });
 
     if (existingCoordinator) {
       return res.status(409).json({
-        message: "La sede ya tiene un coordinador asignado"
+        message: "La sede ya tiene un coordinador asignado",
       });
     }
 
@@ -265,13 +266,13 @@ const assignSedeCoordinator = async (req, res) => {
     await user.update({ sede_id });
 
     res.status(200).json({
-      message: "Coordinador de sede asignado exitosamente"
+      message: "Coordinador de sede asignado exitosamente",
     });
   } catch (error) {
     console.error("Error al asignar coordinador de sede:", error);
     res.status(500).json({
       message: "Error al asignar coordinador de sede",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -280,5 +281,5 @@ module.exports = {
   createCorSede,
   listSedeCoordinators,
   removeSedeCoordinator,
-  assignSedeCoordinator
-}; 
+  assignSedeCoordinator,
+};
