@@ -236,17 +236,6 @@ const createProfessor = async (req, res) => {
       });
     }
 
-    // Validar formato del código (carnet)
-    if (carnet) {
-      const carnetRegex = /^\d{4}-\d{2}-\d{4,6}$/; // Ejemplo válido: 2024-01-1234
-      if (!carnetRegex.test(carnet)) {
-        return res.status(400).json({
-          title: "Error",
-          message: "Carnet inválido, ingrese codigo completo",
-        });
-      }
-    }
-
     const currentYear = new Date().getFullYear();
 
     // Verificar si el año proporcionado es mayor al año actual
