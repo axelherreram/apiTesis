@@ -27,9 +27,9 @@ const crypto = require("crypto");
 const getUsersByCourse = async (req, res) => {
   const { sede_id, course_id, year } = req.params;
   const user_id = req.user_id;
-  const { sede_id: tokenSedeId } = req;
+  //const { sede_id: tokenSedeId } = req;
   try {
-    // Obtener el usuario solicitante para verificar su rol
+    /*     // Obtener el usuario solicitante para verificar su rol
     const requestingUser = await User.findByPk(user_id);
     if (!requestingUser) {
       return res
@@ -46,7 +46,7 @@ const getUsersByCourse = async (req, res) => {
           .json({ message: "No tienes acceso a los grupos de esta sede" });
       }
     }
-
+ */
     const yearRecord = await Year.findOne({ where: { year } });
     if (!yearRecord) {
       return res.status(404).json({ message: "El año especificado no existe" });
@@ -99,6 +99,7 @@ const getUsersByCourse = async (req, res) => {
         user_id: user.user_id,
         email: user.email,
         userName: user.name,
+        sede_id: user.sede_id,
         profilePhoto: user.profilePhoto
           ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
           : null,
@@ -207,7 +208,9 @@ const createAdmin = async (req, res) => {
   const { sede_id } = req;
 
   if (!email || !name || !carnet || !sede_id) {
-    return res.status(400).json({ message: "Todos los campos son obligatorios." });
+    return res
+      .status(400)
+      .json({ message: "Todos los campos son obligatorios." });
   }
 
   try {
@@ -225,37 +228,51 @@ const createAdmin = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({ where: { [Op.or]: [{ email }, { carnet }] } });
-    
+    const existingUser = await User.findOne({
+      where: { [Op.or]: [{ email }, { carnet }] },
+    });
+
     if (existingUser) {
       if (existingUser.sede_id === sede_id) {
         if (existingUser.rol_id !== 3) {
           await existingUser.update({ rol_id: 3 });
           return res.status(200).json({
-            message: "El usuario ya existía y se actualizó su rol a administrador.",
+            message:
+              "El usuario ya existía y se actualizó su rol a administrador.",
           });
         }
-        return res.status(400).json({ message: "El usuario ya es administrador en esta sede." });
+        return res
+          .status(400)
+          .json({ message: "El usuario ya es administrador en esta sede." });
       }
-      return res.status(400).json({ message: "El correo o carnet ya está registrado en otra sede." });
+      return res
+        .status(400)
+        .json({
+          message: "El correo o carnet ya está registrado en otra sede.",
+        });
     }
 
     const sede = await Sede.findByPk(sede_id);
     if (!sede) {
-      return res.status(404).json({ message: "La sede especificada no existe." });
+      return res
+        .status(404)
+        .json({ message: "La sede especificada no existe." });
     }
 
     const adminCount = await User.count({ where: { rol_id: 3, sede_id } });
     if (adminCount >= 3) {
       return res.status(400).json({
-        message: "Ya existen 3 administradores en esta sede. No se puede agregar más.",
+        message:
+          "Ya existen 3 administradores en esta sede. No se puede agregar más.",
       });
     }
 
     const password = crypto.randomBytes(8).toString("hex");
     const hashedPassword = await bcrypt.hash(password, 10);
     const currentYear = new Date().getFullYear();
-    const [yearRecord] = await Year.findOrCreate({ where: { year: currentYear } });
+    const [yearRecord] = await Year.findOrCreate({
+      where: { year: currentYear },
+    });
 
     const admin = await User.create({
       email,
@@ -268,7 +285,7 @@ const createAdmin = async (req, res) => {
     });
 
     try {
-   /*      await sendEmailPassword(
+      /*      await sendEmailPassword(
         "Registro exitoso",
         `Hola ${name}, tu contraseña temporal es: ${password}`,
         email,
@@ -278,7 +295,8 @@ const createAdmin = async (req, res) => {
     } catch (emailError) {
       console.error("Error al enviar el correo:", emailError);
       return res.status(500).json({
-        message: "Administrador creado, pero hubo un error al enviar el correo.",
+        message:
+          "Administrador creado, pero hubo un error al enviar el correo.",
         error: emailError.message,
       });
     }
@@ -386,13 +404,15 @@ const listAllAdmins = async (req, res) => {
     if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
       return res
         .status(403)
-        .json({ message: "No tienes acceso a los administradores de esta sede" });
+        .json({
+          message: "No tienes acceso a los administradores de esta sede",
+        });
     }
 
     const admins = await User.findAll({
-      where: { 
+      where: {
         rol_id: 3,
-        sede_id: sede_id 
+        sede_id: sede_id,
       },
       include: [
         {
@@ -597,6 +617,88 @@ const createUserNotlog = async (req, res) => {
   }
 };
 
+/**
+ * The function `getUsersByCourseSimple` retrieves users assigned to a specific course for a given year and
+ * location, without user validation and sede checks.
+ * @param req - The request object containing course_id, year, and sede_id parameters
+ * @param res - The response object used to send the HTTP response
+ * @returns Returns a list of users assigned to a specific course with their basic information
+ */
+const getUsersByCourseSimple = async (req, res) => {
+  const { sede_id, course_id, year } = req.params;
+
+  try {
+    const yearRecord = await Year.findOne({ where: { year } });
+    if (!yearRecord) {
+      return res.status(404).json({ message: "El año especificado no existe" });
+    }
+    const year_id = yearRecord.year_id;
+
+    // Obtener el asigCourse_id con base en course_id y year_id
+    const courseSedeAssignment = await CourseSedeAssignment.findOne({
+      where: { course_id, year_id, sede_id },
+    });
+
+    if (!courseSedeAssignment) {
+      return res.status(404).json({
+        message: "No se encontró una asignación para el curso, año y sede especificados",
+      });
+    }
+    const asigCourse_id = courseSedeAssignment.asigCourse_id;
+
+    // Obtener usuarios asignados al curso
+    const users = await CourseAssignment.findAll({
+      where: { asigCourse_id },
+      include: [
+        {
+          model: User,
+          attributes: [
+            "user_id",
+            "email",
+            "name",
+            "carnet",
+            "sede_id",
+            "rol_id",
+            "profilePhoto",
+          ],
+        },
+      ],
+    });
+
+    if (users.length === 0) {
+      return res.status(404).json({
+        message: "No se encontraron usuarios asignados a este curso para el año y sede especificados",
+      });
+    }
+
+    // Formatear usuarios para la respuesta
+    const formattedUsers = users.map((assignment) => {
+      const user = assignment.User;
+      return {
+        user_id: user.user_id,
+        email: user.email,
+        userName: user.name,
+        sede_id: user.sede_id,
+        profilePhoto: user.profilePhoto
+          ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
+          : null,
+        carnet: user.carnet,
+      };
+    });
+
+    res.status(200).json({
+      countUsers: users.length,
+      users: formattedUsers,
+    });
+  } catch (error) {
+    console.error("Error al obtener usuarios asignados:", error);
+    res.status(500).json({
+      message: "Error al obtener los usuarios asignados al curso",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   getUsersByCourse,
   listuserbytoken,
@@ -605,4 +707,5 @@ module.exports = {
   listAllAdmins,
   assignAdminToSede,
   createUserNotlog,
+  getUsersByCourseSimple,
 };
