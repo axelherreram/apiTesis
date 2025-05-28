@@ -121,29 +121,37 @@ const getTaskSubmissionStats = async (req, res) => {
  */
 const dataGraphics = async (req, res) => {
   const { sede_id } = req.params;
-  const { sede_id: tokenSedeId } = req;
+  const { sede_id: tokenSedeId, rol_id } = req;
 
   try {
-    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
-    if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
-      return res
-        .status(403)
-        .json({ message: "No tienes acceso a los grupos de esta sede" });
+    // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud, salvo para roles 4 y 5
+    if (rol_id !== 4 && rol_id !== 5) {
+      if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
+        return res
+          .status(403)
+          .json({ message: "No tienes acceso a los grupos de esta sede" });
+      }
     }
 
     // Total de revisiones aprobadas para la sede específica
     const totalApprovedRevisions = await ApprovalThesis.count({
-      where: { 
+      where: {
         status: "approved",
-        sede_id: sede_id 
       },
+      include: [{
+        model: RevisionThesis,
+        where: { sede_id: sede_id }
+      }]
     });
 
     const totalInRevisions = await ApprovalThesis.count({
-      where: { 
+      where: {
         status: "in revision",
-        sede_id: sede_id 
       },
+      include: [{
+        model: RevisionThesis,
+        where: { sede_id: sede_id }
+      }]
     });
 
     // Total de estudiantes en la sede específica
