@@ -71,53 +71,6 @@ router.get(
   userController.getUsersByCourse
 );
 
-/**
- * @swagger
- * /api/sedes/{sede_id}/cursos/{course_id}/estudiantes-simple/{year}:
- *   get:
- *     summary: Listar todos los estudiantes asignados a un curso en una sede específica y registrados en un año determinado (sin validaciones de usuario)
- *     tags: [Estudiantes]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: sede_id
- *         schema:
- *           type: integer
- *         required: true
- *         description: ID de la sede para listar los estudiantes
- *       - in: path
- *         name: course_id
- *         schema:
- *           type: integer
- *         required: true
- *         description: ID del curso para listar los estudiantes asignados
- *       - in: path
- *         name: year
- *         schema:
- *           type: integer
- *         required: true
- *         description: Año de registro para filtrar a los estudiantes
- *     responses:
- *       200:
- *         description: Lista de estudiantes asignados al curso obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
- *       404:
- *         description: Curso, sede o estudiantes no encontrados
- *       500:
- *         description: Error en el servidor
- */
-router.get(
-  "/sedes/:sede_id/cursos/:course_id/estudiantes-simple/:year",
-  authMiddleware,
-  coordinador_sede,
-  userController.getUsersByCourseSimple
-);
 
 /**
  * @swagger
