@@ -9,7 +9,7 @@ const AssignedReview = require("../models/assignedReviewthesis");
 const Year = require("../models/year");
 const CommentsRevision = require("../models/commentsRevisionThesis");
 const { sendEmailThesisRequest } = require("../services/emailService");
-const moment = require("moment");
+const moment = require("moment-timezone");
 /**
  * The function `uploadRevisionThesis` handles the upload of a thesis revision, verifying the
  * existence of required files, validating user information, and ensuring that no active revision
@@ -125,8 +125,8 @@ const uploadRevisionThesis = async (req, res) => {
       recipient_name: CordinadorThesis.name,
       student_name: userInfo.name,
       campus_name: sedeInfo.nameSede,
-      request_date: moment(newRevision.date_revision).format(
-        "DD/MM/YYYY"
+      request_date: moment(newRevision.date_revision).tz("America/Guatemala").format(
+        "DD/MM/YYYY, h:mm A"
       ),
     };
 

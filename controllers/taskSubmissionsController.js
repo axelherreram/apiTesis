@@ -8,8 +8,8 @@ const Year = require("../models/year");
 const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
 const Course = require("../models/course");
-
 const moment = require("moment-timezone");
+
 const { createNotification } = require("../sql/notification");
 const { sendEmailConfirmDelivery } = require("../services/emailService");
 
@@ -84,7 +84,7 @@ const createTaskSubmission = async (req, res) => {
         user_id,
         task_id,
         submission_complete: true,
-        date: new Date(),
+        date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
       });
     } else {
       // Si ya existe, actualizar la entrega
@@ -122,7 +122,7 @@ const createTaskSubmission = async (req, res) => {
         catedraticoNombre: teacher.name,
         studentName: userExist.name,
         chapterTitle: taskExist.title,
-        deliveryDate: new Date(),
+        deliveryDate: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
         stateDelivery: "Entregado",
       };
 

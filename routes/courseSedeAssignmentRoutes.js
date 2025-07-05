@@ -36,10 +36,17 @@ const adminOrSuperadmin = verifyRole([1, 3, 4, 5]);
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - course_id
+ *               - sede_id
  *             properties:
  *               course_id:
  *                 type: integer
- *                 description: ID del curso
+ *                 description: ID del curso a asignar
+ *                 example: 1
+ *               sede_id:
+ *                 type: integer
+ *                 description: ID de la sede donde se asignará el curso
  *                 example: 1
  *     responses:
  *       201:
@@ -54,6 +61,8 @@ const adminOrSuperadmin = verifyRole([1, 3, 4, 5]);
  *                   example: Asignación de curso a sede creada exitosamente.
  *       400:
  *         description: Error en la creación de la asignación (curso en periodo incorrecto, asignación ya existente, etc.)
+ *       403:
+ *         description: No tienes permisos para asignar cursos a esta sede
  *       500:
  *         description: Error del servidor al crear la asignación
  */
@@ -62,7 +71,6 @@ router.post(
   authMiddleware,
   getUserIdToken,
   coordinador_sede,
-  extractSedeIdMiddleware,
   createSedeAssignment
 );
 

@@ -626,5 +626,4 @@ module.exports = {
   listAllAdmins,
   assignAdminToSede,
   createUserNotlog,
-  getUsersByCourseSimple,
 };

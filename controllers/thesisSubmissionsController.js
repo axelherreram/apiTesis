@@ -6,6 +6,7 @@ const fs = require("fs");
 const { addTimeline } = require("../sql/timeline");
 const { createNotification } = require("../sql/notification");
 const { sendEmailThesisSubmission } = require("../services/emailService");
+const moment = require("moment-timezone");
 
 /**
  * The `uploadProposal` function in JavaScript handles the process of uploading a thesis proposal,
@@ -118,7 +119,7 @@ const uploadProposal = async (req, res) => {
         user_id,
         task_id,
         file_path: req.file.path,
-        date: new Date(),
+        date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
       });
 
       //
@@ -148,7 +149,7 @@ const uploadProposal = async (req, res) => {
         professor: userAdmin.name,
         student: userExist.name,
         thesisTitle: taskInfo.title,
-        submissionDate: new Date().toLocaleString(),
+        submissionDate: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
       };
 
       sendEmailThesisSubmission(
@@ -284,7 +285,7 @@ const updateProposal = async (req, res) => {
       existingSubmission.file_path = req.file
         ? req.file.path
         : existingSubmission.file_path;
-      existingSubmission.date = new Date();
+      existingSubmission.date = moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A");
 
       await existingSubmission.save();
 
