@@ -13,7 +13,7 @@ const verifyRole = require("../middlewares/roleMiddleware");
 const router = express.Router();
 
 // Middleware para verificar el rol de coordinador de tesis
-defineCoordinadorTesis = verifyRole([6]);
+defineCoordinadorTesis = verifyRole([5]);
 
 /**
  * @swagger
