@@ -93,44 +93,6 @@ router.get(
 
 /**
  * @swagger
- * /api/thesisCoordinator/deactivate:
- *   post:
- *     summary: Desactivar un coordinador de tesis (no podrá iniciar sesión)
- *     tags: [Coordinador de Tesis]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - user_id
- *             properties:
- *               user_id:
- *                 type: integer
- *                 description: ID del coordinador de tesis
- *     responses:
- *       200:
- *         description: Coordinador de tesis desactivado exitosamente
- *       400:
- *         description: Datos de entrada inválidos
- *       404:
- *         description: Coordinador de tesis no encontrado
- *       500:
- *         description: Error del servidor
- */
-router.post(
-  "/thesisCoordinator/deactivate",
-  authMiddleware,
-  getUserIdToken,
-  defineCoordinadorTesis,
-  deactivateThesisCoordinator
-);
-
-/**
- * @swagger
  * /api/thesisCoordinator/update:
  *   put:
  *     summary: Editar la información de un coordinador de tesis
@@ -179,11 +141,13 @@ router.put(
   updateThesisCoordinator
 );
 
+
+
 /**
  * @swagger
- * /api/thesisCoordinator/activate:
+ * /api/thesisCoordinator/toggle:
  *   post:
- *     summary: Activar un coordinador de tesis (solo puede haber uno activo)
+ *     summary: Alterna el estado activo/inactivo de un coordinador de tesis (solo puede haber uno activo)
  *     tags: [Coordinador de Tesis]
  *     security:
  *       - bearerAuth: []
@@ -201,7 +165,7 @@ router.put(
  *                 description: ID del coordinador de tesis
  *     responses:
  *       200:
- *         description: Coordinador de tesis activado exitosamente
+ *         description: Estado de coordinador de tesis alternado exitosamente
  *       400:
  *         description: Datos de entrada inválidos
  *       404:
@@ -212,11 +176,11 @@ router.put(
  *         description: Error del servidor
  */
 router.post(
-  "/thesisCoordinator/activate",
+  "/thesisCoordinator/toggle",
   authMiddleware,
   getUserIdToken,
   defineCoordinadorTesis,
-  activateThesisCoordinator
+  require("../controllers/createCorThesisController").toggleThesisCoordinatorStatus
 );
 
 module.exports = router; 

@@ -2,7 +2,8 @@ const { Router } = require("express");
 const {
   createRevisor,
   getRevisores,
-  editRevisor
+  editRevisor,  
+  toggleRevisorStatus
 } = require("../controllers/revisoresThesisController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -10,7 +11,7 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const router = Router();
 
 // Middleware para verificar el rol de coordinador de tesis
-const cordThesis = verifyRole([5,6]);
+const cordThesis = verifyRole([5, 6]);
 /**
  * @swagger
  * /api/reviewers:
@@ -152,5 +153,38 @@ router.post("/reviewers", authMiddleware, cordThesis, createRevisor);
  *         description: Error al editar el revisor
  */
 router.put("/reviewers/:user_id", authMiddleware, cordThesis, editRevisor);
+
+/**
+ * @swagger
+ * /api/reviewers/toggle:
+ *   post:
+ *     summary: Alterna el estado activo/inactivo de un revisor 
+ *     tags:
+ *       - Revisores
+ *     security:
+ *       - bearerAuth: [] 
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - user_id
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 description: ID del revisor a alternar
+ *     responses:
+ *       200:
+ *         description: Estado del revisor alternado exitosamente
+ *       400:
+ *         description: Datos de entrada inválidos
+ *       404:
+ *         description: Revisor no encontrado
+ *       500:
+ *         description: Error al alternar el estado del revisor
+ */
+router.post("/reviewers/toggle", authMiddleware, cordThesis, toggleRevisorStatus);
 
 module.exports = router;

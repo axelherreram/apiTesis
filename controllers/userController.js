@@ -175,7 +175,7 @@ const listuserbytoken = async (req, res) => {
         : null,
       carnet: user.carnet,
       sede: user.sede_id,
-      NombreSede: sede.nameSede,
+      NombreSede: sede ? sede.nameSede : null,
       registrationYear: user.registrationYear,
       roleName: user.rol_id ? user.role.name : null,
     };

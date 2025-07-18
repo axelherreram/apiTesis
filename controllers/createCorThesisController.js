@@ -131,46 +131,7 @@ const listThesisCoordinators = async (req, res) => {
   }
 };
 
-/**
- * Deactivates a thesis coordinator (sets active: false)
- * @param {Object} req - Request object containing user_id
- * @param {Object} res - Response object
- * @returns {Object} JSON response with success or error message
- */
-const deactivateThesisCoordinator = async (req, res) => {
-  const { user_id } = req.body;
-  try {
-    if (!user_id) {
-      return res.status(400).json({
-        message: "Se requiere user_id",
-      });
-    }
-    // Find the user and verify they are a thesis coordinator
-    const user = await User.findOne({
-      where: {
-        user_id,
-        rol_id: 6,
-        active: true,
-      },
-    });
-    if (!user) {
-      return res.status(404).json({
-        message: "No se encontró un coordinador de tesis activo con el user_id proporcionado",
-      });
-    }
-    // Deactivate the user
-    await user.update({ active: false });
-    res.status(200).json({
-      message: "Coordinador de tesis desactivado exitosamente",
-    });
-  } catch (error) {
-    console.error("Error al desactivar coordinador de tesis:", error);
-    res.status(500).json({
-      message: "Error al desactivar coordinador de tesis",
-      error: error.message,
-    });
-  }
-};
+
 
 /**
  * Edita la información de un coordinador de tesis (name, email, carnet).
@@ -215,11 +176,12 @@ const updateThesisCoordinator = async (req, res) => {
 };
 
 /**
- * Activa un coordinador de tesis (active: true), validando que no exista otro activo.
+ * Alterna el estado activo/inactivo de un coordinador de tesis (rol_id: 6).
+ * Si está activo, lo desactiva. Si está inactivo, lo activa (validando que solo puede haber uno activo).
  * @param {Object} req - Debe contener user_id
  * @param {Object} res
  */
-const activateThesisCoordinator = async (req, res) => {
+const toggleThesisCoordinatorStatus = async (req, res) => {
   const { user_id } = req.body;
   try {
     if (!user_id) {
@@ -229,29 +191,34 @@ const activateThesisCoordinator = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "No se encontró el coordinador de tesis" });
     }
-    // Valida que no exista otro activo
-    const existingActive = await User.findOne({
-      where: {
-        rol_id: 6,
-        active: true,
-        user_id: { [Op.ne]: user_id },
-      },
-    });
-    if (existingActive) {
-      return res.status(409).json({ message: "Ya existe un coordinador de tesis general activo." });
+    if (user.active) {
+      // Si está activo, desactivar
+      await user.update({ active: false });
+      return res.status(200).json({ message: "Coordinador de tesis desactivado exitosamente" });
+    } else {
+      // Si está inactivo, validar que no haya otro activo
+      const existingActive = await User.findOne({
+        where: {
+          rol_id: 6,
+          active: true,
+          user_id: { [Op.ne]: user_id },
+        },
+      });
+      if (existingActive) {
+        return res.status(409).json({ message: "Ya existe un coordinador de tesis general activo." });
+      }
+      await user.update({ active: true });
+      return res.status(200).json({ message: "Coordinador de tesis activado exitosamente" });
     }
-    await user.update({ active: true });
-    res.status(200).json({ message: "Coordinador de tesis activado exitosamente" });
   } catch (error) {
-    console.error("Error al activar coordinador de tesis:", error);
-    res.status(500).json({ message: "Error al activar coordinador de tesis", error: error.message });
+    console.error("Error al alternar estado de coordinador de tesis:", error);
+    res.status(500).json({ message: "Error al alternar estado de coordinador de tesis", error: error.message });
   }
 };
 
 module.exports = {
   createCorThesis,
   listThesisCoordinators,
-  deactivateThesisCoordinator,
   updateThesisCoordinator,
-  activateThesisCoordinator,
+  toggleThesisCoordinatorStatus,
 };

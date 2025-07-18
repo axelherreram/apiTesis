@@ -37,7 +37,8 @@ const createRevisor = async (req, res) => {
         message: "Ya existe un usuario con este correo",
       });
     }
-    // Validar formato del código (carnet)
+    
+   /*  // Validar formato del código (carnet)
     if (codigo) {
       const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/; // Ejemplo válido: 2024-01-1234
       if (!carnetRegex.test(codigo)) {
@@ -46,7 +47,7 @@ const createRevisor = async (req, res) => {
           message: "Carnet inválido, ingrese codigo completo",
         });
       }
-    }
+     } */
 
     // Validar el dominio del correo
     if (!isValidEmail(email)) {
@@ -186,4 +187,33 @@ const editRevisor = async (req, res) => {
   }
 };
 
-module.exports = { createRevisor, getRevisores, editRevisor };
+/**
+ * Alterna el estado activo/inactivo de un revisor (rol_id: 7)
+ * Si está activo, lo desactiva. Si está inactivo, lo activa.
+ * @param {Object} req - Debe contener user_id en el body
+ * @param {Object} res
+ */
+const toggleRevisorStatus = async (req, res) => {
+  try {
+    const { user_id } = req.body;
+    if (!user_id) {
+      return res.status(400).json({ message: "Se requiere user_id" });
+    }
+    const revisor = await User.findByPk(user_id);
+    if (!revisor || revisor.rol_id !== 7) {
+      return res.status(404).json({ message: "Revisor no encontrado" });
+    }
+    if (revisor.active) {
+      await revisor.update({ active: false });
+      return res.status(200).json({ message: "Revisor desactivado exitosamente" });
+    } else {
+      await revisor.update({ active: true });
+      return res.status(200).json({ message: "Revisor activado exitosamente" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al alternar el estado del revisor", error: error.message });
+  }
+};
+
+module.exports = { createRevisor, getRevisores, editRevisor, toggleRevisorStatus };
