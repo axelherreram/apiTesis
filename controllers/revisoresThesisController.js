@@ -117,6 +117,7 @@ const getRevisores = async (req, res) => {
       name: revisor.name,
       carnet: revisor.carnet,
       rol_nombre: revisor.role ? revisor.role.name : "Desconocido",
+      rol_id: revisor.rol_id,
       active: revisor.active,
     }));
 
