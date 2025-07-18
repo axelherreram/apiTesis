@@ -2,11 +2,12 @@ const { Router } = require("express");
 const {
   createRevisor,
   getRevisores,
-  editRevisor,  
-  toggleRevisorStatus
+  editRevisor,
+  toggleRevisorStatus,
 } = require("../controllers/revisoresThesisController");
 const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
+const getUserIdToken = require("../middlewares/getUserIdToken");
 
 const router = Router();
 
@@ -158,11 +159,11 @@ router.put("/reviewers/:user_id", authMiddleware, cordThesis, editRevisor);
  * @swagger
  * /api/reviewers/toggle:
  *   post:
- *     summary: Alterna el estado activo/inactivo de un revisor 
+ *     summary: Alterna el estado activo/inactivo de un revisor
  *     tags:
  *       - Revisores
  *     security:
- *       - bearerAuth: [] 
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -185,6 +186,12 @@ router.put("/reviewers/:user_id", authMiddleware, cordThesis, editRevisor);
  *       500:
  *         description: Error al alternar el estado del revisor
  */
-router.post("/reviewers/toggle", authMiddleware, cordThesis, toggleRevisorStatus);
+router.post(
+  "/reviewers/toggle",
+  authMiddleware,
+  getUserIdToken,
+  cordThesis,
+  toggleRevisorStatus
+);
 
 module.exports = router;

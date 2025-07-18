@@ -190,15 +190,25 @@ const editRevisor = async (req, res) => {
 /**
  * Alterna el estado activo/inactivo de un revisor (rol_id: 7)
  * Si está activo, lo desactiva. Si está inactivo, lo activa.
- * @param {Object} req - Debe contener user_id en el body
+ * @param {Object} req - Debe contener user_id en el body y user_id del token autenticado
  * @param {Object} res
  */
 const toggleRevisorStatus = async (req, res) => {
   try {
     const { user_id } = req.body;
+    const authenticatedUserId = req.user_id; // ID del usuario autenticado desde el token
+    
     if (!user_id) {
       return res.status(400).json({ message: "Se requiere user_id" });
     }
+
+    // Validar que el usuario no se pueda desactivar a sí mismo
+    if (parseInt(user_id) === parseInt(authenticatedUserId)) {
+      return res.status(400).json({ 
+        message: "No puedes cambiar tu propio estado. Contacta a otro administrador." 
+      });
+    }
+
     const revisor = await User.findByPk(user_id);
     if (!revisor || revisor.rol_id !== 7) {
       return res.status(404).json({ message: "Revisor no encontrado" });
