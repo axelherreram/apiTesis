@@ -27,7 +27,7 @@ const registerUser = async (req, res) => {
   const { email, password, name, carnet, sede_id, rol_id, year } = req.body;
 
   // Validación de campos requeridos
-  if (!email || !password || !name || !carnet || !sede_id || !rol_id || !year) {
+  if (!email || !password || !name || !carnet || !rol_id || !year) {
     return res.status(400).json({
       message:
         "Faltan campos requeridos. Por favor, proporcione todos los datos necesarios.",
