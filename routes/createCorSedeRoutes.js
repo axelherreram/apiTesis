@@ -97,7 +97,6 @@ router.post(
   authMiddleware,
   getUserIdToken,
   coordinadorGeneral,
-  extractSedeIdMiddleware,
   createCorSede
 );
 
