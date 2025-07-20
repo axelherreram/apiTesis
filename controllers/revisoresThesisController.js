@@ -59,11 +59,10 @@ const createRevisor = async (req, res) => {
 
     const password = generateRandomPassword();
     const hashedPassword = await bcrypt.hash(password, 10); // Hash de la contraseña
-    const nameUpper = name.toUpperCase(); // Convertir el nombre a mayúsculas
     await User.create({
       email,
       password: hashedPassword,
-      name: nameUpper,
+      name: name,
       carnet: codigo,
       rol_id: 7,
     });
