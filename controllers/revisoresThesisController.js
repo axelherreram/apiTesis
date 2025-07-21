@@ -69,7 +69,7 @@ const createRevisor = async (req, res) => {
 
     // Enviar correo con la contraseña
     const templateVariables = {
-      nameUpper,
+      name,
       email,
       password,
     };

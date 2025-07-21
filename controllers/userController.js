@@ -583,7 +583,6 @@ const createUserNotlog = async (req, res) => {
     // Generar y hashear una contraseña temporal
     const randomPassword = crypto.randomBytes(8).toString("hex");
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
-    const nameMayusculas = name.toUpperCase();
     // Crear el usuario con una transacción para asegurar la integridad
     const transaction = await User.sequelize.transaction();
 
@@ -592,7 +591,7 @@ const createUserNotlog = async (req, res) => {
         {
           email,
           password: hashedPassword,
-          name: nameMayusculas,
+          name: name,
           carnet,
           sede_id: sede_id_token,
           rol_id: 1, // Rol de estudiante
