@@ -130,11 +130,24 @@ const listThesisCoordinators = async (req, res) => {
   try {
     const coordinators = await User.findAll({
       where: { rol_id: 6 },
-      attributes: ["user_id", "name", "email", "carnet", "active"],
+      attributes: ["user_id", "name", "email", "carnet", "active", "profilePhoto"],
     });
+
+    // Formatear los coordinadores para incluir la URL completa de la foto de perfil
+    const formattedCoordinators = coordinators.map((coordinator) => ({
+      user_id: coordinator.user_id,
+      name: coordinator.name,
+      email: coordinator.email,
+      carnet: coordinator.carnet,
+      active: coordinator.active,
+      profilePhoto: coordinator.profilePhoto
+        ? `${process.env.BASE_URL}/public/profilephoto/${coordinator.profilePhoto}`
+        : null,
+    }));
+
     res.status(200).json({
       message: "Coordinadores de tesis recuperados exitosamente",
-      data: coordinators,
+      data: formattedCoordinators,
     });
   } catch (error) {
     console.error("Error al listar coordinadores de tesis:", error);
