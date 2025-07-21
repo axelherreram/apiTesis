@@ -23,9 +23,17 @@ const crypto = require("crypto");
 const updateProfessorStatus = async (req, res) => {
   const { active } = req.body; // Se acepta solo el campo 'active'
   const { user_id } = req.params;
+  const authenticatedUserId = req.user_id; // ID del usuario autenticado desde el token
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
+    // Validar que el usuario no se pueda desactivar a sí mismo
+    if (parseInt(user_id) === parseInt(authenticatedUserId)) {
+      return res.status(400).json({ 
+        message: "No puedes cambiar tu propio estado. Contacta a otro administrador." 
+      });
+    }
+
     // Buscar al usuario por su ID
     const user = await User.findByPk(user_id);
 

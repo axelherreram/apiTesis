@@ -192,15 +192,25 @@ const updateThesisCoordinator = async (req, res) => {
 /**
  * Alterna el estado activo/inactivo de un coordinador de tesis (rol_id: 6).
  * Si está activo, lo desactiva. Si está inactivo, lo activa (validando que solo puede haber uno activo).
- * @param {Object} req - Debe contener user_id
+ * @param {Object} req - Debe contener user_id en el body y user_id del token autenticado
  * @param {Object} res
  */
 const toggleThesisCoordinatorStatus = async (req, res) => {
   const { user_id } = req.body;
+  const authenticatedUserId = req.user_id; // ID del usuario autenticado desde el token
+  
   try {
     if (!user_id) {
       return res.status(400).json({ message: "Se requiere user_id" });
     }
+
+    // Validar que el usuario no se pueda desactivar a sí mismo
+    if (parseInt(user_id) === parseInt(authenticatedUserId)) {
+      return res.status(400).json({ 
+        message: "No puedes cambiar tu propio estado. Contacta a otro administrador." 
+      });
+    }
+
     const user = await User.findOne({ where: { user_id, rol_id: 6 } });
     if (!user) {
       return res.status(404).json({ message: "No se encontró el coordinador de tesis" });

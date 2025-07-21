@@ -37,8 +37,8 @@ const createRevisor = async (req, res) => {
         message: "Ya existe un usuario con este correo",
       });
     }
-    
-   /*  // Validar formato del código (carnet)
+
+    /*  // Validar formato del código (carnet)
     if (codigo) {
       const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/; // Ejemplo válido: 2024-01-1234
       if (!carnetRegex.test(codigo)) {
@@ -104,6 +104,15 @@ const getRevisores = async (req, res) => {
     const revisores = await User.findAll({
       where: { rol_id: { [Op.in]: [6, 7] } },
       include: [{ model: Roles, as: "role", attributes: ["name"] }],
+      attributes: [
+        "user_id",
+        "email",
+        "name",
+        "carnet",
+        "rol_id",
+        "active",
+        "profilePhoto",
+      ],
     });
 
     if (!revisores || revisores.length === 0) {
@@ -118,6 +127,9 @@ const getRevisores = async (req, res) => {
       rol_nombre: revisor.role ? revisor.role.name : "Desconocido",
       rol_id: revisor.rol_id,
       active: revisor.active,
+      profilePhoto: revisor.profilePhoto
+        ? `${process.env.BASE_URL}/public/profilephoto/${revisor.profilePhoto}`
+        : null,
     }));
 
     res.status(200).json(revisoresData);
@@ -197,15 +209,16 @@ const toggleRevisorStatus = async (req, res) => {
   try {
     const { user_id } = req.body;
     const authenticatedUserId = req.user_id; // ID del usuario autenticado desde el token
-    
+
     if (!user_id) {
       return res.status(400).json({ message: "Se requiere user_id" });
     }
 
     // Validar que el usuario no se pueda desactivar a sí mismo
     if (parseInt(user_id) === parseInt(authenticatedUserId)) {
-      return res.status(400).json({ 
-        message: "No puedes cambiar tu propio estado. Contacta a otro administrador." 
+      return res.status(400).json({
+        message:
+          "No puedes cambiar tu propio estado. Contacta a otro administrador.",
       });
     }
 
@@ -215,15 +228,27 @@ const toggleRevisorStatus = async (req, res) => {
     }
     if (revisor.active) {
       await revisor.update({ active: false });
-      return res.status(200).json({ message: "Revisor desactivado exitosamente" });
+      return res
+        .status(200)
+        .json({ message: "Revisor desactivado exitosamente" });
     } else {
       await revisor.update({ active: true });
       return res.status(200).json({ message: "Revisor activado exitosamente" });
     }
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Error al alternar el estado del revisor", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Error al alternar el estado del revisor",
+        error: error.message,
+      });
   }
 };
 
-module.exports = { createRevisor, getRevisores, editRevisor, toggleRevisorStatus };
+module.exports = {
+  createRevisor,
+  getRevisores,
+  editRevisor,
+  toggleRevisorStatus,
+};
