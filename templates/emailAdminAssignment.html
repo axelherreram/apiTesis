@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e3f2fd;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            background-color: #ffffff;
+            margin: 20px auto;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        .header {
+            background-color: #1976d2;
+            color: white;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px 8px 0 0;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .content {
+            font-size: 16px;
+            color: #333;
+            padding: 20px;
+        }
+
+        .content h2 {
+            font-size: 22px;
+            color: #1976d2;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .info-box {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 5px solid #1976d2;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+
+        .credential-box {
+            background-color: #fff3e0;
+            border: 2px solid #ff9800;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .credential-box h3 {
+            color: #e65100;
+            margin-bottom: 10px;
+        }
+
+        .credential-item {
+            margin: 10px 0;
+            font-size: 18px;
+        }
+
+        .credential-item strong {
+            color: #e65100;
+        }
+
+        .instructions {
+            background-color: #f3e5f5;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #9c27b0;
+            margin: 20px 0;
+        }
+
+        .warning {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 5px solid #f44336;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+
+        .footer {
+            background-color: #f5f5f5;
+            text-align: center;
+            padding: 15px;
+            font-size: 14px;
+            color: #666;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .btn {
+            display: inline-block;
+            background-color: #1976d2;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            🛡️ Asignación como Administrador de Sede
+        </div>
+
+        <div class="content">
+            <h2>¡Felicidades, {{adminName}}!</h2>
+
+            <p>Nos complace informarte que has sido asignado como <strong>Administrador de Sede</strong> en nuestro sistema de gestión de proyectos de graduación.</p>
+
+            <div class="info-box">
+                <h3>📍 Información de tu Asignación:</h3>
+                <p><strong>Sede asignada:</strong> {{sedeName}}</p>
+                <p><strong>Nivel de acceso:</strong> Administrador de Sede</p>
+                <p><strong>Fecha de asignación:</strong> {{currentDate}}</p>
+            </div>
+
+            <div class="credential-box">
+                <h3>🔐 Credenciales de Acceso</h3>
+                <div class="credential-item">
+                    <strong>Usuario:</strong> {{email}}
+                </div>
+                <div class="credential-item">
+                    <strong>Contraseña temporal:</strong> {{password}}
+                </div>
+            </div>
+
+            <div class="warning">
+                ⚠️ <strong>IMPORTANTE:</strong> Por razones de seguridad, debes cambiar tu contraseña temporal en tu primer inicio de sesión.
+            </div>
+
+            <div style="text-align: center;">
+                <a href="{{loginUrl}}" class="btn">Iniciar Sesión</a>
+            </div>
+
+            <p>Si tienes alguna pregunta o necesitas asistencia, no dudes en contactarnos.</p>
+
+            <p>¡Bienvenido al equipo de administración!</p>
+        </div>
+
+        <div class="footer">
+            <p>Este es un correo automático, por favor no responder a esta dirección.</p>
+        </div>
+    </div>
+</body>
+
+</html>

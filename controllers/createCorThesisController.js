@@ -2,6 +2,7 @@ const User = require("../models/user");
 const Year = require("../models/year");
 const { Op } = require("sequelize");
 const bcrypt = require("bcryptjs");
+const {sendEmailThesisCoordinatorCreation} = require("../services/emailService");
 
 /**
  * Generates a random password with specified length
@@ -93,6 +94,19 @@ const createCorThesis = async (req, res) => {
       active: true,
       year_id: yearRecord.id,
     });
+    // Send email notification
+    const templateVariables = {
+      coordinatorName: name,
+      roleName: "Coordinador de Tesis",
+      email,
+      password: randomPassword,
+      currentDate: new Date().toLocaleDateString(),
+    };
+    await sendEmailThesisCoordinatorCreation(
+      "Creación de Coordinador de Tesis",
+      email,
+      templateVariables
+    );
 
     res.status(201).json({
       message: "Coordinador de tesis creado exitosamente ",
