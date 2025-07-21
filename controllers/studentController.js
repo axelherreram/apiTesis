@@ -124,7 +124,6 @@ const bulkUploadUsers = async (req, res) => {
       const { email, nombre, carnet } = user;
 
       // Convertir el nombre a mayúsculas
-      const nameUpper = nombre.toUpperCase();
       const carnetLimpio = user.carnet.replace(/\s+/g, ""); // Elimina espacios del carnet
       // Paso 11: Verificar si el usuario ya existe
       let existingUser = await User.findOne({ where: { email } });
@@ -143,7 +142,7 @@ const bulkUploadUsers = async (req, res) => {
         existingUser = await User.create({
           email,
           password: hashedPassword,
-          name: nameUpper,
+          name: nombre,
           carnet: carnetLimpio,
           rol_id: 1, // Rol de estudiante
           sede_id,
@@ -152,7 +151,7 @@ const bulkUploadUsers = async (req, res) => {
 
         // Paso 14: Enviar correo electrónico con la contraseña temporal
         const templateVariables = {
-          nombre: nameUpper,
+          nombre: nombre,
           password: randomPassword,
         };
 

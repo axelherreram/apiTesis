@@ -60,6 +60,7 @@ const RevisionThesisRoutes = require('./routes/revisionThesisRoutes');
 const AssignedReviewRoutes = require('./routes/assignedReviewRoutes');
 const GraphicThesisRoutes = require('./routes/graphicThesisRoutes');
 const CommentRevision = require('./routes/commentRevisionRoutes');
+const createCorThesisRoutes = require('./routes/createCorThesisRoutes');
 
 const morgan = require('morgan');
 const path = require('path');
@@ -158,6 +159,7 @@ app.use('/api', GraphicThesisRoutes);
 app.use('/api', CommentRevision);
 app.use('/api', updateNoteRoutes);
 app.use('/api', createCorSedeRoutes);
+app.use('/api', createCorThesisRoutes);
 
 // Sincronizar la base de datos y arrancar el servidor
 sequelize.sync({ alter: false, force: false })

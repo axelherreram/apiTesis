@@ -6,6 +6,7 @@ const { addTimeline } = require("../sql/timeline");
 const User = require("../models/user");
 const { sendCommentEmail } = require("../services/emailService");
 const { DATE } = require("sequelize");
+const moment = require("moment-timezone");
 
 /**
  * The function `addCommentForTask` handles the creation of comments for a specific task, validating
@@ -85,7 +86,7 @@ const addCommentForTask = async (req, res) => {
             nombre: userExist.name,
             entregaTitulo: task.title,
             comentario: comment,
-            fechaComentario: new Date().toLocaleString(),
+            fechaComentario: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
           }
         );
       }
@@ -103,7 +104,7 @@ const addCommentForTask = async (req, res) => {
             nombre: teacher.name,
             entregaTitulo: task?.title || "Tarea sin título",
             comentario: comment,
-            fechaComentario: new Date().toLocaleDateString("es-ES"),
+            fechaComentario: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
           }
         );
       } else {

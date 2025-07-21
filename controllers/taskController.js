@@ -165,7 +165,7 @@ const createTask = async (req, res) => {
         nombre: userEmail.name,
         titulo: title,
         descripcion: description,
-        fecha: new Date().toLocaleString(),
+        fecha: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
       };
 
       await sendEmailTask(

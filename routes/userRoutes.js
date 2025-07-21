@@ -66,10 +66,10 @@ router.get(
   "/sedes/:sede_id/cursos/:course_id/estudiantes/:year",
   authMiddleware,
   adminOrTerna,
-  extractSedeIdMiddleware,
   getUserIdToken,
   userController.getUsersByCourse
 );
+
 
 /**
  * @swagger

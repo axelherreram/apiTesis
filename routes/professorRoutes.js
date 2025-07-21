@@ -147,6 +147,7 @@ router.get(
 router.patch(
   "/professors/:user_id/active",
   authMiddleware,
+  getUserIdToken,
   allowed,
   extractSedeIdMiddleware,
   updateProfessorStatus

@@ -24,13 +24,38 @@ const crypto = require("crypto");
  * process, appropriate error messages are returned along with the corresponding HTTP status codes.
  */
 const registerUser = async (req, res) => {
-  const { email, password, name, carnet, sede_id, rol_id, year } = req.body;
+  let { email, password, name, carnet, sede_id, rol_id, year } = req.body;
+
+  // Limpiar sede_id: convertir string vacío a null
+  if (sede_id === "" || sede_id === "null" || sede_id === "undefined") {
+    sede_id = null;
+  }
 
   // Validación de campos requeridos
-  if (!email || !password || !name || !carnet || !sede_id || !rol_id || !year) {
+  if (!email || !password || !name || !carnet || !rol_id || !year) {
     return res.status(400).json({
       message:
         "Faltan campos requeridos. Por favor, proporcione todos los datos necesarios.",
+    });
+  }
+
+  // Validación adicional de tipos de datos
+  // sede_id puede ser null, pero si se proporciona debe ser un número válido
+  if (sede_id !== null && sede_id !== undefined && sede_id !== "" && (isNaN(sede_id) || sede_id <= 0)) {
+    return res.status(400).json({
+      message: "sede_id debe ser un número válido mayor a 0 o null.",
+    });
+  }
+
+  if (isNaN(rol_id) || rol_id <= 0) {
+    return res.status(400).json({
+      message: "rol_id debe ser un número válido mayor a 0.",
+    });
+  }
+
+  if (isNaN(year) || year <= 0) {
+    return res.status(400).json({
+      message: "year debe ser un número válido mayor a 0.",
     });
   }
 
@@ -136,8 +161,8 @@ const loginUser = async (req, res) => {
       { expiresIn: "1h" } // Token expiration time
     );
 
-    // Log activity only for roles that are not 3, 4, or 5
-    if (![3, 4, 5].includes(user.rol_id)) {
+    // Log activity only for role 1
+    if (user.rol_id === 1) {
       await logActivity(
         user.user_id,
         user.sede_id,

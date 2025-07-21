@@ -530,6 +530,78 @@ const sendEmailCommentRevisionRejected = async (
   }
 };
 
+/**
+ * @function sendEmailAdminAssignment
+ * @description Sends an email notification when a user is assigned as an administrator for a sede.
+ * @param {string} subject - The subject of the email.
+ * @param {string} to - The recipient's email address.
+ * @param {Object} templateVariables - Variables to replace in the email template.
+ * @example
+ * sendEmailAdminAssignment(
+ *   'Asignación como Administrador de Sede',
+ *   'admin@example.com',
+ *   { adminName: 'Juan Pérez', sedeName: 'Campus Central', password: 'temp123' }
+ * );
+ */
+const sendEmailAdminAssignment = async (subject, to, templateVariables) => {
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailAdminAssignment.html"
+    );
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Correo de asignación de administrador enviado a: ${to}`);
+  } catch (error) {
+    console.error("Error al enviar el correo de asignación de administrador:", error);
+    throw error;
+  }
+};
+
+/**
+ * @function sendEmailThesisCoordinatorCreation
+ * @description Sends an email notification when a user is created as a thesis coordinator.
+ * @param {string} subject - The subject of the email.
+ * @param {string} to - The recipient's email address.
+ * @param {Object} templateVariables - Variables to replace in the email template.
+ * @example
+ * sendEmailThesisCoordinatorCreation(
+ *   'Asignación como Coordinador de Tesis',
+ *   'coordinator@example.com',
+ *   { coordinatorName: 'María García', password: 'temp456', roleName: 'Coordinador de Tesis General' }
+ * );
+ */
+const sendEmailThesisCoordinatorCreation = async (subject, to, templateVariables) => {
+  try {
+    const templatePath = path.join(
+      __dirname,
+      "../templates/emailThesisCoordinatorCreation.html"
+    );
+    const htmlContent = loadTemplate(templatePath, templateVariables);
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: to,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Correo de creación de coordinador de tesis enviado a: ${to}`);
+  } catch (error) {
+    console.error("Error al enviar el correo de creación de coordinador de tesis:", error);
+    throw error;
+  }
+};
+
 module.exports = {
   sendEmailActiveCouser,
   sendEmailPassword,
@@ -544,4 +616,6 @@ module.exports = {
   sendEmailCommentRevisionAproved,
   sendEmailCommentRevisionRejected,
   sendEmailRegisterRevisor,
+  sendEmailAdminAssignment,
+  sendEmailThesisCoordinatorCreation,
 };

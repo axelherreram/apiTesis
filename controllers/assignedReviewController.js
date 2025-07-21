@@ -3,7 +3,7 @@ const AssignedReview = require("../models/assignedReviewthesis");
 const RevisionThesis = require("../models/revisionThesis");
 const User = require("../models/user");
 const { sendEmailReviewerAsigned } = require("../services/emailService");
-const moment = require("moment");
+const moment = require("moment-timezone");
 const { Op } = require("sequelize");
 
 /**
@@ -77,7 +77,7 @@ const createAssignedReview = async (req, res) => {
     // Enviar correo al revisor
     await sendEmailReviewerAsigned("Nueva revisión", infoUser.email, {
       reviewer_name: infoUser.name,
-      reviewer_date: moment().format("DD/MM/YYYY"),
+      reviewer_date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
     });
 
     return res.status(201).json({ message: "Revisión asignada con éxito" });

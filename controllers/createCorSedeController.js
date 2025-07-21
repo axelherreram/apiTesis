@@ -5,6 +5,7 @@ const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const Year = require("../models/year");
 const { Op } = require("sequelize");
 const bcrypt = require("bcryptjs");
+const {sendEmailAdminAssignment} = require("../services/emailService");
 
 /**
  * Generates a random password with specified length
@@ -107,6 +108,22 @@ const createCorSede = async (req, res) => {
       password: hashedPassword,
     });
 
+    const templateVariables = {
+      currentDate: new Date().toLocaleDateString(),
+      sedeName: sede.nameSede,
+      email,
+      password: randomPassword,
+      adminName: name,
+    };
+
+    // Send email notification
+    await sendEmailAdminAssignment(
+      "Asignación de Administrador de Sede",
+      email,
+      templateVariables
+    );
+
+
     res.status(201).json({
       message: "Coordinador creado exitosamente ",
     });
@@ -136,12 +153,25 @@ const listSedeCoordinators = async (req, res) => {
           attributes: ["nameSede"],
         },
       ],
-      attributes: ["user_id", "name", "email", "carnet", "sede_id"],
+      attributes: ["user_id", "name", "email", "carnet", "sede_id", "profilePhoto"],
     });
+
+    // Formatear los coordinadores para incluir la URL completa de la foto de perfil
+    const formattedCoordinators = coordinators.map((coordinator) => ({
+      user_id: coordinator.user_id,
+      name: coordinator.name,
+      email: coordinator.email,
+      carnet: coordinator.carnet,
+      sede_id: coordinator.sede_id,
+      location: coordinator.location,
+      profilePhoto: coordinator.profilePhoto
+        ? `${process.env.BASE_URL}/public/profilephoto/${coordinator.profilePhoto}`
+        : null,
+    }));
 
     res.status(200).json({
       message: "Coordinadores de sede recuperados exitosamente",
-      data: coordinators,
+      data: formattedCoordinators,
     });
   } catch (error) {
     console.error("Error al listar coordinadores de sede:", error);

@@ -128,7 +128,7 @@ const createCommentRevision = async (req, res) => {
       student_name: data_student.User.name,
       title,
       comment,
-      date: moment(newComment.date_comment).format("DD/MM/YYYY"),
+      date: moment(newComment.date_comment).tz("America/Guatemala").format("DD/MM/YYYY"),
       status_message: isApproved ? "Aprobada" : "Rechazada",
       custom_message: isApproved
         ? "¡Felicitaciones! Tu tesis ha sido aprobada. Puedes proceder con los siguientes pasos."

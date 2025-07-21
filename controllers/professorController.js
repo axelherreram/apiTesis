@@ -23,9 +23,17 @@ const crypto = require("crypto");
 const updateProfessorStatus = async (req, res) => {
   const { active } = req.body; // Se acepta solo el campo 'active'
   const { user_id } = req.params;
+  const authenticatedUserId = req.user_id; // ID del usuario autenticado desde el token
   const { sede_id: tokenSedeId } = req; // Sede extraída del token
 
   try {
+    // Validar que el usuario no se pueda desactivar a sí mismo
+    if (parseInt(user_id) === parseInt(authenticatedUserId)) {
+      return res.status(400).json({ 
+        message: "No puedes cambiar tu propio estado. Contacta a otro administrador." 
+      });
+    }
+
     // Buscar al usuario por su ID
     const user = await User.findByPk(user_id);
 
@@ -282,12 +290,11 @@ const createProfessor = async (req, res) => {
 
     // Hashear la contraseña generada
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
-    const nameUpper = name.toUpperCase(); // Convertir el nombre a mayúsculas
     // Crear el nuevo usuario (profesor)
     const user = await User.create({
       email,
       password: hashedPassword,
-      name: nameUpper,
+      name: name,
       carnet,
       sede_id,
       rol_id: 2, // Rol de profesor
@@ -299,14 +306,14 @@ const createProfessor = async (req, res) => {
     await logActivity(
       userToken.user_id,
       userToken.sede_id,
-      userToken.nameUpper,
+      userToken.name,
       "Profesor creado",
       `Creación de profesor: ${user.name}`
     );
 
     // Enviar correo con las credenciales al profesor
     await sendEmailCatedratico("Bienvenido a MyOnlineProject", email, {
-      nombre: nameUpper,
+      nombre: name,
       password: randomPassword,
     });
     console.log("email: ", email, "  password: ", randomPassword);

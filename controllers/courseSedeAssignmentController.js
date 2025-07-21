@@ -4,7 +4,7 @@ const Sede = require("../models/sede");
 const Year = require("../models/year");
 const User = require("../models/user");
 const { sendEmailActiveCouser } = require("../services/emailService");
-const moment = require("moment");
+const moment = require("moment-timezone");
 
 /**
  * The function `createSedeAssignment` handles the creation of course assignments to different
@@ -21,10 +21,12 @@ const moment = require("moment");
  * exceptions during the process, it returns an appropriate error response with a relevant message.
  */
 const createSedeAssignment = async (req, res) => {
-  const { course_id } = req.body;
-  const { sede_id, user_id } = req;
+  const { course_id, sede_id } = req.body;
+  const { user_id } = req;
 
   try {
+    // Obtener el año actual
+    const currentYear = moment().tz("America/Guatemala").year();
 
     const user = await User.findByPk(user_id);
 
@@ -104,7 +106,7 @@ const createSedeAssignment = async (req, res) => {
       const templateVariables = {
         name_sede: sedeName,
         course_name: course_name,
-        date_assing: moment().format("YYYY-MM-DD"),
+        date_assing: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
       };
 
       // Enviar correo al administrador de la sede
