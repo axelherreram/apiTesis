@@ -3,9 +3,10 @@ const {
   uploadRevisionThesis,
   getPendingRevisions,
   getRevisionsByUserId,
-  getRevisionsInReview, // Nuevo controlador
+  getRevisionsInReview, 
   getInforRevisionsByUserId,
   getApprovedRevisions,
+  getReviewerHistory,
 } = require("../controllers/revisionThesisController");
 const uploadFilesMiddleware = require("../middlewares/revisionFilesMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
@@ -419,6 +420,72 @@ router.get(
   authMiddleware,
   cordThesis,
   getApprovedRevisions
+);
+
+/**
+ * @swagger
+ * /api/revision-thesis/history/{user_id}:
+ *   get:
+ *     summary: Obtener el historial de revisiones realizadas por un revisor
+ *     description: Obtiene el historial de revisiones de tesis realizadas por un revisor específico.
+ *     tags:
+ *       - Revisión de Tesis
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         type: integer
+ *         required: true
+ *         description: ID del usuario (revisor) para obtener su historial de revisiones.
+ *     responses:
+ *       200:
+ *         description: Historial de revisiones del revisor.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Historial de revisiones del revisor obtenido con éxito
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       revision_thesis_id:
+ *                         type: integer
+ *                         example: 1
+ *                       thesis_dir:
+ *                         type: string
+ *                         example: http://localhost:3000/path/to/thesis.pdf
+ *                       date_revision:
+ *                         type: string
+ *                         format: date
+ *                         example: 2023-10-01
+ *                       status:
+ *                         type: string
+ *                         example: approved
+ *                       user:
+ *                         type: object
+ *                         properties:
+ *                           name:
+ *                             type: string
+ *                             example: Juan Perez
+ *                           carnet:
+ *                             type: string
+ *                             example: 12345
+ *       404:
+ *         description: No se encontraron revisiones para el revisor.
+ *       500:
+ *         description: Error al obtener el historial de revisiones del revisor.
+ */
+router.get(
+  "/revision-thesis/history/:user_id",
+  authMiddleware,
+  cordThesis,
+  getReviewerHistory
 );
 
 module.exports = router;

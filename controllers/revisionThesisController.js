@@ -612,6 +612,191 @@ const getApprovedRevisions = async (req, res) => {
   }
 };
 
+/**
+ * The function `getReviewerHistory` retrieves the complete revision history for a specific reviewer,
+ * including all comments made and the final approval status of each thesis revision.
+ * @param req - The HTTP request object, containing the `user_id` (reviewer ID) as a URL parameter.
+ * @param res - The HTTP response object used to return the reviewer's revision history.
+ * @returns A JSON response with the reviewer's complete revision history including comments and approval status,
+ * or an error message if none are found or if an internal server error occurs.
+ */
+const getReviewerHistory = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { order = "desc", limit = 50 } = req.query;
+
+    const orderDirection = order === "desc" ? "DESC" : "ASC";
+
+    // Validar que el usuario existe y es un revisor
+    const reviewer = await User.findByPk(user_id);
+    if (!reviewer) {
+      return res.status(404).json({
+        message: "Revisor no encontrado",
+      });
+    }
+
+    // Verificar que el usuario tiene rol de revisor (rol_id: 6, 7)
+    if (![6, 7].includes(reviewer.rol_id)) {
+      return res.status(403).json({
+        message: "El usuario no tiene permisos de revisor",
+      });
+    }
+
+    // Obtener todas las revisiones asignadas al revisor
+    const reviewerHistory = await AssignedReview.findAll({
+      where: { user_id },
+      attributes: ["assigned_review_id", "date_assigned"],
+      include: [
+        {
+          model: RevisionThesis,
+          attributes: ["revision_thesis_id", "date_revision", "thesis_dir", "active_process"],
+          include: [
+            {
+              model: User, // Estudiante que envió la tesis
+              attributes: ["user_id", "name", "carnet", "email", "profilePhoto"],
+              include: [
+                {
+                  model: Sede,
+                  as: "location",
+                  attributes: ["nameSede"],
+                },
+                {
+                  model: Year,
+                  as: "year",
+                  attributes: ["year"],
+                },
+              ],
+            },
+            {
+              model: ApprovalThesis,
+              attributes: ["status", "date_approved", "approved"],
+              required: false,
+            },
+            {
+              model: Sede,
+              attributes: ["nameSede"],
+            },
+          ],
+        },
+        {
+          model: CommentsRevision, // ✅ Cambiar a CommentsRevision (importado en el archivo)
+          attributes: ["commentsRevision_id", "title", "comment", "date_comment"], // ✅ Usar commentsRevision_id
+          required: false, // No todas las revisiones tienen comentarios
+        },
+      ],
+      order: [["date_assigned", orderDirection]],
+      limit: parseInt(limit),
+    });
+
+    // Si no hay historial de revisiones
+    if (reviewerHistory.length === 0) {
+      return res.status(404).json({
+        message: "No se encontró historial de revisiones para este revisor",
+      });
+    }
+
+    const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
+
+    // Formatear los datos del historial
+    const formattedHistory = reviewerHistory.map((assignedReview) => {
+      const reviewData = assignedReview.toJSON();
+      const revisionThesis = reviewData.RevisionThesis;
+      
+      // Formatear foto de perfil del estudiante
+      const studentWithPhoto = revisionThesis.User.profilePhoto 
+        ? { 
+            ...revisionThesis.User, 
+            profilePhoto: `${BASE_URL}/public/profilephoto/${revisionThesis.User.profilePhoto}` 
+          }
+        : revisionThesis.User;
+
+      // Determinar el estado en español
+      let statusInSpanish = "Sin estado";
+      if (revisionThesis.ApprovalThesis) {
+        switch (revisionThesis.ApprovalThesis.status) {
+          case "pending":
+            statusInSpanish = "Pendiente";
+            break;
+          case "in revision":
+            statusInSpanish = "En revisión";
+            break;
+          case "approved":
+            statusInSpanish = "Aprobada";
+            break;
+          case "rejected":
+            statusInSpanish = "Rechazada";
+            break;
+          default:
+            statusInSpanish = revisionThesis.ApprovalThesis.status;
+        }
+      }
+
+      return {
+        assigned_review_id: reviewData.assigned_review_id,
+        date_assigned: reviewData.date_assigned,
+        revision_info: {
+          revision_thesis_id: revisionThesis.revision_thesis_id,
+          date_revision: revisionThesis.date_revision,
+          thesis_dir: `${BASE_URL}/public${revisionThesis.thesis_dir}`,
+          active_process: revisionThesis.active_process,
+          sede: revisionThesis.Sede.nameSede,
+        },
+        student_info: {
+          ...studentWithPhoto,
+        },
+        approval_status: {
+          status: statusInSpanish,
+          status_original: revisionThesis.ApprovalThesis?.status || null,
+          date_approved: revisionThesis.ApprovalThesis?.date_approved || null,
+          approved: revisionThesis.ApprovalThesis?.approved || null,
+        },
+        comments: reviewData.commentsRevisions || [], // ✅ Cambiar a commentsRevisions (plural, minúscula)
+        total_comments: reviewData.commentsRevisions ? reviewData.commentsRevisions.length : 0, // ✅ Cambiar a commentsRevisions
+      };
+    });
+
+    // Estadísticas del revisor
+    const totalReviews = formattedHistory.length;
+    const approvedCount = formattedHistory.filter(item => 
+      item.approval_status.status_original === "approved"
+    ).length;
+    const rejectedCount = formattedHistory.filter(item => 
+      item.approval_status.status_original === "rejected"
+    ).length;
+    const pendingCount = formattedHistory.filter(item => 
+      ["pending", "in revision"].includes(item.approval_status.status_original)
+    ).length;
+    const totalComments = formattedHistory.reduce((sum, item) => sum + item.total_comments, 0);
+
+    // Respuesta exitosa
+    res.status(200).json({
+      message: "Historial de revisiones del revisor obtenido con éxito",
+      reviewer_info: {
+        user_id: reviewer.user_id,
+        name: reviewer.name,
+        email: reviewer.email,
+        profilePhoto: reviewer.profilePhoto 
+          ? `${BASE_URL}/public/profilephoto/${reviewer.profilePhoto}` 
+          : null,
+      },
+      statistics: {
+        total_reviews: totalReviews,
+        approved: approvedCount,
+        rejected: rejectedCount,
+        pending: pendingCount,
+        total_comments: totalComments,
+      },
+      orden: orderDirection,
+      data: formattedHistory,
+    });
+  } catch (error) {
+    console.error("Error al obtener el historial del revisor:", error);
+    res.status(500).json({
+      message: "Error al obtener el historial del revisor",
+      error: error.message,
+    });
+  }
+};
 module.exports = {
   uploadRevisionThesis,
   getPendingRevisions,
@@ -619,4 +804,5 @@ module.exports = {
   getRevisionsInReview,
   getInforRevisionsByUserId,
   getApprovedRevisions,
+  getReviewerHistory,
 };
