@@ -131,7 +131,7 @@ const getAssignedReviewsByUser = async (req, res) => {
             {
               model: ApprovalThesis,
               attributes: ["status"],
-              where: { status: "in revision" },
+              where: { status: "in revision"  } || { status: "rejected" },
             },
             {
               model: User,
