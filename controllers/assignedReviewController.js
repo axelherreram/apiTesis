@@ -131,7 +131,11 @@ const getAssignedReviewsByUser = async (req, res) => {
             {
               model: ApprovalThesis,
               attributes: ["status"],
-              where: { status: "in revision"  } || { status: "rejected" },
+              where: { 
+                status: {
+                  [Op.in]: ["in revision", "rejected"] // Usar Op.in para múltiples valores
+                }
+              },
             },
             {
               model: User,
@@ -145,18 +149,20 @@ const getAssignedReviewsByUser = async (req, res) => {
 
     if (assignedReviews.length === 0) {
       return res.status(200).json({
-        message: "No tienes revisiones asignadas",
+        message: "No tienes revisiones asignadas con estado 'en revisión' o 'rechazado'",
         reviews: [],
       });
     }
 
-    // Transformar el estado "in revision" a "en revisión"
+    // Transformar los estados a español
     const transformedReviews = assignedReviews.map((review) => {
       if (review.RevisionThesis) {
         review.RevisionThesis.approvaltheses =
           review.RevisionThesis.approvaltheses.map((approval) => {
             if (approval.status === "in revision") {
               approval.status = "en revisión";
+            } else if (approval.status === "rejected") {
+              approval.status = "rechazado";
             }
             return approval;
           });
