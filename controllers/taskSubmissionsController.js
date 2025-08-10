@@ -128,7 +128,7 @@ const createTaskSubmission = async (req, res) => {
       where: { user_id, task_id },
     });
 
-    if (taskSubmissionExist?.submission_complete) {
+/*     if (taskSubmissionExist?.submission_complete) {
       // Eliminar el archivo si ya existe una entrega completa
       if (req.file && req.file.path) {
         fs.unlink(req.file.path, (err) => {
@@ -141,7 +141,7 @@ const createTaskSubmission = async (req, res) => {
       return res.status(400).json({ 
         message: "La tarea ya ha sido entregada. Use el endpoint de actualización para cambiar el archivo." 
       });
-    }
+    } */
 
     let isUpdate = false;
 
@@ -236,112 +236,7 @@ const createTaskSubmission = async (req, res) => {
     });
   }
 };
-/**
- * Actualiza una entrega de tarea existente, reemplazando el archivo anterior
- * @param {Object} req - Debe contener user_id, task_id y file (nuevo archivo PDF)
- * @param {Object} res
- */
-const updateTaskSubmission = async (req, res) => {
-  const { user_id, task_id } = req.body;
-  const file = req.file;
 
-  try {
-    // Verificar que se haya subido un archivo
-    if (!file) {
-      return res.status(400).json({ message: "Se requiere subir un archivo PDF" });
-    }
-
-    // Verificar si el usuario existe
-    const userExist = await User.findByPk(user_id);
-    if (!userExist) {
-      return res.status(404).json({ message: "El usuario no existe" });
-    }
-
-    // Verificar si la tarea existe
-    const taskExist = await Task.findByPk(task_id);
-    if (!taskExist) {
-      return res.status(404).json({ message: "La tarea no existe" });
-    }
-
-    // Buscar la entrega existente
-    const taskSubmissionExist = await TaskSubmission.findOne({
-      where: { user_id, task_id },
-    });
-
-    if (!taskSubmissionExist) {
-      return res.status(404).json({ message: "No se encontró una entrega para esta tarea" });
-    }
-
-    if (!taskSubmissionExist.submission_complete) {
-      return res.status(400).json({ message: "La tarea no ha sido entregada aún" });
-    }
-
-    // Eliminar el archivo anterior si existe
-    if (taskSubmissionExist.file_path) {
-      const oldFilePath = path.join("uploads/taskSubmissions", taskSubmissionExist.file_path);
-      if (fs.existsSync(oldFilePath)) {
-        fs.unlinkSync(oldFilePath);
-      }
-    }
-
-    // Actualizar la entrega con el nuevo archivo
-    await taskSubmissionExist.update({
-      file_path: file.filename,
-      date: new Date(),
-    });
-
-    // Crear la línea de tiempo
-    await addTimeline(
-      userExist.user_id,
-      "Tarea de envío actualizada",
-      `Actualización de entrega para la tarea: ${taskExist.title}`,
-      taskExist.task_id
-    );
-
-    // Crear la notificación
-    await createNotification(
-      `El estudiante ${userExist.name} ha actualizado la entrega de la tarea: ${taskExist.title}`,
-      userExist.sede_id,
-      user_id,
-      task_id,
-      "general"
-    );
-
-    // Recuperar administrador/catedrático de la sede
-    const teacher = await User.findOne({
-      where: { sede_id: userExist.sede_id, rol_id: 3 },
-    });
-
-    if (teacher) {
-      // Enviar correo electrónico de confirmación de actualización
-      const templateVariables = {
-        catedraticoNombre: teacher.name,
-        studentName: userExist.name,
-        chapterTitle: taskExist.title,
-        deliveryDate: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
-        stateDelivery: "Actualizado",
-      };
-
-      await sendEmailConfirmDelivery(
-        "Actualización de Entrega",
-        teacher.email,
-        templateVariables
-      );
-    }
-
-    return res.status(200).json({
-      message: "Tarea de envío actualizada exitosamente",
-      file_path: file.filename
-    });
-
-  } catch (error) {
-    console.error("Error al actualizar la entrega de tarea:", error);
-    res.status(500).json({
-      message: "Error en el servidor al actualizar la entrega de la tarea",
-      error: error.message,
-    });
-  }
-};
 
 /**
  * The function `getCourseDetails` retrieves information about a specific course, including students
@@ -685,7 +580,6 @@ const getAllTasksBySedeYearAndUser = async (req, res) => {
 module.exports = {
   getCourseDetails,
   createTaskSubmission,
-  updateTaskSubmission,
   getStudentCourseDetails,
   getAllTasksBySedeYearAndUser,
 };

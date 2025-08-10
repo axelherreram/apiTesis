@@ -107,62 +107,12 @@ router.post(
   authMiddleware,
   student,
   getUserIdToken,
-  validateUser,
   uploadTaskSubmission.single("file"),
+  validateUser,
   handleMulterError,
   createTaskSubmission
 );
 
-// Nueva ruta para actualizar una entrega de tarea
-/**
- * @swagger
- * /api/task-submissions/update:
- *   put:
- *     summary: Actualizar una entrega de tarea existente con nuevo archivo PDF
- *     tags: [TaskSubmissions]
- *     requestBody:
- *       required: true
- *       content:
- *         multipart/form-data:
- *           schema:
- *             type: object
- *             required:
- *               - user_id
- *               - task_id
- *               - file
- *             properties:
- *               user_id:
- *                 type: integer
- *                 description: ID del usuario
- *               task_id:
- *                 type: integer
- *                 description: ID de la tarea
- *               file:
- *                 type: string
- *                 format: binary
- *                 description: Nuevo archivo PDF de la tarea (máximo 5MB)
- *     responses:
- *       200:
- *         description: Tarea de envío actualizada exitosamente
- *       400:
- *         description: Datos de entrada inválidos o archivo requerido
- *       404:
- *         description: No se encontró una entrega para esta tarea
- *       500:
- *         description: Error en el servidor al actualizar la entrega
- *     security:
- *       - bearerAuth: []
- */
-router.put(
-  "/task-submissions/update",
-  authMiddleware,
-  student,
-  getUserIdToken,
-  validateUser,
-  uploadTaskSubmission.single("file"),
-  handleMulterError,
-  updateTaskSubmission
-);
 
 /**
  * @swagger
