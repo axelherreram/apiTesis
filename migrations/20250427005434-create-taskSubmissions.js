@@ -29,6 +29,10 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
+      file_path: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
       submission_complete: {
         type: Sequelize.BOOLEAN,
         allowNull: false,

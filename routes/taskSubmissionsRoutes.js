@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   getCourseDetails,
   createTaskSubmission,
+  updateTaskSubmission,
   getStudentCourseDetails,
   getAllTasksBySedeYearAndUser,
 } = require("../controllers/taskSubmissionsController");
@@ -10,6 +11,9 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 const getUserIdToken = require("../middlewares/getUserIdToken");
 const validateUser = require("../middlewares/validateUser");
+const { uploadTaskSubmission, handleMulterError } = require("../middlewares/uploadTaskSubmission");
+const fs = require("fs");
+const path = require("path");
 
 const admin = verifyRole([3, 5]); // Permitir solo a usuarios con rol de administrador
 const student = verifyRole([1]); // Permitir solo a usuarios con rol de estudiante
@@ -63,14 +67,18 @@ router.get(
  * @swagger
  * /api/task-submissions:
  *   post:
- *     summary: Crear una nueva tarea de envío
+ *     summary: Crear una nueva tarea de envío con archivo PDF
  *     tags: [TaskSubmissions]
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - user_id
+ *               - task_id
+ *               - file
  *             properties:
  *               user_id:
  *                 type: integer
@@ -78,11 +86,15 @@ router.get(
  *               task_id:
  *                 type: integer
  *                 description: ID de la tarea
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Archivo PDF de la tarea (máximo 5MB)
  *     responses:
  *       201:
  *         description: Tarea de envío creada exitosamente
  *       400:
- *         description: La tarea de envío ya existe para este usuario y tarea
+ *         description: La tarea de envío ya existe para este usuario y tarea o archivo requerido
  *       404:
  *         description: El usuario o la tarea no existe
  *       500:
@@ -96,7 +108,60 @@ router.post(
   student,
   getUserIdToken,
   validateUser,
+  uploadTaskSubmission.single("file"),
+  handleMulterError,
   createTaskSubmission
+);
+
+// Nueva ruta para actualizar una entrega de tarea
+/**
+ * @swagger
+ * /api/task-submissions/update:
+ *   put:
+ *     summary: Actualizar una entrega de tarea existente con nuevo archivo PDF
+ *     tags: [TaskSubmissions]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - user_id
+ *               - task_id
+ *               - file
+ *             properties:
+ *               user_id:
+ *                 type: integer
+ *                 description: ID del usuario
+ *               task_id:
+ *                 type: integer
+ *                 description: ID de la tarea
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Nuevo archivo PDF de la tarea (máximo 5MB)
+ *     responses:
+ *       200:
+ *         description: Tarea de envío actualizada exitosamente
+ *       400:
+ *         description: Datos de entrada inválidos o archivo requerido
+ *       404:
+ *         description: No se encontró una entrega para esta tarea
+ *       500:
+ *         description: Error en el servidor al actualizar la entrega
+ *     security:
+ *       - bearerAuth: []
+ */
+router.put(
+  "/task-submissions/update",
+  authMiddleware,
+  student,
+  getUserIdToken,
+  validateUser,
+  uploadTaskSubmission.single("file"),
+  handleMulterError,
+  updateTaskSubmission
 );
 
 /**
@@ -188,6 +253,44 @@ router.get(
   authMiddleware,
   adminOrStudent,
   getAllTasksBySedeYearAndUser
+);
+
+// Ruta para descargar archivos de tareas
+/**
+ * @swagger
+ * /api/task-submissions/download/{filename}:
+ *   get:
+ *     summary: Descargar archivo de tarea por nombre de archivo
+ *     tags: [TaskSubmissions]
+ *     parameters:
+ *       - in: path
+ *         name: filename
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: Nombre del archivo a descargar
+ *     responses:
+ *       200:
+ *         description: Archivo descargado exitosamente
+ *       404:
+ *         description: Archivo no encontrado
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get(
+  "/task-submissions/download/:filename",
+  authMiddleware,
+  adminOrStudent,
+  (req, res) => {
+    const { filename } = req.params;
+    const filePath = path.join(__dirname, "../uploads/taskSubmissions", filename);
+    
+    if (fs.existsSync(filePath)) {
+      res.download(filePath);
+    } else {
+      res.status(404).json({ message: "Archivo no encontrado" });
+    }
+  }
 );
 
 module.exports = router;

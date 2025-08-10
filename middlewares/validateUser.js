@@ -22,6 +22,7 @@ const validateUser = async (req, res, next) => {
   try {
     // Check if the user exists in the database
     const userExist = await User.findByPk(user_id);
+    console.log(user_id);
     if (!userExist) {
       return res.status(404).json({ message: "User does not exist" });
     }

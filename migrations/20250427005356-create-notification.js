@@ -65,7 +65,12 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
-    });
+    },
+  {
+    timestamps: true,
+  }
+  );
+  
   },
 
   down: async (queryInterface, Sequelize) => {

@@ -47,6 +47,10 @@ const TaskSubmissions = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
+    file_path: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     date: {
       type: DataTypes.DATE,
       allowNull: false,
