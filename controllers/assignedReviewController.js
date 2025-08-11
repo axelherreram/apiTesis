@@ -126,15 +126,12 @@ const getAssignedReviewsByUser = async (req, res) => {
         {
           model: RevisionThesis,
           attributes: ["revision_thesis_id", "date_revision", "active_process"],
+          where: { active_process: true },
           include: [
             {
               model: ApprovalThesis,
               attributes: ["status"],
-              where: { 
-                status: {
-                  [Op.in]: ["in revision", "rejected"] // Usar Op.in para múltiples valores
-                }
-              },
+              where: { status: "in revision" },
             },
             {
               model: User,
@@ -148,51 +145,18 @@ const getAssignedReviewsByUser = async (req, res) => {
 
     if (assignedReviews.length === 0) {
       return res.status(200).json({
-        message: "No tienes revisiones asignadas con estado 'en revisión' o 'rechazado'",
+        message: "No tienes revisiones asignadas",
         reviews: [],
       });
     }
 
-    // Agrupar las revisiones por usuario (carnet) y obtener solo la más reciente
-    const groupedByUser = {};
-    
-    assignedReviews.forEach((review) => {
-      if (review.RevisionThesis && review.RevisionThesis.User) {
-        const userCarnet = review.RevisionThesis.User.carnet;
-        const reviewDate = new Date(review.date_assigned);
-        
-        // Si es la primera revisión de este usuario o si es más reciente
-        if (!groupedByUser[userCarnet] || 
-            reviewDate > new Date(groupedByUser[userCarnet].date_assigned)) {
-          groupedByUser[userCarnet] = review;
-        }
-      }
-    });
-
-    // Convertir el objeto agrupado a array
-    const uniqueReviews = Object.values(groupedByUser);
-
-    // Ordenar las revisiones únicas según el parámetro order
-    uniqueReviews.sort((a, b) => {
-      const dateA = new Date(a.date_assigned);
-      const dateB = new Date(b.date_assigned);
-      
-      if (orderDirection === "ASC") {
-        return dateA - dateB;
-      } else {
-        return dateB - dateA;
-      }
-    });
-
-    // Transformar los estados a español
-    const transformedReviews = uniqueReviews.map((review) => {
+    // Transformar el estado "in revision" a "en revisión"
+    const transformedReviews = assignedReviews.map((review) => {
       if (review.RevisionThesis) {
         review.RevisionThesis.approvaltheses =
           review.RevisionThesis.approvaltheses.map((approval) => {
             if (approval.status === "in revision") {
-              approval.status = "En revisión";
-            } else if (approval.status === "rejected") {
-              approval.status = "Rechazado";
+              approval.status = "en revisión";
             }
             return approval;
           });
@@ -203,8 +167,6 @@ const getAssignedReviewsByUser = async (req, res) => {
     res.status(200).json({
       message: "Revisiones asignadas obtenidas con éxito",
       reviews: transformedReviews,
-      totalUsers: uniqueReviews.length,
-      totalReviews: assignedReviews.length
     });
   } catch (error) {
     console.error("Error al obtener revisiones asignadas:", error);
@@ -216,8 +178,68 @@ const getAssignedReviewsByUser = async (req, res) => {
 };
 
 
+/**
+ * The function `getReviewHistoryByUser` retrieves the review history for a specific user, with optional
+ * filtering by `carnet` and ordering by `date_assigned`.
+ * @param {Object} req - The HTTP request object containing the `user_id` in the request parameters and optional `order` and `carnet` in the query parameters.
+ * @param {Object} res - The HTTP response object used to send back the result of the operation.
+ * @returns {Promise<void>} A JSON response indicating success or failure, including the list of review history
+ * or a message if no reviews are found.
+ */
+const getReviewHistoryByUser = async (req, res) => {
+  try {
+    const { user_id } = req.params;
+    const { order = "desc", carnet } = req.query;
+
+    // Validar el formato del orden
+    const orderDirection = order.toLowerCase() === "asc" ? "ASC" : "DESC";
+
+    // Construcción dinámica de filtros
+    const whereClause = { user_id };
+    const userWhereClause = carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {};
+
+    // Obtener historial de revisiones
+    const reviewHistory = await AssignedReview.findAll({
+      attributes: ["date_assigned"],
+      where: whereClause,
+      order: [["date_assigned", orderDirection]],
+      include: [
+        {
+          model: RevisionThesis,
+          attributes: ["date_revision", "active_process"],
+          include: [
+            {
+              model: ApprovalThesis,
+              attributes: ["status", "date_approved"],
+            },
+            {
+              model: User,
+              attributes: ["user_id", "name", "email", "carnet"],
+              where: userWhereClause,
+            },
+          ],
+        },
+      ],
+    });
+
+    return res.status(reviewHistory.length ? 200 : 404).json({
+      message: reviewHistory.length
+        ? "Historial de revisiones obtenido con éxito"
+        : "No hay historial de revisiones para este usuario",
+      reviews: reviewHistory,
+    });
+  } catch (error) {
+    console.error("Error al obtener el historial de revisiones:", error);
+    return res.status(500).json({
+      message: "Error interno del servidor al obtener el historial de revisiones",
+      details: error.message,
+    });
+  }
+};
+
 
 module.exports = {
   createAssignedReview,
   getAssignedReviewsByUser,
+  getReviewHistoryByUser,
 };

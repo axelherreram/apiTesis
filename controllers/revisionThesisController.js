@@ -327,15 +327,12 @@ const getPendingRevisions = async (req, res) => {
 /**
  * The function `getRevisionsInReview` retrieves all thesis revisions that are currently in review
  * and have been assigned to a reviewer, with optional filtering by student ID (`carnet`) and ordering by date.
+ * Returns only the most recent revision per user when multiple revisions exist.
  * @param req - The HTTP request object, allowing query parameters `order` (asc/desc) and `carnet`.
  * @param res - The HTTP response object used to return the list of thesis revisions in review.
  * @returns A JSON response with the list of thesis revisions in review or an error message if none are found
  * or if an internal server error occurs.
- * @returns A JSON response with the list of thesis revisions in review or an error message if none are found
- * or if an internal server error occurs.
- * @returns A JSON response with the list of thesis revisions in review or an error message if none are found
- * or if an internal server error occurs.
- *  */
+ */
 const getRevisionsInReview = async (req, res) => {
   try {
     const { order = "asc", carnet } = req.query;
@@ -360,18 +357,19 @@ const getRevisionsInReview = async (req, res) => {
     }
 
     const revisionsInReview = await RevisionThesis.findAll({
-      attributes: ["revision_thesis_id", "date_revision"],
-      where: { active_process: true },
+      attributes: ["revision_thesis_id", "date_revision", "user_id"],
       include: [
         {
           model: ApprovalThesis,
-          where: { status: "in revision" },
+          where: { status: { [Op.in]: ["in revision", "rejected"] } },
           attributes: ["status"],
+          required: true,
         },
         {
           model: User,
           attributes: ["user_id", "name", "carnet"],
           where: userWhereClause,
+          required: true,
         },
         {
           model: AssignedReview,
@@ -379,7 +377,7 @@ const getRevisionsInReview = async (req, res) => {
           required: true,
         },
       ],
-      order: [["date_revision", orderDirection]],
+      order: [["date_revision", "DESC"]],
     });
 
     if (revisionsInReview.length === 0) {
@@ -388,18 +386,51 @@ const getRevisionsInReview = async (req, res) => {
       });
     }
 
-    // Convertir el estado "in revision" a "en revisión"
-    const formattedRevisions = revisionsInReview.map((revision) => ({
-      ...revision.toJSON(),
-      ApprovalThesis: {
-        ...revision.ApprovalThesis,
-        status: "en revisión",
-      },
-    }));
+    // Filtrar para obtener solo la revisión más reciente por usuario
+    const userLatestRevisions = new Map();
+    
+    revisionsInReview.forEach((revision) => {
+      const userId = revision.user_id;
+      
+      if (!userLatestRevisions.has(userId)) {
+        userLatestRevisions.set(userId, revision);
+      } else {
+        const existingRevision = userLatestRevisions.get(userId);
+        if (new Date(revision.date_revision) > new Date(existingRevision.date_revision)) {
+          userLatestRevisions.set(userId, revision);
+        }
+      }
+    });
+
+    // Convertir el Map a array y aplicar el ordenamiento solicitado
+    let uniqueRevisions = Array.from(userLatestRevisions.values());
+    
+    uniqueRevisions.sort((a, b) => {
+      const dateA = new Date(a.date_revision);
+      const dateB = new Date(b.date_revision);
+      return orderDirection === "ASC" ? dateA - dateB : dateB - dateA;
+    });
+
+    // Formatear las revisiones manteniendo el status en inglés
+    const formattedRevisions = uniqueRevisions.map((revision) => {
+      const revisionData = revision.toJSON();
+      
+      // Manejar tanto ApprovalThesis como approvaltheses
+      let approvalStatus = null;
+      if (revisionData.ApprovalThesis) {
+        approvalStatus = revisionData.ApprovalThesis;
+      } else if (revisionData.approvaltheses && revisionData.approvaltheses.length > 0) {
+        approvalStatus = revisionData.approvaltheses[0];
+      }
+
+      return {
+        ...revisionData,
+        ApprovalThesis: approvalStatus || { status: "unknown" },
+      };
+    });
 
     res.status(200).json({
-      message:
-        "Revisiones en revisión con revisor asignado obtenidas con éxito",
+      message: "Revisiones en revisión con revisor asignado obtenidas con éxito",
       orden: orderDirection,
       data: formattedRevisions,
     });
