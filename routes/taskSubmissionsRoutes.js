@@ -3,7 +3,6 @@ const router = express.Router();
 const {
   getCourseDetails,
   createTaskSubmission,
-  updateTaskSubmission,
   getStudentCourseDetails,
   getAllTasksBySedeYearAndUser,
 } = require("../controllers/taskSubmissionsController");

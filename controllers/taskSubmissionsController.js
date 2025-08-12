@@ -213,9 +213,13 @@ const createTaskSubmission = async (req, res) => {
       );
     }
 
+    const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
+    const normalizedPath = (req.file.path || "").replace(/\\/g, "/");
+    const publicFileUrl = encodeURI(`${BASE_URL}/${normalizedPath}`);
+
     return res.status(isUpdate ? 200 : 201).json({
       message: isUpdate ? "Tarea de envío actualizada exitosamente" : "Tarea de envío creada exitosamente",
-      file_path: req.file.path,
+      file_path: publicFileUrl,
       filename: req.file.filename
     });
 
@@ -440,7 +444,7 @@ const getStudentCourseDetails = async (req, res) => {
         user_id,
         task_id: tasks.map((task) => task.task_id),
       },
-      attributes: ["submission_complete", "date"],
+      attributes: ["submission_complete", "date", "file_path"],
       include: [
         {
           model: Task,
@@ -449,12 +453,21 @@ const getStudentCourseDetails = async (req, res) => {
       ],
     });
 
-    // Formatear las entregas para incluir el título de la tarea
-    const formattedSubmissions = submissions.map((submission) => ({
-      title: submission.Task.title,
-      submission_complete: submission.submission_complete,
-      date: submission.date,
-    }));
+    // Formatear las entregas para incluir el título de la tarea y URL pública del archivo
+    const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
+    const formattedSubmissions = submissions.map((submission) => {
+      const normalizedPath = (submission.file_path || "").replace(/\\/g, "/");
+      const publicFileUrl = normalizedPath
+        ? encodeURI(`${BASE_URL}/${normalizedPath}`)
+        : null;
+
+      return {
+        title: submission.Task.title,
+        submission_complete: submission.submission_complete,
+        date: submission.date,
+        file_path: publicFileUrl,
+      };
+    });
 
     // Paso 7: Enviar la respuesta con los detalles del curso y las entregas del estudiante
     res.status(200).json({
