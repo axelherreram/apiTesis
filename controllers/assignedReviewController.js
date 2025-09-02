@@ -101,82 +101,115 @@ const createAssignedReview = async (req, res) => {
  */
 const getAssignedReviewsByUser = async (req, res) => {
   const { user_id } = req.params;
-  const { order = "desc", carnet = "" } = req.query; // Valores por defecto
+  const { order = "desc", carnet = "" } = req.query;
 
   try {
     // Validar que el usuario exista
     const infoUser = await User.findByPk(user_id);
     if (!infoUser) {
-      return res.status(404).json({
-        message: "Usuario no encontrado",
-      });
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    // Configurar la ordenación (por defecto DESC)
     const orderDirection = order.toLowerCase() === "asc" ? "ASC" : "DESC";
 
-    // Obtener las revisiones asignadas al usuario con filtros y ordenación
+    // Obtener TODAS las asignaciones del usuario (sin filtrar por estado)
     const assignedReviews = await AssignedReview.findAll({
-      where: {
-        user_id,
-      },
+      where: { user_id },
       attributes: ["date_assigned"],
-      order: [["date_assigned", orderDirection]], // Ordenación dinámica
       include: [
         {
           model: RevisionThesis,
           attributes: ["revision_thesis_id", "date_revision", "active_process"],
-          where: { active_process: true },
           include: [
             {
               model: ApprovalThesis,
               attributes: ["status"],
-              where: { status: "in revision" },
             },
             {
               model: User,
-              attributes: ["user_id","name", "email", "carnet"],
-              where: carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {}, // Filtro dentro de User
+              attributes: ["user_id", "name", "email", "carnet"],
+              where: carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {},
+              required: true,
             },
           ],
+          required: true,
         },
       ],
     });
 
     if (assignedReviews.length === 0) {
-      return res.status(200).json({
-        message: "No tienes revisiones asignadas",
-        reviews: [],
-      });
+      return res.status(200).json({ message: "No tienes revisiones asignadas", reviews: [] });
     }
 
-    // Transformar el estado "in revision" a "en revisión"
-    const transformedReviews = assignedReviews.map((review) => {
-      if (review.RevisionThesis) {
-        review.RevisionThesis.approvaltheses =
-          review.RevisionThesis.approvaltheses.map((approval) => {
-            if (approval.status === "in revision") {
-              approval.status = "en revisión";
-            }
-            return approval;
-          });
+    // Normaliza estado a español con prioridad: en revisión > Rechazada > Aprobado > Sin estado
+    const getNormalizedStatus = (review) => {
+      const approvals = review?.RevisionThesis?.approvaltheses || [];
+      const hasInRevision = approvals.some(ap => ap.status === "in revision" || ap.status === "en revisión");
+      if (hasInRevision) return "en revisión";
+      const hasRejected = approvals.some(ap => ap.status === "rejected" || ap.status === "Rechazada");
+      if (hasRejected) return "Rechazado";
+      const hasApproved = approvals.some(ap => ap.status === "approved" || ap.status === "Aprobado");
+      if (hasApproved) return "Aprobado";
+      return "Sin estado";
+    };
+
+    // Agrupar por estudiante (por nombre normalizado)
+    const reviewsByStudentName = assignedReviews.reduce((acc, review) => {
+      const name = review?.RevisionThesis?.User?.name || "";
+      const key = name.trim().toLowerCase();
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(review);
+      return acc;
+    }, {});
+
+    // Seleccionar 1 por estudiante: prioriza "en revisión", si no hay, la más reciente
+    const pickMostRelevant = (arr) => {
+      const sortByAssignedDesc = (x, y) => new Date(y.date_assigned) - new Date(x.date_assigned);
+      const inRevision = arr.filter(r => getNormalizedStatus(r) === "en revisión").sort(sortByAssignedDesc);
+      if (inRevision.length) return inRevision[0];
+      return [...arr].sort(sortByAssignedDesc)[0];
+    };
+
+    const onePerStudent = Object.values(reviewsByStudentName).map(pickMostRelevant);
+
+    // Traducir estados al español en el payload seleccionado
+    const translateApprovals = (review) => {
+      if (review?.RevisionThesis?.approvaltheses) {
+        review.RevisionThesis.approvaltheses.forEach(ap => {
+          if (ap.status === "in revision") ap.status = "en revisión";
+          else if (ap.status === "rejected") ap.status = "Rechazado";
+          else if (ap.status === "approved") ap.status = "Aprobado";
+        });
       }
       return review;
+    };
+
+    const translated = onePerStudent.map(translateApprovals);
+
+    // Orden final: en revisión primero; luego por fecha segun 'order'
+    const sorted = translated.sort((a, b) => {
+      const aIn = getNormalizedStatus(a) === "en revisión";
+      const bIn = getNormalizedStatus(b) === "en revisión";
+      if (aIn && !bIn) return -1;
+      if (!aIn && bIn) return 1;
+
+      const da = new Date(a.date_assigned);
+      const db = new Date(b.date_assigned);
+      return orderDirection === "ASC" ? da - db : db - da;
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Revisiones asignadas obtenidas con éxito",
-      reviews: transformedReviews,
+      reviews: sorted,
     });
   } catch (error) {
     console.error("Error al obtener revisiones asignadas:", error);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Error interno del servidor al obtener revisiones asignadas",
-      details: `Ocurrió un error inesperado: ${error.message}. Por favor, contacta al administrador del sistema.`,
+      details: error.message,
     });
   }
 };
-
 
 /**
  * The function `getReviewHistoryByUser` retrieves the review history for a specific user, with optional
