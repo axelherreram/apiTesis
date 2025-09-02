@@ -81,28 +81,21 @@ const createTaskSubmission = async (req, res) => {
       });
     }
 
+    // ...existing code...
+    
     // Configurar zona horaria
     const timeZone = "America/Guatemala";
-    const currentDate = moment.tz(timeZone);
-    const currentTime = moment(currentDate.format("HH:mm:ss"), "HH:mm:ss");
-
-    // Convertir fechas y horas de la tarea a la zona horaria correcta
+    const currentDateTime = moment.tz(timeZone);
+    
+    // Convertir fechas de la tarea a la zona horaria correcta
     const taskStart = moment.tz(taskExist.taskStart, timeZone);
     const endTask = moment.tz(taskExist.endTask, timeZone);
-    const startTime = moment(taskExist.startTime, "HH:mm:ss");
-    const endTime = moment(taskExist.endTime, "HH:mm:ss");
-
-    // Validar rango de fechas y horas
-    const isDateValid = currentDate.isBetween(taskStart, endTask, "day", "[]");
-    const isTimeValid = currentTime.isBetween(
-      startTime,
-      endTime,
-      "second",
-      "[]"
-    );
-
-    if (!isDateValid || !isTimeValid) {
-      // Eliminar el archivo si está fuera del rango permitido
+    
+    // Validar rango de fechas (sin considerar horas)
+    const isDateValid = currentDateTime.isBetween(taskStart, endTask, "day", "[]");
+    
+    if (!isDateValid) {
+      // Eliminar el archivo si está fuera del rango de fechas permitido
       if (req.file && req.file.path) {
         fs.unlink(req.file.path, (err) => {
           if (err) {
@@ -110,18 +103,58 @@ const createTaskSubmission = async (req, res) => {
           }
         });
       }
-
+    
       return res.status(400).json({
-        message: "La tarea no puede ser entregada fuera del rango de fecha permitido",
+        message: "La tarea no puede ser entregada fuera del rango de fechas permitido",
         debug: {
-          currentDate: currentDate.format(),
+          currentDateTime: currentDateTime.format(),
           taskStart: taskStart.format(),
           endTask: endTask.format(),
-          startTime: startTime.format(),
-          endTime: endTime.format(),
         },
       });
     }
+    
+    // Solo validar horario si es el primer o último día
+    const isFirstDay = currentDateTime.isSame(taskStart, 'day');
+    const isLastDay = currentDateTime.isSame(endTask, 'day');
+    
+    if (isFirstDay || isLastDay) {
+      // Extraer las horas y minutos de la tarea
+      const startTimeParts = taskExist.startTime.split(':');
+      const endTimeParts = taskExist.endTime.split(':');
+    
+      // Crear objetos moment para la hora actual y las horas de inicio/fin
+      const startTime = moment(currentDateTime).set({
+        hour: parseInt(startTimeParts[0], 10),
+        minute: parseInt(startTimeParts[1], 10),
+        second: 0
+      });
+      const endTime = moment(currentDateTime).set({
+        hour: parseInt(endTimeParts[0], 10),
+        minute: parseInt(endTimeParts[1], 10),
+        second: 0
+      });
+    
+      // Validar si la hora actual está dentro del rango de horas permitido
+      const isTimeValid = currentDateTime.isBetween(startTime, endTime, null, '[]');
+    
+      if (!isTimeValid) {
+        // Eliminar el archivo si está fuera del rango de horas permitido
+        if (req.file && req.file.path) {
+          fs.unlink(req.file.path, (err) => {
+            if (err) {
+              console.error(`Error al eliminar el archivo PDF: ${err.message}`);
+            }
+          });
+        }
+    
+        return res.status(400).json({
+          message: "La tarea no puede ser entregada fuera del horario permitido",
+        });
+      }
+    }
+    
+    // ...existing code...
 
     // Buscar si ya existe una entrega
     let taskSubmissionExist = await TaskSubmission.findOne({
