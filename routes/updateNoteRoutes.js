@@ -22,6 +22,8 @@ const allowedRolesList = verifyRole([3, 4, 5]);
  *     summary: Actualiza la nota de un estudiante en un curso específico.
  *     tags:
  *       - Notas
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:

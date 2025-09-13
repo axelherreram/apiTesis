@@ -10,7 +10,7 @@ const getUserIdToken = require("../middlewares/getUserIdToken");
 const validateUser = require("../middlewares/validateUser");
 
 const student = verifyRole([1]);
-const admin = verifyRole([3]);
+const admin = verifyRole([3,5]);
 
 /**
  * @swagger

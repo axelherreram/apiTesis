@@ -9,7 +9,9 @@ const router = express.Router();
 
 const adminOrTerna = verifyRole([2, 3, 5]); // Roles permitidos: Terna (2), Admin (3)
 const admin = verifyRole([3]); // Solo Admin
-const coordinador_sede = verifyRole([4, 5]); 
+const coordinador_sede = verifyRole([4]); 
+const coordinador_sede_or_admin = verifyRole([3, 4, 5]); // Admin o Coordinador de Sede
+
 const adminOrSuperAdmin = verifyRole([3, 4, 5]); // Solo Admin
 
 /**
@@ -304,7 +306,7 @@ router.put(
 router.get(
   "/admins/:sede_id",
   authMiddleware, 
-  coordinador_sede, 
+  coordinador_sede_or_admin, 
   extractSedeIdMiddleware,
   userController.listAllAdmins 
 );

@@ -23,7 +23,7 @@ const { sequelize } = require("../config/database");
  * - `belongsTo(Comments, { foreignKey: "comment_id" })`: Each comment version belongs to a specific comment.
  */
 const CommentVersion = sequelize.define(
-  "CommentVersion",
+  "commentversion",
   {
     commentVersion_id: {
       type: DataTypes.INTEGER,
@@ -58,7 +58,7 @@ const CommentVersion = sequelize.define(
     },
   },
   {
-    tableName: "commentVersion",
+    tableName: "commentversion",
     timestamps: false,
     hooks: {
       beforeCreate: (commentVersion, options) => {

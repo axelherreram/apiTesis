@@ -153,10 +153,14 @@ const getAllCommentsForTaskAndUser = async (req, res) => {
       include: [
         {
           model: CommentVersion,
-          attributes: ["comment", "datecomment", "role"],
+          // Incluimos el ID para poder devolverlo en la respuesta
+          attributes: ["commentVersion_id", "comment", "datecomment", "role"],
+      // Alias implícito de Sequelize será plural del model name: 'commentversion' -> 'commentversions'
         },
       ],
-      order: [[CommentVersion, "datecomment", "DESC"]],
+    order: [[CommentVersion, "datecomment", "DESC"]],
+    raw: false,
+    nest: true,
     });
 
     if (!comments.length) {
@@ -164,19 +168,26 @@ const getAllCommentsForTaskAndUser = async (req, res) => {
         message: "No se encontraron comentarios para esta tarea y usuario.",
       });
     }
-
-    const formattedComments = comments.map((comment) => ({
-      comment_id: comment.comment_id,
-      comment_active: comment.comment_active,
-      task_id: comment.task_id,
-      user_id: comment.user_id,
-      versions: comment.CommentVersions.map((version) => ({
-        commentVersion_id: version.commentVersion_id,
-        comment: version.comment,
-        datecomment: version.datecomment,
-        role: version.role === "student" ? "Estudiante" : "Catedratico",
-      })),
-    }));
+    const formattedComments = comments.map((comment) => {
+      // El model se definió como 'commentversion' (lowercase) => asociación plural: 'commentversions'
+      let rawVersions =
+        comment.commentversions ||
+        comment.CommentVersions ||
+        comment.commentVersions ||
+        [];
+      return {
+        comment_id: comment.comment_id,
+        comment_active: comment.comment_active,
+        task_id: comment.task_id,
+        user_id: comment.user_id,
+        versions: rawVersions.map((version) => ({
+          commentVersion_id: version.commentVersion_id,
+          comment: version.comment,
+          datecomment: version.datecomment,
+          role: version.role === "student" ? "Estudiante" : "Catedratico",
+        })),
+      };
+    });
 
     res.status(200).json(formattedComments);
   } catch (error) {

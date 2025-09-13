@@ -10,6 +10,9 @@ const verifyRole = require("../middlewares/roleMiddleware");
 // Middleware para verificar el rol de administrador, estudiante y coordinador general
 const admin = verifyRole([3,5]); // Permitir solo a usuarios con rol de administrador
 const adminOrStuden = verifyRole([1, 3, 5]); // Permitir solo a usuarios con rol de administrador o estudiante
+const adminOrStudenX = verifyRole([1, 3]); 
+const adminOnly = verifyRole([3]);
+
 const router = express.Router();
 
 /**
@@ -92,7 +95,7 @@ const router = express.Router();
 router.post(
   "/comments/:taskId",
   authMiddleware,
-  adminOrStuden,
+  adminOrStudenX,
   addCommentForTask
 );
 
@@ -211,7 +214,7 @@ router.get(
 router.patch(
   "/comments/:commentId/deactivate",
   authMiddleware,
-  admin,
+  adminOnly,
   toggleCommentStatus
 );
 
