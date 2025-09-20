@@ -39,10 +39,10 @@ const createTaskSubmission = async (req, res) => {
     });
   }
 
-  // Verificar que se haya subido un archivo 
+  // Verificar que se haya subido un archivo
   if (!req.file) {
-    return res.status(400).json({ 
-      message: "Se requiere subir un archivo PDF" 
+    return res.status(400).json({
+      message: "Se requiere subir un archivo PDF",
     });
   }
 
@@ -59,8 +59,8 @@ const createTaskSubmission = async (req, res) => {
         });
       }
 
-      return res.status(404).json({ 
-        message: "El usuario no existe" 
+      return res.status(404).json({
+        message: "El usuario no existe",
       });
     }
 
@@ -76,24 +76,29 @@ const createTaskSubmission = async (req, res) => {
         });
       }
 
-      return res.status(404).json({ 
-        message: "La tarea no existe" 
+      return res.status(404).json({
+        message: "La tarea no existe",
       });
     }
 
     // ...existing code...
-    
+
     // Configurar zona horaria
     const timeZone = "America/Guatemala";
     const currentDateTime = moment.tz(timeZone);
-    
+
     // Convertir fechas de la tarea a la zona horaria correcta
     const taskStart = moment.tz(taskExist.taskStart, timeZone);
     const endTask = moment.tz(taskExist.endTask, timeZone);
-    
+
     // Validar rango de fechas (sin considerar horas)
-    const isDateValid = currentDateTime.isBetween(taskStart, endTask, "day", "[]");
-    
+    const isDateValid = currentDateTime.isBetween(
+      taskStart,
+      endTask,
+      "day",
+      "[]"
+    );
+
     if (!isDateValid) {
       // Eliminar el archivo si está fuera del rango de fechas permitido
       if (req.file && req.file.path) {
@@ -103,9 +108,10 @@ const createTaskSubmission = async (req, res) => {
           }
         });
       }
-    
+
       return res.status(400).json({
-        message: "La tarea no puede ser entregada fuera del rango de fechas permitido",
+        message:
+          "La tarea no puede ser entregada fuera del rango de fechas permitido",
         debug: {
           currentDateTime: currentDateTime.format(),
           taskStart: taskStart.format(),
@@ -113,31 +119,36 @@ const createTaskSubmission = async (req, res) => {
         },
       });
     }
-    
+
     // Solo validar horario si es el primer o último día
-    const isFirstDay = currentDateTime.isSame(taskStart, 'day');
-    const isLastDay = currentDateTime.isSame(endTask, 'day');
-    
+    const isFirstDay = currentDateTime.isSame(taskStart, "day");
+    const isLastDay = currentDateTime.isSame(endTask, "day");
+
     if (isFirstDay || isLastDay) {
       // Extraer las horas y minutos de la tarea
-      const startTimeParts = taskExist.startTime.split(':');
-      const endTimeParts = taskExist.endTime.split(':');
-    
+      const startTimeParts = taskExist.startTime.split(":");
+      const endTimeParts = taskExist.endTime.split(":");
+
       // Crear objetos moment para la hora actual y las horas de inicio/fin
       const startTime = moment(currentDateTime).set({
         hour: parseInt(startTimeParts[0], 10),
         minute: parseInt(startTimeParts[1], 10),
-        second: 0
+        second: 0,
       });
       const endTime = moment(currentDateTime).set({
         hour: parseInt(endTimeParts[0], 10),
         minute: parseInt(endTimeParts[1], 10),
-        second: 0
+        second: 0,
       });
-    
+
       // Validar si la hora actual está dentro del rango de horas permitido
-      const isTimeValid = currentDateTime.isBetween(startTime, endTime, null, '[]');
-    
+      const isTimeValid = currentDateTime.isBetween(
+        startTime,
+        endTime,
+        null,
+        "[]"
+      );
+
       if (!isTimeValid) {
         // Eliminar el archivo si está fuera del rango de horas permitido
         if (req.file && req.file.path) {
@@ -147,13 +158,14 @@ const createTaskSubmission = async (req, res) => {
             }
           });
         }
-    
+
         return res.status(400).json({
-          message: "La tarea no puede ser entregada fuera del horario permitido",
+          message:
+            "La tarea no puede ser entregada fuera del horario permitido",
         });
       }
     }
-    
+
     // ...existing code...
 
     // Buscar si ya existe una entrega
@@ -161,7 +173,7 @@ const createTaskSubmission = async (req, res) => {
       where: { user_id, task_id },
     });
 
-/*     if (taskSubmissionExist?.submission_complete) {
+    /*     if (taskSubmissionExist?.submission_complete) {
       // Eliminar el archivo si ya existe una entrega completa
       if (req.file && req.file.path) {
         fs.unlink(req.file.path, (err) => {
@@ -185,17 +197,19 @@ const createTaskSubmission = async (req, res) => {
         task_id,
         submission_complete: true,
         file_path: req.file.path,
-        date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
+        date: new Date(),
       });
     } else {
       // Si ya existe, actualizar la entrega
       isUpdate = true;
-      
+
       // Eliminar archivo anterior si existe
       if (taskSubmissionExist.file_path) {
         fs.unlink(taskSubmissionExist.file_path, (err) => {
           if (err) {
-            console.error(`Error al eliminar el archivo anterior: ${err.message}`);
+            console.error(
+              `Error al eliminar el archivo anterior: ${err.message}`
+            );
           }
         });
       }
@@ -203,7 +217,7 @@ const createTaskSubmission = async (req, res) => {
       await taskSubmissionExist.update({
         submission_complete: true,
         file_path: req.file.path,
-        date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
+        date: new Date(),
       });
     }
 
@@ -211,13 +225,17 @@ const createTaskSubmission = async (req, res) => {
     await addTimeline(
       userExist.user_id,
       isUpdate ? "Tarea de envío actualizada" : "Tarea de envío confirmada",
-      `${isUpdate ? "Actualización" : "Confirmación"} de entrega para la tarea: ${taskExist.title}`,
+      `${
+        isUpdate ? "Actualización" : "Confirmación"
+      } de entrega para la tarea: ${taskExist.title}`,
       taskExist.task_id
     );
 
     // Crear la notificación
     await createNotification(
-      `El estudiante ${userExist.name} ha ${isUpdate ? "actualizado" : "confirmado"} la entrega de la tarea: ${taskExist.title}`,
+      `El estudiante ${userExist.name} ha ${
+        isUpdate ? "actualizado" : "confirmado"
+      } la entrega de la tarea: ${taskExist.title}`,
       userExist.sede_id,
       user_id,
       task_id,
@@ -235,7 +253,9 @@ const createTaskSubmission = async (req, res) => {
         catedraticoNombre: teacher.name,
         studentName: userExist.name,
         chapterTitle: taskExist.title,
-        deliveryDate: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
+        deliveryDate: moment()
+          .tz("America/Guatemala")
+          .format("DD/MM/YYYY, h:mm A"),
         stateDelivery: "Entregado",
       };
 
@@ -251,11 +271,12 @@ const createTaskSubmission = async (req, res) => {
     const publicFileUrl = encodeURI(`${BASE_URL}/${normalizedPath}`);
 
     return res.status(isUpdate ? 200 : 201).json({
-      message: isUpdate ? "Tarea de envío actualizada exitosamente" : "Tarea de envío creada exitosamente",
+      message: isUpdate
+        ? "Tarea de envío actualizada exitosamente"
+        : "Tarea de envío creada exitosamente",
       file_path: publicFileUrl,
-      filename: req.file.filename
+      filename: req.file.filename,
     });
-
   } catch (error) {
     // Eliminar el archivo si ocurre un error en la base de datos
     if (req.file && req.file.path) {
@@ -273,7 +294,6 @@ const createTaskSubmission = async (req, res) => {
     });
   }
 };
-
 
 /**
  * The function `getCourseDetails` retrieves information about a specific course, including students
