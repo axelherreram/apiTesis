@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('commentsrevision', {
+    await queryInterface.createTable('commentsrevisionthesis', {
       commentsRevision_id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -35,6 +35,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('commentsrevision');
+    await queryInterface.dropTable('commentsrevisionthesis');
   },
 };
