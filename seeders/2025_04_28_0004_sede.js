@@ -15,10 +15,10 @@ module.exports = {
       "Quetzaltenango"
     ];
 
-    await queryInterface.bulkInsert('Sede', sedes.map(sede => ({ nameSede: sede })), {});
+    await queryInterface.bulkInsert('sede', sedes.map(sede => ({ nameSede: sede })), {});
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('Sede', null, {});
+    await queryInterface.bulkDelete('sede', null, {});
   }
 };
