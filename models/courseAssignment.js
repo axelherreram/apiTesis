@@ -49,7 +49,7 @@ const CourseAssignment = sequelize.define(
   },
   {
     timestamps: false,
-    tableName: "CourseAssignment",
+    tableName: "Courseassignment",
   }
 );
 

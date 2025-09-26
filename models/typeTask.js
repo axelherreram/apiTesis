@@ -28,7 +28,7 @@ const typeTask = sequelize.define(
   },
   {
     timestamps: false,
-    tableName: "typeTask",
+    tableName: "typetask",
   }
 );
 

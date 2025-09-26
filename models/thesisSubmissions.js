@@ -69,7 +69,7 @@ const thesisSubmissions = sequelize.define(
     },
   },
   {
-    tableName: "thesisSubmissions",
+    tableName: "thesissubmissions",
     timestamps: false,
     hooks: {
       beforeCreate: (thesisSubmission, options) => {

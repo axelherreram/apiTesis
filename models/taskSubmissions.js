@@ -58,7 +58,7 @@ const TaskSubmissions = sequelize.define(
     },
   },
   {
-    tableName: "TaskSubmissions",
+    tableName: "tasksubmissions",
     timestamps: false,
     hooks: {
       beforeCreate: (taskSubmission, options) => {
