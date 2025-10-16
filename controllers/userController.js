@@ -233,22 +233,10 @@ const createAdmin = async (req, res) => {
     });
 
     if (existingUser) {
-      if (existingUser.sede_id === sede_id) {
-        if (existingUser.rol_id !== 3) {
-          await existingUser.update({ rol_id: 3 });
-          return res.status(200).json({
-            message:
-              "El usuario ya existía y se actualizó su rol a administrador.",
-          });
-        }
-        return res
-          .status(400)
-          .json({ message: "El usuario ya es administrador en esta sede." });
-      }
       return res
         .status(400)
         .json({
-          message: "El correo o carnet ya está registrado en otra sede.",
+          message: "El correo o carnet ya está registrado.",
         });
     }
 
