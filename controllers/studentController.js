@@ -126,7 +126,7 @@ const bulkUploadUsers = async (req, res) => {
       // Convertir el nombre a mayúsculas
       const carnetLimpio = carnet.replace(/\s+/g, ""); // Elimina espacios del carnet
       // Paso 11: Verificar si el usuario ya existe
-      let existingUser = await User.findOne({ where: { email,carnetLimpio, rol_id: 1 } });
+      let existingUser = await User.findOne({ where: { email,carnet: carnetLimpio, rol_id: 1 } });
 
       if (!existingUser) {
         // Paso 12: Generar una contraseña temporal y hashearla
