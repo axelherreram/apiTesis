@@ -81,6 +81,7 @@ const getUsersByCourse = async (req, res) => {
             "rol_id",
             "profilePhoto",
           ],
+          required: true, // Esto asegura que solo se obtengan assignments con User válido
         },
       ],
     });
@@ -92,20 +93,22 @@ const getUsersByCourse = async (req, res) => {
       });
     }
 
-    // Formatear usuarios para la respuesta
-    const formattedUsers = users.map((assignment) => {
-      const user = assignment.User;
-      return {
-        user_id: user.user_id,
-        email: user.email,
-        userName: user.name,
-        sede_id: user.sede_id,
-        profilePhoto: user.profilePhoto
-          ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
-          : null,
-        carnet: user.carnet,
-      };
-    });
+    // Formatear usuarios para la respuesta - con validación adicional
+    const formattedUsers = users
+      .filter((assignment) => assignment.User) // Filtrar assignments sin User
+      .map((assignment) => {
+        const user = assignment.User;
+        return {
+          user_id: user.user_id,
+          email: user.email,
+          userName: user.name,
+          sede_id: user.sede_id,
+          profilePhoto: user.profilePhoto
+            ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
+            : null,
+          carnet: user.carnet,
+        };
+      });
 
     // Obtener información del curso
     const course = await Course.findByPk(course_id);
@@ -125,7 +128,7 @@ const getUsersByCourse = async (req, res) => {
     ); */
 
     res.status(200).json({
-      countUsers: users.length,
+      countUsers: formattedUsers.length,
       users: formattedUsers,
     });
   } catch (error) {
