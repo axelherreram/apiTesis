@@ -11,6 +11,7 @@ const { sendEmailPassword } = require("../services/emailService");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const crypto = require("crypto");
 
+
 /**
  * The function `getUsersByCourse` retrieves users assigned to a specific course for a given year and
  * location, handling various validations and returning formatted user data along with course
@@ -72,6 +73,7 @@ const getUsersByCourse = async (req, res) => {
       include: [
         {
           model: User,
+          required: true, // Solo incluir registros que tengan un usuario válido
           attributes: [
             "user_id",
             "email",
@@ -81,7 +83,6 @@ const getUsersByCourse = async (req, res) => {
             "rol_id",
             "profilePhoto",
           ],
-          required: true, // Esto asegura que solo se obtengan assignments con User válido
         },
       ],
     });
@@ -93,11 +94,15 @@ const getUsersByCourse = async (req, res) => {
       });
     }
 
-    // Formatear usuarios para la respuesta - con validación adicional
+    // Formatear usuarios para la respuesta
     const formattedUsers = users
-      .filter((assignment) => assignment.User) // Filtrar assignments sin User
+      .filter((assignment) => assignment.user) // Filtrar registros sin usuario (user en minúscula)
       .map((assignment) => {
-        const user = assignment.User;
+        const user = assignment.user; // user en minúscula según el log
+        if (!user) {
+          console.error("User is undefined for assignment:", assignment);
+          return null;
+        }
         return {
           user_id: user.user_id,
           email: user.email,
@@ -108,7 +113,8 @@ const getUsersByCourse = async (req, res) => {
             : null,
           carnet: user.carnet,
         };
-      });
+      })
+      .filter(Boolean); // Remover elementos null
 
     // Obtener información del curso
     const course = await Course.findByPk(course_id);
@@ -139,6 +145,7 @@ const getUsersByCourse = async (req, res) => {
     });
   }
 };
+
 
 /**
  * The function `listuserbytoken` retrieves user information based on a token and returns a formatted
