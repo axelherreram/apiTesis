@@ -152,7 +152,6 @@ router.get(
 router.post(
   "/admin/create",
   authMiddleware,
-  extractSedeIdMiddleware,
   coordinador_sede,
   userController.createAdmin
 );
@@ -207,12 +206,12 @@ router.post(
   userController.assignAdminToSede
 );
 
-// Ruta: Eliminar un administrador
+// Ruta: Activar/Desactivar un administrador
 /**
  * @swagger
- * /api/admin/remove:
+ * /api/admin/toggle-status:
  *   put:
- *     summary: Eliminar a un administrador de una sede
+ *     summary: Activar o desactivar a un administrador de una sede
  *     tags: [Administradores]
  *     security:
  *       - bearerAuth: []
@@ -225,23 +224,37 @@ router.post(
  *             properties:
  *               user_id:
  *                 type: integer
- *                 description: ID del administrador a eliminar
+ *                 description: ID del administrador a activar/desactivar
+ *               active:
+ *                 type: boolean
+ *                 description: Estado activo (true) o inactivo (false)
  *             required:
  *               - user_id
+ *               - active
  *     responses:
  *       200:
- *         description: Administrador eliminado exitosamente
+ *         description: Estado del administrador actualizado exitosamente
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Administrador activado exitosamente."
+ *       400:
+ *         description: Datos inválidos o no se puede desactivar al único administrador activo
  *       404:
  *         description: Administrador no encontrado
  *       500:
  *         description: Error en el servidor
  */
 router.put(
-  "/admin/remove",
+  "/admin/toggle-status",
   authMiddleware,
   extractSedeIdMiddleware,
   coordinador_sede,
-  userController.removeAdmin
+  userController.toggleAdminStatus
 );
 
 /**
@@ -282,6 +295,9 @@ router.put(
  *                         type: string
  *                       carnet:
  *                         type: string
+ *                       active:
+ *                         type: boolean
+ *                         description: Estado activo/inactivo del administrador
  *                       sede:
  *                         type: object
  *                         properties:

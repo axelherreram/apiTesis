@@ -47,6 +47,10 @@ const TaskSubmissions = sequelize.define(
       allowNull: false,
       defaultValue: false,
     },
+    file_path: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     date: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -54,7 +58,7 @@ const TaskSubmissions = sequelize.define(
     },
   },
   {
-    tableName: "TaskSubmissions",
+    tableName: "tasksubmissions",
     timestamps: false,
     hooks: {
       beforeCreate: (taskSubmission, options) => {

@@ -51,7 +51,7 @@ const commentsRevision = sequelize.define(
     },
   },
   {
-    tableName: "commentsRevision",
+    tableName: "commentsrevision",
     timestamps: false,
   }
 );

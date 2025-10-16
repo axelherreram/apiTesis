@@ -50,6 +50,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('thesisSubmissions');
+    await queryInterface.dropTable('thesissubmissions');
   },
 };

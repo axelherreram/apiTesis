@@ -2,7 +2,7 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkInsert('rolComision', [
+    await queryInterface.bulkInsert('rolcomision', [
       { rolComisionName: "Presidente" },
       { rolComisionName: "Secretario" },
       { rolComisionName: "Vocal 1" },
@@ -12,6 +12,6 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('rolComision', null, {});
+    await queryInterface.bulkDelete('rolcomision', null, {});
   }
 };

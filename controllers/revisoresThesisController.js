@@ -164,16 +164,7 @@ const editRevisor = async (req, res) => {
     if (revisor.rol_id !== 7) {
       return res.status(400).json({ message: "El usuario no es revisor" });
     }
-    // Validar formato del código (carnet)
-    if (codigo) {
-      const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/;
-      if (!carnetRegex.test(codigo)) {
-        return res.status(400).json({
-          title: "Error",
-          message: "Carnet inválido, ingrese codigo completo",
-        });
-      }
-    }
+
 
     // Validar el dominio del correo
     if (email && !isValidEmail(email)) {

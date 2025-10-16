@@ -155,6 +155,7 @@ const createTask = async (req, res) => {
           user_id: student.user_id,
           task_id: newTaskId,
           submission_complete: false,
+          file_path: null, // Inicialmente no hay archivo adjunto
         });
       }
     }

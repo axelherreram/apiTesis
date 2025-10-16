@@ -52,7 +52,7 @@ const studentComision = sequelize.define(
     },
     {
         timestamps: false,
-        tableName: "studentComision",
+        tableName: "studentcomision",
     }
 );
 

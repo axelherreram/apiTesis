@@ -59,7 +59,7 @@ const TimelineEventos = sequelize.define(
   },
   {
     timestamps: false,
-    tableName: "TimelineEventos",
+    tableName: "timelineeventos",
     hooks: {
       beforeCreate: (timelineEvento, options) => {
         const currentDate = new Date();

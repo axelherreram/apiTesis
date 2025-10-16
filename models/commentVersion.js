@@ -58,7 +58,7 @@ const CommentVersion = sequelize.define(
     },
   },
   {
-    tableName: "commentVersion",
+    tableName: "commentversion",
     timestamps: false,
     hooks: {
       beforeCreate: (commentVersion, options) => {

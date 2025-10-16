@@ -9,74 +9,174 @@ const { addTimeline } = require("../sql/timeline");
 const Sede = require("../models/sede");
 const Course = require("../models/course");
 const moment = require("moment-timezone");
+const fs = require("fs");
+const path = require("path");
 
 const { createNotification } = require("../sql/notification");
 const { sendEmailConfirmDelivery } = require("../services/emailService");
 
 /**
- * The function `createTaskSubmission` handles the submission of a task by a user, checking various
- * conditions and creating or updating the submission accordingly.
- * @param req - The `req` parameter in the `createTaskSubmission` function typically represents the
- * HTTP request object, which contains information about the incoming request from the client, such as
- * headers, parameters, body content, and more. In this specific function, `req` is used to extract the
- * `user_id`
- * @param res - The `res` parameter in the `createTaskSubmission` function is the response object that
- * will be used to send back the response to the client making the request. It is typically used to
- * send HTTP responses with status codes and data back to the client. In the provided code snippet,
- * `res`
- * @returns The function `createTaskSubmission` returns different JSON responses based on the
- * conditions met during its execution. Here are the possible return values:
+ * Crea o actualiza una entrega de tarea con archivo PDF
+ * @param {Object} req - Debe contener user_id, task_id y file (archivo PDF)
+ * @param {Object} res
  */
 const createTaskSubmission = async (req, res) => {
   const { user_id, task_id } = req.body;
+
+  // Validar que los campos requeridos existan
+  if (!user_id || !task_id) {
+    // Eliminar el archivo subido si faltan campos requeridos
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) {
+          console.error(`Error al eliminar el archivo PDF: ${err.message}`);
+        }
+      });
+    }
+
+    return res.status(400).json({
+      message: "Faltan campos requeridos: user_id y task_id son obligatorios",
+    });
+  }
+
+  // Verificar que se haya subido un archivo 
+  if (!req.file) {
+    return res.status(400).json({ 
+      message: "Se requiere subir un archivo PDF" 
+    });
+  }
 
   try {
     // Verificar si el usuario existe
     const userExist = await User.findByPk(user_id);
     if (!userExist) {
-      return res.status(404).json({ message: "El usuario no existe" });
+      // Eliminar el archivo si el usuario no existe
+      if (req.file && req.file.path) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) {
+            console.error(`Error al eliminar el archivo PDF: ${err.message}`);
+          }
+        });
+      }
+
+      return res.status(404).json({ 
+        message: "El usuario no existe" 
+      });
     }
 
     // Verificar si la tarea existe
     const taskExist = await Task.findByPk(task_id);
     if (!taskExist) {
-      return res.status(404).json({ message: "La tarea no existe" });
-    }
+      // Eliminar el archivo si la tarea no existe
+      if (req.file && req.file.path) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) {
+            console.error(`Error al eliminar el archivo PDF: ${err.message}`);
+          }
+        });
+      }
 
-    // Configurar zona horaria
-    const timeZone = "America/Guatemala";
-    const currentDate = moment.tz(timeZone);
-    const currentTime = moment(currentDate.format("HH:mm:ss"), "HH:mm:ss");
-
-    // Convertir fechas y horas de la tarea a la zona horaria correcta
-    const taskStart = moment.tz(taskExist.taskStart, timeZone);
-    const endTask = moment.tz(taskExist.endTask, timeZone);
-    const startTime = moment(taskExist.startTime, "HH:mm:ss");
-    const endTime = moment(taskExist.endTime, "HH:mm:ss");
-
-    // Validar rango de fechas y horas
-    const isDateValid = currentDate.isBetween(taskStart, endTask, "day", "[]");
-    const isTimeValid = currentTime.isBetween(
-      startTime,
-      endTime,
-      "second",
-      "[]"
-    );
-
-    if (!isDateValid || !isTimeValid) {
-      return res.status(400).json({
-        message: "La tarea no puede ser entregada fuera del rango de fecha permitido",
+      return res.status(404).json({ 
+        message: "La tarea no existe" 
       });
     }
+
+    // ...existing code...
+    
+    // Configurar zona horaria
+    const timeZone = "America/Guatemala";
+    const currentDateTime = moment.tz(timeZone);
+    
+    // Convertir fechas de la tarea a la zona horaria correcta
+    const taskStart = moment.tz(taskExist.taskStart, timeZone);
+    const endTask = moment.tz(taskExist.endTask, timeZone);
+    
+    // Validar rango de fechas (sin considerar horas)
+    const isDateValid = currentDateTime.isBetween(taskStart, endTask, "day", "[]");
+    
+    if (!isDateValid) {
+      // Eliminar el archivo si está fuera del rango de fechas permitido
+      if (req.file && req.file.path) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) {
+            console.error(`Error al eliminar el archivo PDF: ${err.message}`);
+          }
+        });
+      }
+    
+      return res.status(400).json({
+        message: "La tarea no puede ser entregada fuera del rango de fechas permitido",
+        debug: {
+          currentDateTime: currentDateTime.format(),
+          taskStart: taskStart.format(),
+          endTask: endTask.format(),
+        },
+      });
+    }
+    
+    // Solo validar horario si es el primer o último día
+    const isFirstDay = currentDateTime.isSame(taskStart, 'day');
+    const isLastDay = currentDateTime.isSame(endTask, 'day');
+    
+    if (isFirstDay || isLastDay) {
+      // Extraer las horas y minutos de la tarea
+      const startTimeParts = taskExist.startTime.split(':');
+      const endTimeParts = taskExist.endTime.split(':');
+    
+      // Crear objetos moment para la hora actual y las horas de inicio/fin
+      const startTime = moment(currentDateTime).set({
+        hour: parseInt(startTimeParts[0], 10),
+        minute: parseInt(startTimeParts[1], 10),
+        second: 0
+      });
+      const endTime = moment(currentDateTime).set({
+        hour: parseInt(endTimeParts[0], 10),
+        minute: parseInt(endTimeParts[1], 10),
+        second: 0
+      });
+    
+      // Validar si la hora actual está dentro del rango de horas permitido
+      const isTimeValid = currentDateTime.isBetween(startTime, endTime, null, '[]');
+    
+      if (!isTimeValid) {
+        // Eliminar el archivo si está fuera del rango de horas permitido
+        if (req.file && req.file.path) {
+          fs.unlink(req.file.path, (err) => {
+            if (err) {
+              console.error(`Error al eliminar el archivo PDF: ${err.message}`);
+            }
+          });
+        }
+    
+        return res.status(400).json({
+          message: "La tarea no puede ser entregada fuera del horario permitido",
+        });
+      }
+    }
+    
+    // ...existing code...
 
     // Buscar si ya existe una entrega
     let taskSubmissionExist = await TaskSubmission.findOne({
       where: { user_id, task_id },
     });
 
-    if (taskSubmissionExist?.submission_complete) {
-      return res.status(400).json({ message: "La tarea ya ha sido entregada" });
-    }
+/*     if (taskSubmissionExist?.submission_complete) {
+      // Eliminar el archivo si ya existe una entrega completa
+      if (req.file && req.file.path) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) {
+            console.error(`Error al eliminar el archivo PDF: ${err.message}`);
+          }
+        });
+      }
+
+      return res.status(400).json({ 
+        message: "La tarea ya ha sido entregada. Use el endpoint de actualización para cambiar el archivo." 
+      });
+    } */
+
+    let isUpdate = false;
 
     // Si no existe, crear la entrega
     if (!taskSubmissionExist) {
@@ -84,27 +184,40 @@ const createTaskSubmission = async (req, res) => {
         user_id,
         task_id,
         submission_complete: true,
+        file_path: req.file.path,
         date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
       });
     } else {
       // Si ya existe, actualizar la entrega
+      isUpdate = true;
+      
+      // Eliminar archivo anterior si existe
+      if (taskSubmissionExist.file_path) {
+        fs.unlink(taskSubmissionExist.file_path, (err) => {
+          if (err) {
+            console.error(`Error al eliminar el archivo anterior: ${err.message}`);
+          }
+        });
+      }
+
       await taskSubmissionExist.update({
         submission_complete: true,
-        date: new Date(),
+        file_path: req.file.path,
+        date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
       });
     }
 
     // Crear la línea de tiempo
     await addTimeline(
       userExist.user_id,
-      "Tarea de envío confirmada",
-      `Confirmación de entrega para la tarea: ${taskExist.title}`,
+      isUpdate ? "Tarea de envío actualizada" : "Tarea de envío confirmada",
+      `${isUpdate ? "Actualización" : "Confirmación"} de entrega para la tarea: ${taskExist.title}`,
       taskExist.task_id
     );
 
     // Crear la notificación
     await createNotification(
-      `El estudiante ${userExist.name} ha confirmado la entrega de la tarea: ${taskExist.title}`,
+      `El estudiante ${userExist.name} ha ${isUpdate ? "actualizado" : "confirmado"} la entrega de la tarea: ${taskExist.title}`,
       userExist.sede_id,
       user_id,
       task_id,
@@ -133,11 +246,26 @@ const createTaskSubmission = async (req, res) => {
       );
     }
 
-    return res.status(taskSubmissionExist ? 200 : 201).json({
-      message: taskSubmissionExist ? "Tarea de envío actualizada exitosamente" : "Tarea de envío creada exitosamente",
+    const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
+    const normalizedPath = (req.file.path || "").replace(/\\/g, "/");
+    const publicFileUrl = encodeURI(`${BASE_URL}/${normalizedPath}`);
+
+    return res.status(isUpdate ? 200 : 201).json({
+      message: isUpdate ? "Tarea de envío actualizada exitosamente" : "Tarea de envío creada exitosamente",
+      file_path: publicFileUrl,
+      filename: req.file.filename
     });
 
   } catch (error) {
+    // Eliminar el archivo si ocurre un error en la base de datos
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) {
+          console.error(`Error al eliminar el archivo PDF: ${err.message}`);
+        }
+      });
+    }
+
     console.error("Error al procesar la entrega de tarea:", error);
     res.status(500).json({
       message: "Error en el servidor al procesar la entrega de la tarea",
@@ -145,6 +273,7 @@ const createTaskSubmission = async (req, res) => {
     });
   }
 };
+
 
 /**
  * The function `getCourseDetails` retrieves information about a specific course, including students
@@ -348,7 +477,7 @@ const getStudentCourseDetails = async (req, res) => {
         user_id,
         task_id: tasks.map((task) => task.task_id),
       },
-      attributes: ["submission_complete", "date"],
+      attributes: ["submission_complete", "date", "file_path"],
       include: [
         {
           model: Task,
@@ -357,12 +486,21 @@ const getStudentCourseDetails = async (req, res) => {
       ],
     });
 
-    // Formatear las entregas para incluir el título de la tarea
-    const formattedSubmissions = submissions.map((submission) => ({
-      title: submission.Task.title,
-      submission_complete: submission.submission_complete,
-      date: submission.date,
-    }));
+    // Formatear las entregas para incluir el título de la tarea y URL pública del archivo
+    const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
+    const formattedSubmissions = submissions.map((submission) => {
+      const normalizedPath = (submission.file_path || "").replace(/\\/g, "/");
+      const publicFileUrl = normalizedPath
+        ? encodeURI(`${BASE_URL}/${normalizedPath}`)
+        : null;
+
+      return {
+        title: submission.Task.title,
+        submission_complete: submission.submission_complete,
+        date: submission.date,
+        file_path: publicFileUrl,
+      };
+    });
 
     // Paso 7: Enviar la respuesta con los detalles del curso y las entregas del estudiante
     res.status(200).json({

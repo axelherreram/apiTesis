@@ -60,7 +60,7 @@ const ApprovalThesis = sequelize.define(
     },
   },
   {
-    tableName: "approvalThesis",
+    tableName: "approvalthesis",
     timestamps: false,
   }
 );

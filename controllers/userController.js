@@ -81,6 +81,7 @@ const getUsersByCourse = async (req, res) => {
             "rol_id",
             "profilePhoto",
           ],
+          required: true, // Esto asegura que solo se obtengan assignments con User válido
         },
       ],
     });
@@ -92,20 +93,22 @@ const getUsersByCourse = async (req, res) => {
       });
     }
 
-    // Formatear usuarios para la respuesta
-    const formattedUsers = users.map((assignment) => {
-      const user = assignment.User;
-      return {
-        user_id: user.user_id,
-        email: user.email,
-        userName: user.name,
-        sede_id: user.sede_id,
-        profilePhoto: user.profilePhoto
-          ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
-          : null,
-        carnet: user.carnet,
-      };
-    });
+    // Formatear usuarios para la respuesta - con validación adicional
+    const formattedUsers = users
+      .filter((assignment) => assignment.User) // Filtrar assignments sin User
+      .map((assignment) => {
+        const user = assignment.User;
+        return {
+          user_id: user.user_id,
+          email: user.email,
+          userName: user.name,
+          sede_id: user.sede_id,
+          profilePhoto: user.profilePhoto
+            ? `${process.env.BASE_URL}/public/profilephoto/${user.profilePhoto}`
+            : null,
+          carnet: user.carnet,
+        };
+      });
 
     // Obtener información del curso
     const course = await Course.findByPk(course_id);
@@ -125,7 +128,7 @@ const getUsersByCourse = async (req, res) => {
     ); */
 
     res.status(200).json({
-      countUsers: users.length,
+      countUsers: formattedUsers.length,
       users: formattedUsers,
     });
   } catch (error) {
@@ -233,22 +236,10 @@ const createAdmin = async (req, res) => {
     });
 
     if (existingUser) {
-      if (existingUser.sede_id === sede_id) {
-        if (existingUser.rol_id !== 3) {
-          await existingUser.update({ rol_id: 3 });
-          return res.status(200).json({
-            message:
-              "El usuario ya existía y se actualizó su rol a administrador.",
-          });
-        }
-        return res
-          .status(400)
-          .json({ message: "El usuario ya es administrador en esta sede." });
-      }
       return res
         .status(400)
         .json({
-          message: "El correo o carnet ya está registrado en otra sede.",
+          message: "El correo o carnet ya está registrado.",
         });
     }
 
@@ -285,12 +276,10 @@ const createAdmin = async (req, res) => {
     });
 
     try {
-      /*      await sendEmailPassword(
-        "Registro exitoso",
+        await sendEmailPassword("Registro exitoso",
         `Hola ${name}, tu contraseña temporal es: ${password}`,
-        email,
-        { nombre: name, password }
-      );   */
+        email,{ nombre: name, password }
+      );  
       console.log("Correo enviado a:", email);
     } catch (emailError) {
       console.error("Error al enviar el correo:", emailError);
@@ -313,38 +302,44 @@ const createAdmin = async (req, res) => {
 };
 
 /**
- * The function `removeAdmin` removes an administrator role from a user, ensuring that at
- * least one administrator remains per location.
- * @param req - The `req` parameter in the `removeAdmin` function represents the HTTP request
- * object containing `user_id` and `sede_id` in the request body. These values are used to
- * identify and validate the administrator being removed.
- * @param res - The `res` parameter in the `removeAdmin` function represents the HTTP response
+ * The function `toggleAdminStatus` activates or deactivates an administrator user,
+ * ensuring that at least one active administrator remains per location.
+ * @param req - The `req` parameter in the `toggleAdminStatus` function represents the HTTP request
+ * object containing `user_id` and `active` status in the request body. These values are used to
+ * identify and update the administrator's status.
+ * @param res - The `res` parameter in the `toggleAdminStatus` function represents the HTTP response
  * object used to send responses back to the client. It returns appropriate status codes and
- * messages based on the success or failure of the administrator removal process.
- * @returns The `removeAdmin` function returns a JSON response. If successful, it returns a
+ * messages based on the success or failure of the administrator status update process.
+ * @returns The `toggleAdminStatus` function returns a JSON response. If successful, it returns a
  * 200 status with a confirmation message. If validation fails or an error occurs, it returns
  * a relevant status code (400, 404, or 500) with an appropriate error message.
  */
-const removeAdmin = async (req, res) => {
-  const { user_id } = req.body;
+const toggleAdminStatus = async (req, res) => {
+  const { user_id, active } = req.body;
   const { sede_id } = req;
 
-  const userExist = await User.findOne({ where: { user_id } });
-
-  if (userExist.sede_id !== sede_id) {
-    return res.status(400).json({
-      message: "El usuario no pertenece a la sede.",
-    });
-  }
-
   // Validar campos requeridos
-  if (!user_id || !sede_id) {
+  if (!user_id || sede_id === undefined || active === undefined) {
     return res
       .status(400)
       .json({ message: "Todos los campos son obligatorios." });
   }
 
   try {
+    const userExist = await User.findOne({ where: { user_id } });
+
+    if (!userExist) {
+      return res.status(404).json({
+        message: "El usuario no existe.",
+      });
+    }
+
+    if (userExist.sede_id !== sede_id) {
+      return res.status(400).json({
+        message: "El usuario no pertenece a la sede.",
+      });
+    }
+
     // Verificar si el usuario existe y es un administrador
     const user = await User.findOne({ where: { user_id, rol_id: 3, sede_id } });
     if (!user) {
@@ -353,31 +348,35 @@ const removeAdmin = async (req, res) => {
       });
     }
 
-    // Verificar si el usuario es el único administrador de la sede
-    const adminCount = await User.count({
-      where: {
-        rol_id: 3,
-        sede_id,
-      },
-    });
-
-    if (adminCount <= 1) {
-      return res.status(400).json({
-        message: "No se puede eliminar al único administrador de esta sede.",
+    // Si se está desactivando, verificar que no sea el único administrador activo
+    if (!active) {
+      const activeAdminCount = await User.count({
+        where: {
+          rol_id: 3,
+          sede_id,
+          active: true,
+        },
       });
+
+      if (activeAdminCount <= 1) {
+        return res.status(400).json({
+          message: "No se puede desactivar al único administrador activo de esta sede.",
+        });
+      }
     }
 
-    // Eliminar el usuario como administrador de la sede y le asigna el rol de catedratico
-    await user.update({ rol_id: 2 });
+    // Actualizar el estado del administrador
+    await user.update({ active: active });
 
+    const statusMessage = active ? "activado" : "desactivado";
     res.status(200).json({
-      message: "Administrador eliminado exitosamente.",
+      message: `Administrador ${statusMessage} exitosamente.`,
     });
   } catch (error) {
     console.error(error);
     res
       .status(500)
-      .json({ message: "Ocurrió un error al eliminar al administrador." });
+      .json({ message: "Ocurrió un error al actualizar el estado del administrador." });
   }
 };
 
@@ -421,7 +420,7 @@ const listAllAdmins = async (req, res) => {
           attributes: ["sede_id", "nameSede"],
         },
       ],
-      attributes: ["user_id", "email", "name", "carnet", "profilePhoto"],
+      attributes: ["user_id", "email", "name", "carnet", "profilePhoto", "active"],
     });
 
     // Verificar si se encontraron administradores
@@ -437,6 +436,7 @@ const listAllAdmins = async (req, res) => {
       email: admin.email,
       name: admin.name,
       carnet: admin.carnet,
+      active: admin.active,
       sede: admin.location
         ? {
             sede_id: admin.location.sede_id,
@@ -621,7 +621,7 @@ module.exports = {
   getUsersByCourse,
   listuserbytoken,
   createAdmin,
-  removeAdmin,
+  toggleAdminStatus,
   listAllAdmins,
   assignAdminToSede,
   createUserNotlog,

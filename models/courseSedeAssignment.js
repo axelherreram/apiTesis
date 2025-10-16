@@ -57,7 +57,7 @@ const CourseSedeAssignment = sequelize.define(
   },
   {
     timestamps: false,
-    tableName: "CourseSedeAssignment",
+    tableName: "coursesedeassignment",
   }
 );
 

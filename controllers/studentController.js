@@ -124,41 +124,86 @@ const bulkUploadUsers = async (req, res) => {
       const { email, nombre, carnet } = user;
 
       // Convertir el nombre a mayúsculas
-      const carnetLimpio = user.carnet.replace(/\s+/g, ""); // Elimina espacios del carnet
-      // Paso 11: Verificar si el usuario ya existe
-      let existingUser = await User.findOne({ where: { email } });
-
-      if (!existingUser) {
-        // Paso 12: Generar una contraseña temporal y hashearla
-        const randomPassword = crypto
-          .randomBytes(8)
-          .toString("base64")
-          .slice(0, 12);
-
-        console.log(`Contraseña generada para ${email}: ${randomPassword}`);
-        const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
-        // Paso 13: Crear el usuario con el year_id del año actual o recién creado
-        existingUser = await User.create({
-          email,
-          password: hashedPassword,
-          name: nombre,
-          carnet: carnetLimpio,
-          rol_id: 1, // Rol de estudiante
-          sede_id,
-          year_id,
-        });
-
-        // Paso 14: Enviar correo electrónico con la contraseña temporal
-        const templateVariables = {
-          nombre: nombre,
-          password: randomPassword,
-        };
-
-        await sendEmailPassword("Registro exitoso", email, templateVariables);
+      const carnetLimpio = carnet.replace(/\s+/g, ""); // Elimina espacios del carnet
+      
+      // Paso 11: Verificar si ya existe un usuario con ese carnet (cualquier rol)
+      const userWithCarnet = await User.findOne({ where: { carnet: carnetLimpio } });
+      
+      let existingUser;
+      
+      if (userWithCarnet) {
+        // Si existe un usuario con ese carnet, verificar si es estudiante
+        if (userWithCarnet.rol_id === 1) {
+          existingUser = userWithCarnet;
+        } else {
+          // Si existe pero no es estudiante, saltar este registro
+          console.log(`El carnet ${carnetLimpio} ya está asignado a un usuario con rol diferente a estudiante`);
+          continue;
+        }
+      } else {
+        // Verificar si existe un usuario con ese email y rol de estudiante
+        existingUser = await User.findOne({ where: { email, rol_id: 1 } });
       }
 
-      // Paso 15: Verificar si el usuario ya está asignado al curso actual
+      if (!existingUser) {
+        // Paso 12: Verificar nuevamente que no exista duplicado de carnet o email antes de crear
+        const duplicateCarnet = await User.findOne({ where: { carnet: carnetLimpio } });
+        const duplicateEmail = await User.findOne({ where: { email } });
+        
+        if (duplicateCarnet) {
+          console.log(`El carnet ${carnetLimpio} ya existe en el sistema`);
+          continue;
+        }
+        
+        if (duplicateEmail && duplicateEmail.rol_id !== 1) {
+          console.log(`El email ${email} ya está registrado con un rol diferente a estudiante`);
+          continue;
+        }
+        
+        try {
+          // Paso 13: Generar una contraseña temporal y hashearla
+          const randomPassword = crypto
+            .randomBytes(8)
+            .toString("base64")
+            .slice(0, 12);
+
+          console.log(`Contraseña generada para ${email}: ${randomPassword}`);
+          const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+          // Paso 14: Crear el usuario con el year_id del año actual o recién creado
+          existingUser = await User.create({
+            email,
+            password: hashedPassword,
+            name: nombre,
+            carnet: carnetLimpio,
+            rol_id: 1, // Rol de estudiante
+            sede_id,
+            year_id,
+          });
+
+          // Paso 15: Enviar correo electrónico con la contraseña temporal
+          const templateVariables = {
+            nombre: nombre,
+            password: randomPassword,
+          };
+
+          await sendEmailPassword("Registro exitoso", email, templateVariables);
+        } catch (createError) {
+          if (createError.name === 'SequelizeUniqueConstraintError') {
+            console.log(`Error de duplicado al crear usuario con carnet ${carnetLimpio} o email ${email}:`, createError.message);
+            continue;
+          }
+          throw createError; // Re-lanzar otros errores
+        }
+      }
+
+      // Verificar que existingUser no sea null antes de proceder
+      if (!existingUser) {
+        console.log(`No se pudo obtener o crear el usuario para ${email} con carnet ${carnetLimpio}`);
+        continue;
+      }
+
+      // Paso 16: Verificar si el usuario ya está asignado al curso actual
       const existingAssignmentForCourse = await CourseAssignment.findOne({
         where: {
           student_id: existingUser.user_id,
@@ -171,7 +216,7 @@ const bulkUploadUsers = async (req, res) => {
         continue;
       }
 
-      // Paso 16: Crear la asignación para el estudiante con el asigCourse_id
+      // Paso 17: Crear la asignación para el estudiante con el asigCourse_id
       const existingAssignment = await CourseAssignment.findOne({
         where: {
           student_id: existingUser.user_id,

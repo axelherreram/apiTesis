@@ -47,7 +47,7 @@ const GroupComision = sequelize.define(
   },
   {
     timestamps: true,
-    tableName: "groupComision",
+    tableName: "groupcomision",
   }
 );
 

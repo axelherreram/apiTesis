@@ -27,7 +27,7 @@ const rolComision = sequelize.define(
   },
   {
     timestamps: false,
-    tableName: "rolComision",
+    tableName: "rolcomision",
   }
 );
 
