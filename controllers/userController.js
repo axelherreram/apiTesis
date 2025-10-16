@@ -273,12 +273,10 @@ const createAdmin = async (req, res) => {
     });
 
     try {
-      /*      await sendEmailPassword(
-        "Registro exitoso",
+        await sendEmailPassword("Registro exitoso",
         `Hola ${name}, tu contraseña temporal es: ${password}`,
-        email,
-        { nombre: name, password }
-      );   */
+        email,{ nombre: name, password }
+      );  
       console.log("Correo enviado a:", email);
     } catch (emailError) {
       console.error("Error al enviar el correo:", emailError);
