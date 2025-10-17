@@ -83,9 +83,10 @@ const createTaskSubmission = async (req, res) => {
 
     // ...existing code...
     
-    // Configurar zona horaria
-    const timeZone = "America/Guatemala";
-    const currentDateTime = moment.tz(timeZone);
+  // Configurar zona horaria
+  const timeZone = "America/Guatemala";
+  // Use moment() with tz to get the current time in the target timezone
+  const currentDateTime = moment().tz(timeZone);
     
     // Convertir fechas de la tarea a la zona horaria correcta
     const taskStart = moment.tz(taskExist.taskStart, timeZone);
@@ -154,7 +155,6 @@ const createTaskSubmission = async (req, res) => {
       }
     }
     
-    // ...existing code...
 
     // Buscar si ya existe una entrega
     let taskSubmissionExist = await TaskSubmission.findOne({
@@ -185,7 +185,8 @@ const createTaskSubmission = async (req, res) => {
         task_id,
         submission_complete: true,
         file_path: req.file.path,
-        date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
+        // Store a JS Date object so Sequelize/MySQL will accept it
+        date: moment().tz(timeZone).toDate(),
       });
     } else {
       // Si ya existe, actualizar la entrega
@@ -203,7 +204,8 @@ const createTaskSubmission = async (req, res) => {
       await taskSubmissionExist.update({
         submission_complete: true,
         file_path: req.file.path,
-        date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
+        // Use a Date object instead of a formatted string
+        date: moment().tz(timeZone).toDate(),
       });
     }
 
