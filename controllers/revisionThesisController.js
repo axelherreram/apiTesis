@@ -517,18 +517,25 @@ const getInforRevisionsByUserId = async (req, res) => {
     const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
     
     // Modificar thesis_dir para concatenar la BASE_URL
-    const updatedRevisions = revisions.map(revision => {
+    const updatedRevisions = revisions.map((revision) => {
       // Convertir la revisión a JSON para evitar la estructura circular
       const revisionData = revision.toJSON();
 
-      const userWithUpdatedPhoto = revisionData.User.profilePhoto 
-        ? { ...revisionData.User, profilePhoto: `${BASE_URL}/public${revisionData.User.profilePhoto}` }
-        : revisionData.User;
-        
+      // Asegurar que User exista antes de acceder a profilePhoto
+      const safeUser = revisionData.User || null;
+      const userWithUpdatedPhoto = safeUser
+        ? safeUser.profilePhoto
+          ? { ...safeUser, profilePhoto: `${BASE_URL}/public${safeUser.profilePhoto}` }
+          : safeUser
+        : null;
+
+      // Asegurar thesis_dir y construir URL segura
+      const thesisPath = revisionData.thesis_dir ? `${BASE_URL}/public${revisionData.thesis_dir}` : null;
+
       return {
         ...revisionData,
-        thesis_dir: `${BASE_URL}/public${revisionData.thesis_dir}`,
-        User: userWithUpdatedPhoto, // Actualizamos el perfil del usuario con la URL completa de la foto
+        thesis_dir: thesisPath,
+        User: userWithUpdatedPhoto, // Actualizamos el perfil del usuario con la URL completa de la foto o null
       };
     });
 
