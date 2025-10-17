@@ -65,6 +65,19 @@ const createCommentRevision = async (req, res) => {
       });
     }
 
+    // Validar que no exista ya un comentario para esta revisión
+    const existingComment = await CommentRevision.findOne({
+      where: { assigned_review_id },
+      transaction,
+    });
+
+    if (existingComment) {
+      await transaction.rollback();
+      return res.status(409).json({
+        message: "Ya existe un comentario para esta revisión de tesis. No se pueden crear comentarios duplicados.",
+      });
+    }
+
     // Desactivar el proceso de revisión
     const revision = await RevisionThesis.update(
       { active_process: false },
