@@ -34,12 +34,12 @@ const uploadRevisionThesis = async (req, res) => {
         "Se requieren ambos archivos (carta de aprobación y tesis)"
       );
     }
-    if (carnet) {
+/*     if (carnet) {
       const carnetRegex = /^\d{4}-\d{2}-\d{4,}$/;
       if (!carnetRegex.test(carnet)) {
         throw new Error("Carnet inválido, ingrese carnet completo" + carnet);
       }
-    }
+    } */
 
     // Desestructurar los archivos subidos
     const { approval_letter, thesis } = req.files;
@@ -120,21 +120,25 @@ const uploadRevisionThesis = async (req, res) => {
       where: { rol_id: 6 },
     });
 
-    // Enviar correo electrónico al coordinador de sede
-    const templateVariables = {
-      recipient_name: CordinadorThesis.name,
-      student_name: userInfo.name,
-      campus_name: sedeInfo.nameSede,
-      request_date: moment(newRevision.date_revision).tz("America/Guatemala").format(
-        "DD/MM/YYYY, h:mm A"
-      ),
-    };
+    // Enviar correo electrónico al coordinador de sede solo si existe
+    if (CordinadorThesis) {
+      const templateVariables = {
+        recipient_name: CordinadorThesis.name,
+        student_name: userInfo.name,
+        campus_name: sedeInfo.nameSede,
+        request_date: moment(newRevision.date_revision).tz("America/Guatemala").format(
+          "DD/MM/YYYY, h:mm A"
+        ),
+      };
 
-    await sendEmailThesisRequest(
-      "Solicitud de revisión de tesis",
-      CordinadorThesis.email,
-      templateVariables
-    );
+      await sendEmailThesisRequest(
+        "Solicitud de revisión de tesis",
+        CordinadorThesis.email,
+        templateVariables
+      );
+    } else {
+      console.warn("No se encontró coordinador de tesis (rol_id: 6) para enviar el correo");
+    }
 
     // Respuesta exitosa
     res.status(201).json({

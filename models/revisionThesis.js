@@ -68,7 +68,7 @@ const RevisionThesis = sequelize.define(
   },
   {
     tableName: "revisionthesis",
-    timestamps: false,
+    timestamps: true,
   }
 );
 

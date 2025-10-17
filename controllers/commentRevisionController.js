@@ -57,7 +57,6 @@ const createCommentRevision = async (req, res) => {
 
     const assigned_review_id =
       revisionThesis.AssignedReviews[0].assigned_review_id;
-    console.log(assigned_review_id);
     if (revisionThesis.AssignedReviews[0].user_id !== revisor_id) {
       await transaction.rollback();
       return res.status(403).json({
@@ -114,8 +113,10 @@ const createCommentRevision = async (req, res) => {
       },
     });
 
+    // Sequelize puede devolver el usuario como 'user' (minúscula) o 'User' (mayúscula)
+    const studentUser = data_student?.User || data_student?.user;
     // Verificar que `data_student` tenga datos
-    if (!data_student || !data_student.User) {
+    if (!data_student || !studentUser) {
       await transaction.rollback();
       return res.status(404).json({
         message:
@@ -125,7 +126,7 @@ const createCommentRevision = async (req, res) => {
 
     // Enviar correo electrónico al estudiante
     const templateVariables = {
-      student_name: data_student.User.name,
+      student_name: studentUser.name,
       title,
       comment,
       date: moment(newComment.date_comment).tz("America/Guatemala").format("DD/MM/YYYY"),
@@ -139,13 +140,13 @@ const createCommentRevision = async (req, res) => {
     if (isApproved) {
       await sendEmailCommentRevisionAproved(
         "Comentario de revisión de tesis",
-        data_student.User.email,
+        studentUser.email,
         templateVariables
       );
     } else {
       await sendEmailCommentRevisionRejected(
         "Comentario de revisión de tesis",
-        data_student.User.email,
+        studentUser.email,
         templateVariables
       );
     }
