@@ -125,10 +125,14 @@ router.get(
  *               carnet:
  *                 type: string
  *                 description: Carnet del administrador
+ *               sede_id:
+ *                 type: integer
+ *                 description: ID de la sede a la que pertenecerá el administrador
  *             required:
  *               - email
  *               - name
  *               - carnet
+ *               - sede_id
  *     responses:
  *       201:
  *         description: Administrador creado exitosamente

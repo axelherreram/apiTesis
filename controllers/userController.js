@@ -214,8 +214,7 @@ const listuserbytoken = async (req, res) => {
  * appropriate error message.
  */
 const createAdmin = async (req, res) => {
-  const { email, name, carnet } = req.body;
-  const { sede_id } = req;
+  const { email, name, carnet, sede_id } = req.body;
 
   if (!email || !name || !carnet || !sede_id) {
     return res
