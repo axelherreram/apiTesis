@@ -312,7 +312,7 @@ const getPendingRevisions = async (req, res) => {
       orden: orderDirection,
       data: pendingRevisions.map((revision) => ({
         ...revision.toJSON(),
-        ApprovalThesis: { ...revision.ApprovalThesis, status: "pendiente" },
+        ApprovalThesis: { ...revision.ApprovalThesis, status: "Pendiente" },
       })),
     });
   } catch (error) {
