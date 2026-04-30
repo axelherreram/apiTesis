@@ -1,7 +1,8 @@
 'use strict';
 
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('approvalthesis', {
       approval_id: {
         type: Sequelize.INTEGER,
@@ -13,7 +14,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'revisionthesis', 
+          model: 'revisionthesis',
           key: 'revision_thesis_id',
         },
         onUpdate: 'CASCADE',
@@ -23,17 +24,13 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'user', 
+          model: 'user',
           key: 'user_id',
         },
         onUpdate: 'CASCADE',
         onDelete: 'RESTRICT',
       },
-      approved: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
+      // NORMALIZACIÓN 3NF: approved BOOLEAN eliminado (redundante con status ENUM)
       date_approved: {
         type: Sequelize.DATE,
         allowNull: true,
@@ -42,11 +39,11 @@ module.exports = {
         type: Sequelize.ENUM('pending', 'approved', 'rejected', 'in revision'),
         allowNull: false,
         defaultValue: 'pending',
-      }
+      },
     });
   },
 
-  down: async (queryInterface, Sequelize) => {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('approvalthesis');
-  }
+  },
 };

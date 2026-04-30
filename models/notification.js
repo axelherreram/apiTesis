@@ -2,29 +2,28 @@ const { sequelize } = require("../config/database");
 const { DataTypes } = require("sequelize");
 const User = require("./user");
 const Task = require("./task");
-const Sede = require("./sede");
 
 /**
  * Notification Model
  *
- * This model represents a notification in the system. It includes various fields
- * such as notification text, the associated `sede`, student, and task, as well as
- * the type of notification (either "student" or "general").
+ * Represents a notification sent to a student related to a specific task.
  *
- * @module notification
- * @typedef {Object} Notification
+ * Fields:
+ * - `notification_id`: Unique identifier (PK, auto-increment).
+ * - `notification_text`: Text content of the notification (TEXT, required).
+ * - `student_id`: FK to `User`, the student receiving the notification.
+ * - `task_id`: FK to `Task`, the task associated with the notification.
+ * - `notification_date`: Date/time when the notification was created (default: NOW).
+ * - `type_notification`: Type of notification — ENUM('student', 'general').
  *
- * @property {number} notification_id - The unique identifier for each notification (primary key).
- * @property {string} notification_text - The text content of the notification.
- * @property {number} sede_id - The ID of the `sede` where the notification is associated.
- * @property {number} student_id - The ID of the student receiving the notification.
- * @property {number} task_id - The ID of the task associated with the notification.
- * @property {Date} notification_date - The date and time when the notification was created.
- * @property {string} type_notification - The type of notification, either "student" or "general".
+ * NORMALIZACIÓN 3NF:
+ * - Eliminado `sede_id` (transitivo via student_id -> user.sede_id).
+ * - `notification_text` ampliado a TEXT.
+ * - `type_notification` convertido a ENUM en lugar de STRING libre.
  *
- * @see {@link ./user} for the User model.
- * @see {@link ./task} for the Task model.
- * @see {@link ./sede} for the Sede model.
+ * Configuration:
+ * - `timestamps: false`: No automatic `createdAt` / `updatedAt`.
+ * - `tableName: 'notification'`: Database table name.
  */
 const notification = sequelize.define(
   "notification",
@@ -36,16 +35,8 @@ const notification = sequelize.define(
       primaryKey: true,
     },
     notification_text: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
       allowNull: false,
-    },
-    sede_id: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      references: {
-        model: Sede,
-        key: "sede_id",
-      },
     },
     student_id: {
       type: DataTypes.INTEGER,
@@ -68,16 +59,9 @@ const notification = sequelize.define(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-
     type_notification: {
-      type: DataTypes.STRING(10),
+      type: DataTypes.ENUM("student", "general"),
       allowNull: false,
-      validate: {
-        isIn: {
-          args: [["student", "general"]],
-          msg: "El tipo de notificación debe ser 'student' o 'general'.",
-        },
-      },
     },
   },
   {

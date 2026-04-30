@@ -1,42 +1,40 @@
+const AppLog = require('../models/appLog');
+
 /**
  * Logs user activity to the AppLog model.
- * 
- * This function is responsible for recording a user's activity into the `AppLog` model. It creates a new log entry in the database, including details about the user performing the action, the action taken, and additional information provided.
- * 
- * @param {number} user_id - The ID of the user performing the action.
- * @param {number} sede_id - The ID of the location (sede) where the action is performed.
- * @param {string} username - The username of the user performing the action.
- * @param {string} action - The action being performed (e.g., "create", "update", "delete").
- * @param {string} details - A detailed description of the action performed.
- * 
- * @throws {Error} - If any required parameter is missing, or if there is an issue with creating the log entry, an error will be logged to the console.
- * 
+ *
+ * Records a user's activity in the `AppLog` table.
+ *
+ * @param {number} user_id  - ID of the user performing the action.
+ * @param {number} sede_id  - ID of the location (sede); can be null.
+ * @param {string} action   - Short label of the action (e.g., "create", "update").
+ * @param {string} details  - Detailed description of the action performed.
+ *
+ * NORMALIZACIÓN 3NF:
+ * - Eliminado `username` (transitivo via user_id -> user.name).
+ *   Para obtener el nombre del usuario, hacer JOIN con la tabla `user`.
+ *
  * @example
- * // Example usage of the logActivity function:
- * logActivity(1, 2, 'admin', 'update', 'Updated user information for user with ID 1');
- * 
- * The function will create a new record in the AppLog table, including the user_id, sede_id, username, action, and details.
+ * logActivity(1, 2, 'update', 'Updated user information for user with ID 1');
  */
-const AppLog = require('../models/appLog');  
-
-async function logActivity(user_id, sede_id, username, action, details) {  
+async function logActivity(user_id, sede_id, action, details) {
   try {
-    if (!user_id || !username || !action || !details) {
-      console.error('Undefined or null parameters:', { user_id, action, details });
+    if (!user_id || !action || !details) {
+      console.error('Parámetros requeridos faltantes:', { user_id, action, details });
       return;
     }
 
     await AppLog.create({
       user_id,
-      sede_id,  
-      username, 
-      action,  
-      details, 
+      sede_id,
+      action,
+      details,
     });
-    console.log('Activity logged:', { user_id, username, action, details });
+
+    console.log('Activity logged:', { user_id, action, details });
   } catch (err) {
-    console.error('Error:', err);
+    console.error('Error al registrar actividad:', err);
   }
 }
 
-module.exports = { logActivity };  
+module.exports = { logActivity };

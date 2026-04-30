@@ -1,10 +1,15 @@
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 
 // Configuración del almacenamiento
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = path.join(__dirname, '../public/uploads/revisionthesis');
+    // Crear el directorio si no existe
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {

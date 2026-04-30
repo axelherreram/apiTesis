@@ -21,11 +21,18 @@
  */
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
+// Ensure upload directory exists on startup
+const submissionsDir = path.join(__dirname, '../public/uploads/submissions');
+if (!fs.existsSync(submissionsDir)) {
+  fs.mkdirSync(submissionsDir, { recursive: true });
+}
 
 // Configure multer to store the uploaded files in the 'submissions' folder
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, 'public/uploads/submissions');
+    cb(null, submissionsDir);
   },
   filename: (req, file, cb) => {
     const fileName = `${Date.now()}-${file.originalname}`;

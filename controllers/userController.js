@@ -271,6 +271,7 @@ const createAdmin = async (req, res) => {
       where: { year: currentYear },
     });
 
+    // NORMALIZACIÓN: year_id no existe en users
     const admin = await User.create({
       email,
       name,
@@ -278,7 +279,6 @@ const createAdmin = async (req, res) => {
       sede_id,
       password: hashedPassword,
       rol_id: 3,
-      year_id: yearRecord.year_id,
     });
 
     try {

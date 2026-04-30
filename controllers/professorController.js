@@ -59,7 +59,6 @@ const updateProfessorStatus = async (req, res) => {
     await logActivity(
       user_id,
       user.sede_id,
-      user.name,
       `El campo active ha sido actualizado a ${active}`,
       "Actualización de campo active"
     );
@@ -185,8 +184,9 @@ const listActiveProfessors = async (req, res) => {
         sede_id: sede_id,
         year_id: year_id,
         user_id: {
+          // NORMALIZACIÓN: comisiones ya no tiene year_id; filtramos via group_id -> groupcomision
           [Op.notIn]: sequelize.literal(
-            `(SELECT user_id FROM comisiones WHERE year_id = ${year_id})`
+            `(SELECT c.user_id FROM comisiones c INNER JOIN groupcomision g ON c.group_id = g.group_id WHERE g.year_id = ${year_id} AND g.sede_id = ${sede_id})`
           ),
         },
       },
@@ -306,7 +306,6 @@ const createProfessor = async (req, res) => {
     await logActivity(
       userToken.user_id,
       userToken.sede_id,
-      userToken.name,
       "Profesor creado",
       `Creación de profesor: ${user.name}`
     );

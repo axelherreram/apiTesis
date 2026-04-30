@@ -46,14 +46,11 @@ const searchStudentByCarnet = async (req, res) => {
 
   try {
     // Realizar la búsqueda de estudiantes, filtrando por sede_id
+    // NORMALIZACIÓN: year_id eliminado de users — filtrar solo por sede y carnet
     const students = await User.findAll({
       where: {
-        year_id,
-        sede_id,
-        carnet: {
-          [Op.like]: `${carnet}%`,
-        },
-        rol_id: 1, // Solo estudiantes
+        carnet: { [Op.like]: `${carnet}%` },
+        rol_id: 1,
         sede_id: tokenSedeId,
       },
       attributes: ["user_id", "name", "carnet", "email", "profilePhoto", "sede_id"],

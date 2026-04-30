@@ -9,11 +9,12 @@ module.exports = {
         primaryKey: true,
         autoIncrement: true,
       },
+      // NORMALIZACIÓN 3NF: year_id eliminado (transitivo via group_id -> groupcomision.year_id)
       group_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'groupcomision', 
+          model: 'groupcomision',
           key: 'group_id',
         },
         onUpdate: 'CASCADE',
@@ -23,22 +24,18 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'user', 
+          model: 'user',
           key: 'user_id',
         },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      year_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'year',
-          key: 'year_id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
-      },
+    });
+
+    // UNIQUE compuesto: evita inscripción duplicada de estudiante al mismo grupo
+    await queryInterface.addIndex('studentcomision', ['group_id', 'user_id'], {
+      unique: true,
+      name: 'uq_studentcomision',
     });
   },
 

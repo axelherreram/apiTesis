@@ -112,8 +112,8 @@ const addCommentForTask = async (req, res) => {
       }
     }
 
-    // Crear notificación en la plataforma
-    await createNotification(notificationMessage, userExist.sede_id, user_id, taskId, role === "student" ? "general" : "student");
+    // Crear notificación en la plataforma — NORMALIZACIÓN: sede_id eliminado (transitivo via user_id)
+    await createNotification(notificationMessage, user_id, taskId, role === "student" ? "general" : "student");
 
     // Respuesta exitosa
     res.status(201).json({ message: "Comentario agregado exitosamente." });

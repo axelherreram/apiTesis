@@ -84,7 +84,8 @@ const createCorThesis = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(randomPassword, salt);
 
-    // Create user (thesis coordinator)
+    // Crear usuario coordinador de tesis
+    // NORMALIZACIÓN: year_id no existe en users; se eliminan el findOrCreate del año también
     await User.create({
       name,
       email,
@@ -92,7 +93,6 @@ const createCorThesis = async (req, res) => {
       rol_id: 6,
       password: hashedPassword,
       active: true,
-      year_id: yearRecord.id,
     });
     // Send email notification
     const templateVariables = {

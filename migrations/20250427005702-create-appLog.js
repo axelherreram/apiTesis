@@ -1,8 +1,9 @@
 'use strict';
 
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('AppLog', {
+  async up(queryInterface, Sequelize) {
+    await queryInterface.createTable('applog', {
       log_id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -13,7 +14,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'user',  
+          model: 'user',
           key: 'user_id',
         },
         onUpdate: 'CASCADE',
@@ -23,16 +24,13 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-          model: 'sede', 
+          model: 'sede',
           key: 'sede_id',
         },
         onUpdate: 'CASCADE',
         onDelete: 'SET NULL',
       },
-      username: {
-        type: Sequelize.STRING(255),
-        allowNull: false,
-      },
+      // NORMALIZACIÓN 3NF: username eliminado (transitivo via user_id -> user.name)
       action: {
         type: Sequelize.STRING(255),
         allowNull: false,
@@ -45,11 +43,11 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
-      }
+      },
     });
   },
 
-  down: async (queryInterface, Sequelize) => {
-    await queryInterface.dropTable('AppLog');
-  }
+  async down(queryInterface, Sequelize) {
+    await queryInterface.dropTable('applog');
+  },
 };

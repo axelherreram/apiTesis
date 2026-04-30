@@ -32,9 +32,7 @@ module.exports = function associateModels() {
   Task.belongsTo(TypeTask, { foreignKey: "typeTask_id" });
   TypeTask.hasMany(Task, { foreignKey: "typeTask_id" });
 
-  // Relación entre Task y Year
-  Task.belongsTo(Year, { foreignKey: "year_id" });
-  Year.hasMany(Task, { foreignKey: "year_id" });
+  // NOTA: Task ya no tiene year_id (eliminado en 3NF — transitivo via asigCourse_id)
 
   // Relación entre TimelineEventos y Task
   TimelineEventos.belongsTo(Task, { foreignKey: "task_id" });
@@ -84,9 +82,7 @@ module.exports = function associateModels() {
   User.hasMany(Comisiones, { foreignKey: "user_id", as: "comisiones" });
   Comisiones.belongsTo(User, { foreignKey: "user_id" });
 
-  // Relación entre Comisiones y Year
-  Comisiones.belongsTo(Year, { foreignKey: "year_id" });
-  Year.hasMany(Comisiones, { foreignKey: "year_id" });
+  // NOTA: Comisiones ya no tiene year_id (eliminado en 3NF — transitivo via group_id)
 
   // Relación entre Comisiones y rolComision
   Comisiones.belongsTo(rolComision, { foreignKey: "rol_comision_id" });
@@ -168,9 +164,7 @@ module.exports = function associateModels() {
   Task.hasMany(ThesisSubmission, { foreignKey: "task_id" });
   ThesisSubmission.belongsTo(Task, { foreignKey: "task_id" });
 
-  // Relación entre Notification y Sede
-  Notification.belongsTo(Sede, { foreignKey: "sede_id" });
-  Sede.hasMany(Notification, { foreignKey: "sede_id" });
+  // NOTA: Notification ya no tiene sede_id (eliminado en 3NF — transitivo via student_id -> user.sede_id)
 
   // Relación entre Notification y User (Student)
   Notification.belongsTo(User, { foreignKey: "student_id" });

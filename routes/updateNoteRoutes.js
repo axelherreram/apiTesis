@@ -4,24 +4,25 @@ const { updateNote, listNotes } = require("../controllers/updateNoteController")
 const authMiddleware = require('../middlewares/authMiddleware');
 const verifyRole = require('../middlewares/roleMiddleware');
 
-// Define roles for routes
 const admin = verifyRole([3]);
 const allowedRolesList = verifyRole([3, 4, 5]);
 
 /**
  * @swagger
  * tags:
- *   name: Notas
- *   description: Endpoints para gestionar notas de estudiantes.
+ *   name: Grades
+ *   description: Endpoints for managing student grades.
  */
 
 /**
  * @swagger
- * /api/notas/update:
+ * /api/grades/update:
  *   put:
- *     summary: Actualiza la nota de un estudiante en un curso específico.
+ *     summary: Update a student's grade for a specific course.
  *     tags:
- *       - Notas
+ *       - Grades
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -36,62 +37,53 @@ const allowedRolesList = verifyRole([3, 4, 5]);
  *               student_id:
  *                 type: integer
  *                 example: 5
- *                 description: ID del estudiante.
+ *                 description: Student ID.
  *               course_id:
  *                 type: integer
  *                 example: 3
- *                 description: ID de la asignación del curso (por sede y año).
+ *                 description: Course assignment ID (by sede and year).
  *               note:
  *                 type: number
  *                 format: float
  *                 example: 87.5
- *                 description: Nota a asignar al estudiante.
+ *                 description: Grade to assign.
  *     responses:
  *       200:
- *         description: Nota actualizada correctamente.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Nota actualizada exitosamente.
+ *         description: Grade updated successfully.
  *       400:
- *         description: Datos incompletos o inválidos.
+ *         description: Incomplete or invalid data.
  *       404:
- *         description: Asignación del estudiante al curso no encontrada.
+ *         description: Student course assignment not found.
  *       500:
- *         description: Error del servidor al actualizar la nota.
+ *         description: Server error.
  */
-
-router.put("/notas/update", authMiddleware, admin, updateNote);
+router.put("/grades/update", authMiddleware, admin, updateNote);
 
 /**
  * @swagger
- * /api/notas/list/{user_id}/{course_id}:
+ * /api/grades/list/{user_id}/{course_id}:
  *   get:
- *     summary: Lista la nota de un estudiante para un curso específico.
+ *     summary: Get a student's grade for a specific course.
  *     tags:
- *       - Notas
+ *       - Grades
  *     security:
- *      - bearerAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: user_id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del estudiante.
+ *         description: Student ID.
  *       - in: path
  *         name: course_id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID de la asignación del curso (por sede y año).
+ *         description: Course assignment ID (by sede and year).
  *     responses:
  *       200:
- *         description: Nota del estudiante obtenida correctamente.
+ *         description: Student grade retrieved successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -101,14 +93,13 @@ router.put("/notas/update", authMiddleware, admin, updateNote);
  *                   type: number
  *                   format: float
  *                   example: 87.5
- *                   description: Nota del estudiante.
  *       400:
- *         description: Datos incompletos o inválidos.
+ *         description: Incomplete or invalid data.
  *       404:
- *         description: Asignación del estudiante al curso no encontrada o nota no registrada.
+ *         description: Assignment or grade not found.
  *       500:
- *         description: Error del servidor al listar la nota.
+ *         description: Server error.
  */
-router.get("/notas/list/:user_id/:course_id", authMiddleware, allowedRolesList, listNotes);
+router.get("/grades/list/:user_id/:course_id", authMiddleware, allowedRolesList, listNotes);
 
 module.exports = router;

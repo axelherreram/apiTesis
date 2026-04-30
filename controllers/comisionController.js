@@ -112,19 +112,20 @@ const createGroupComision = async (req, res) => {
         throw new Error(`El usuario ${user_id} no existe.`);
       }
 
+      // NORMALIZACIÓN: year_id eliminado de comisiones (transitivo via group_id → groupcomision)
       await Comisiones.create(
-        { group_id: group.group_id, year_id, user_id, rol_comision_id },
+        { group_id: group.group_id, user_id, rol_comision_id },
         { transaction }
       );
     }
 
     // 9. Asignar estudiantes al grupo
     for (const estudiante of estudiantes) {
+      // NORMALIZACIÓN: year_id eliminado de studentComision (transitivo via group_id → groupcomision)
       await studentComision.create(
         {
           group_id: group.group_id,
           user_id: estudiante.User.user_id,
-          year_id,
         },
         { transaction }
       );
@@ -195,7 +196,8 @@ const removeUserFromComision = async (req, res) => {
     }
 
     // Buscar al usuario en la comisión
-    const comision = await Comisiones.findOne({ where: { group_id, user_id, year_id } });
+    // NORMALIZACIÓN: year_id eliminado de comisiones
+    const comision = await Comisiones.findOne({ where: { group_id, user_id } });
     if (!comision) {
       return res
         .status(404)
@@ -307,10 +309,9 @@ const addUserToComision = async (req, res) => {
     }
 
     // Crear la nueva entrada en la tabla Comisiones
+    // NORMALIZACIÓN: year_id y sede_id eliminados de comisiones (se obtienen via group_id → groupcomision)
     const comision = await Comisiones.create({
       group_id,
-      year_id: groupExists.year_id,
-      sede_id: groupExists.sede_id,
       user_id,
       rol_comision_id,
     });

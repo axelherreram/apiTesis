@@ -166,7 +166,6 @@ const loginUser = async (req, res) => {
       await logActivity(
         user.user_id,
         user.sede_id,
-        user.name,
         `El usuario inició sesión`,
         "Inicio de sesión"
       );
@@ -235,7 +234,6 @@ const updatePassword = async (req, res) => {
     await logActivity(
       user_id,
       user.sede_id,
-      user.name,
       "El usuario actualizó su contraseña",
       "Actualización de contraseña"
     );
@@ -310,7 +308,6 @@ const updateProfilePhoto = async (req, res) => {
     await logActivity(
       user_id,
       updatedUser.sede_id,
-      updatedUser.name,
       `El usuario actualizó su foto de perfil`,
       "Actualización de foto de perfil"
     );

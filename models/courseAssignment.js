@@ -4,20 +4,9 @@ const CourseSedeAssignment = require("./courseSedeAssignment");
 const { sequelize } = require("../config/database");
 
 /**
- * Model `CourseAssignment` represents the assignment of a course to a student.
+ * Model `CourseAssignment` - inscripción de un estudiante a un curso-sede-año.
  *
- * Fields:
- * - `courseAssignment_id`: Unique identifier for the course assignment (PK, auto-increment).
- * - `student_id`: Foreign key referencing the `User` model, representing the student assigned to the course.
- * - `asigCourse_id`: Foreign key referencing the `CourseSedeAssignment` model, representing the specific course assignment at a given site.
- *
- * Configuration:
- * - `timestamps: false`: Disables automatic `createdAt` and `updatedAt` fields.
- * - `tableName: 'CourseAssignment'`: Database table name (`CourseAssignment`).
- *
- * Relationships:
- * - `CourseAssignment.belongsTo(models.User, { foreignKey: 'student_id' })`: Defines a many-to-one relationship with the `User` model.
- * - `CourseAssignment.belongsTo(models.CourseSedeAssignment, { foreignKey: 'asigCourse_id' })`: Defines a many-to-one relationship with the `CourseSedeAssignment` model.
+ * NORMALIZACIÓN: FKs ahora son NOT NULL. UNIQUE(student_id, asigCourse_id) en migración.
  */
 const CourseAssignment = sequelize.define(
   "CourseAssignment",
@@ -29,20 +18,16 @@ const CourseAssignment = sequelize.define(
     },
     student_id: {
       type: DataTypes.INTEGER,
-      references: {
-        model: User,
-        key: "user_id",
-      },
+      allowNull: false,
+      references: { model: User, key: "user_id" },
     },
     asigCourse_id: {
       type: DataTypes.INTEGER,
-      references: {
-        model: CourseSedeAssignment,
-        key: "asigCourse_id",
-      },
+      allowNull: false,
+      references: { model: CourseSedeAssignment, key: "asigCourse_id" },
     },
     note: {
-      type: DataTypes.FLOAT(4,2),
+      type: DataTypes.FLOAT,
       allowNull: true,
       defaultValue: null,
     },
@@ -52,12 +37,5 @@ const CourseAssignment = sequelize.define(
     tableName: "courseassignment",
   }
 );
-
-CourseAssignment.associate = function (models) {
-  CourseAssignment.belongsTo(models.User, { foreignKey: "student_id" });
-  CourseAssignment.belongsTo(models.CourseSedeAssignment, {
-    foreignKey: "asigCourse_id",
-  });
-};
 
 module.exports = CourseAssignment;

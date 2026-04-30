@@ -4,29 +4,28 @@ const {
   createGroupComision,
   removeUserFromComision,
   addUserToComision,
-  getGroupsAndUsersBySedeAndYear, // Importar la nueva función
+  getGroupsAndUsersBySedeAndYear,
 } = require("../controllers/comisionController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
-// Middleware para verificar el rol de administrador y coordinador general
-const admin = verifyRole([3, 5]); 
+const admin = verifyRole([3, 5]);
 
 /**
  * @swagger
  * tags:
- *   name: Comisiones
- *   description: Operaciones relacionadas con comisiones y grupos de comisión.
+ *   name: Commissions
+ *   description: Commission group management operations.
  */
 
 /**
  * @swagger
- * /api/comisiones/grupo:
+ * /api/commissions/group:
  *   post:
- *     summary: Crear un nuevo grupo de comisión y asignar usuarios
- *     description: Crea un grupo de comisión y asigna usuarios con roles específicos.
- *     tags: [Comisiones]
+ *     summary: Create a new commission group and assign members
+ *     description: Creates a commission group and assigns users with specific roles.
+ *     tags: [Commissions]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -55,22 +54,12 @@ const admin = verifyRole([3, 5]);
  *                       example: 2
  *     responses:
  *       201:
- *         description: Grupo de comisión creado exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Grupo de comisión creado exitosamente
- *                 group:
- *                   $ref: '#/components/schemas/Comisiones'
+ *         description: Commission group created successfully
  *       500:
- *         description: Error en el servidor
+ *         description: Server error
  */
 router.post(
-  "/comisiones/grupo",
+  "/commissions/group",
   authMiddleware,
   admin,
   extractSedeIdMiddleware,
@@ -79,11 +68,11 @@ router.post(
 
 /**
  * @swagger
- * /api/comisiones/{group_id}/usuario/{user_id}:
+ * /api/commissions/{group_id}/member/{user_id}:
  *   delete:
- *     summary: Eliminar un usuario de una comisión
- *     description: Elimina un usuario específico de una comisión dentro de un grupo.
- *     tags: [Comisiones]
+ *     summary: Remove a member from a commission group
+ *     description: Removes a specific user from a commission group.
+ *     tags: [Commissions]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -92,23 +81,23 @@ router.post(
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del grupo de comisión
+ *         description: Commission group ID
  *       - in: path
  *         name: user_id
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del usuario
+ *         description: User ID
  *     responses:
  *       200:
- *         description: Usuario eliminado exitosamente de la comisión
+ *         description: Member removed successfully
  *       404:
- *         description: Usuario no encontrado en la comisión
+ *         description: Member not found in commission
  *       500:
- *         description: Error en el servidor
+ *         description: Server error
  */
 router.delete(
-  "/comisiones/:group_id/usuario/:user_id",
+  "/commissions/:group_id/member/:user_id",
   authMiddleware,
   admin,
   extractSedeIdMiddleware,
@@ -117,11 +106,11 @@ router.delete(
 
 /**
  * @swagger
- * /api/comisiones/{group_id}/usuario:
+ * /api/commissions/{group_id}/member:
  *   post:
- *     summary: Agregar un usuario a una comisión existente
- *     description: Agrega un usuario con un rol específico a un grupo de comisión existente.
- *     tags: [Comisiones]
+ *     summary: Add a member to an existing commission group
+ *     description: Adds a user with a specific role to an existing commission group.
+ *     tags: [Commissions]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -130,7 +119,7 @@ router.delete(
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID del grupo de comisión
+ *         description: Commission group ID
  *     requestBody:
  *       required: true
  *       content:
@@ -140,52 +129,24 @@ router.delete(
  *             properties:
  *               user_id:
  *                 type: integer
- *                 description: ID del usuario que se va a agregar
  *                 example: 15
  *               rol_comision_id:
  *                 type: integer
- *                 description: ID del rol asignado al usuario dentro de la comisión
  *                 example: 3
  *     responses:
  *       201:
- *         description: Usuario agregado exitosamente a la comisión
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Usuario agregado a la comisión exitosamente
- *                 comision:
- *                   type: object
- *                   properties:
- *                     group_id:
- *                       type: integer
- *                       example: 1
- *                     year_id:
- *                       type: integer
- *                       example: 2024
- *                     sede_id:
- *                       type: integer
- *                       example: 2
- *                     user_id:
- *                       type: integer
- *                       example: 15
- *                     rol_comision_id:
- *                       type: integer
- *                       example: 3
- *       404:
- *         description: Grupo de comisión no encontrado
+ *         description: Member added successfully
  *       400:
- *         description: Usuario o rol de comisión no válido o límite de usuarios excedido
+ *         description: Invalid user/role or member limit exceeded
  *       403:
- *         description: No tienes acceso para esta sede
+ *         description: Access denied for this sede
+ *       404:
+ *         description: Commission group not found
  *       500:
- *         description: Error en el servidor
+ *         description: Server error
  */
 router.post(
-  "/comisiones/:group_id/usuario",
+  "/commissions/:group_id/member",
   authMiddleware,
   admin,
   extractSedeIdMiddleware,
@@ -194,11 +155,11 @@ router.post(
 
 /**
  * @swagger
- * /api/comisiones/grupos/{sede_id}/{year}:
+ * /api/commissions/groups/{sede_id}/{year}:
  *   get:
- *     summary: Obtener los grupos de comisión por sede y año, junto con los usuarios y roles
- *     description: Obtiene todos los grupos de comisión por sede y año, junto con los usuarios y sus roles asociados.
- *     tags: [Comisiones]
+ *     summary: Get commission groups by sede and year, including users and roles
+ *     description: Returns all commission groups for a given sede and year, with their members and roles.
+ *     tags: [Commissions]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -207,62 +168,23 @@ router.post(
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID de la sede
+ *         description: Sede ID
  *       - in: path
  *         name: year
  *         required: true
  *         schema:
  *           type: integer
- *         description: Año de los grupos de comisión
+ *         description: Year
  *     responses:
  *       200:
- *         description: Grupos de comisión obtenidos exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 groups:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       group_id:
- *                         type: integer
- *                         example: 1
- *                       year_id:
- *                         type: integer
- *                         example: 2024
- *                       sede_id:
- *                         type: integer
- *                         example: 1
- *                       users:
- *                         type: array
- *                         items:
- *                           type: object
- *                           properties:
- *                             user_id:
- *                               type: integer
- *                               example: 123
- *                             email:
- *                               type: string
- *                               example: usuario@dominio.com
- *                             nombre:
- *                               type: string
- *                               example: Juan Pérez
- *                             rol:
- *                               type: string
- *                               example: Profesor
- *                             profilePhoto:
- *                               type: string
- *                               example: "http://localhost:3000/public/profilephoto/juan.jpg"
+ *         description: Commission groups retrieved successfully
  *       404:
- *         description: No se encontraron grupos de comisión
+ *         description: No commission groups found
  *       500:
- *         description: Error en el servidor
+ *         description: Server error
  */
 router.get(
-  "/comisiones/grupos/:sede_id/:year",
+  "/commissions/groups/:sede_id/:year",
   authMiddleware,
   admin,
   extractSedeIdMiddleware,

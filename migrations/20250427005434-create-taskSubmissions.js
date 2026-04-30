@@ -29,20 +29,27 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      file_path: {
-        type: Sequelize.STRING,
-        allowNull: true,
-      },
       submission_complete: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
         defaultValue: false,
+      },
+      // Ampliado a STRING(500) para soportar rutas largas de archivos
+      file_path: {
+        type: Sequelize.STRING(500),
+        allowNull: true,
       },
       date: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
+    });
+
+    // UNIQUE compuesto: evita entregas duplicadas de un mismo usuario a la misma tarea
+    await queryInterface.addIndex('tasksubmissions', ['user_id', 'task_id'], {
+      unique: true,
+      name: 'uq_tasksubmit',
     });
   },
 

@@ -10,24 +10,22 @@ const getUserIdToken = require("../middlewares/getUserIdToken");
 
 const router = express.Router();
 
-// Middleware para verificar el rol de administrador, coordinador sede y coordinador general
-// (roles 3, 4 y 5 respectivamente)
 const allowed = verifyRole([3, 4, 5]);
 
 /**
  * @swagger
  * tags:
- *   name: Bitácora
- *   description: Operaciones de bitácora
+ *   name: Logs
+ *   description: Activity log operations
  */
 
 /**
  * @swagger
- * /api/bitacoraxuser/{user_id}:
+ * /api/logs/user/{user_id}:
  *   get:
- *     tags: [Bitácora]
- *     summary: Listar las bitácoras de un usuario
- *     description: Obtiene una lista de todas las entradas de la bitácora para un usuario específico.
+ *     tags: [Logs]
+ *     summary: List activity logs for a specific user
+ *     description: Returns all activity log entries for the given user.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -36,10 +34,10 @@ const allowed = verifyRole([3, 4, 5]);
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID del usuario para el que se listarán las bitácoras
+ *         description: User ID to retrieve logs for
  *     responses:
  *       200:
- *         description: Lista de bitácoras
+ *         description: List of activity logs
  *         content:
  *           application/json:
  *             schema:
@@ -47,18 +45,19 @@ const allowed = verifyRole([3, 4, 5]);
  *               items:
  *                 $ref: '#/components/schemas/Bitacora'
  *       404:
- *         description: No se encontraron entradas de bitácora para este usuario
+ *         description: No log entries found for this user
  *       500:
- *         description: Error en el servidor
+ *         description: Server error
  */
-router.get("/bitacoraxuser/:user_id", authMiddleware, allowed, listLogsByUser);
+router.get("/logs/user/:user_id", authMiddleware, allowed, listLogsByUser);
+
 /**
  * @swagger
- * /api/bitacora/{sede_id}:
+ * /api/logs/{sede_id}:
  *   get:
- *     tags: [Bitácora]
- *     summary: Listar todas las bitácoras
- *     description: Obtiene una lista de todas las entradas de la bitácora en el sistema.
+ *     tags: [Logs]
+ *     summary: List all activity logs for a sede
+ *     description: Returns all activity log entries for the given sede.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -67,10 +66,10 @@ router.get("/bitacoraxuser/:user_id", authMiddleware, allowed, listLogsByUser);
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID de la sede para la que se listarán las bitácoras
+ *         description: Sede ID to retrieve logs for
  *     responses:
  *       200:
- *         description: Lista completa de bitácoras
+ *         description: Full list of activity logs
  *         content:
  *           application/json:
  *             schema:
@@ -78,12 +77,12 @@ router.get("/bitacoraxuser/:user_id", authMiddleware, allowed, listLogsByUser);
  *               items:
  *                 $ref: '#/components/schemas/Bitacora'
  *       404:
- *         description: No se encontraron entradas de bitácora
+ *         description: No log entries found
  *       500:
- *         description: Error en el servidor
+ *         description: Server error
  */
 router.get(
-  "/bitacora/:sede_id",
+  "/logs/:sede_id",
   authMiddleware,
   allowed,
   extractSedeIdMiddleware,

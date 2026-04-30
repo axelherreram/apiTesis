@@ -503,7 +503,8 @@ const getInforRevisionsByUserId = async (req, res) => {
         },
         {
           model: ApprovalThesis,
-          attributes: ["status", "date_approved", "approved"], // Datos de aprobación
+          // NORMALIZACIÓN: 'approved' BOOLEAN eliminado — usar 'status' ENUM
+          attributes: ["status", "date_approved"],
           required: false,
         },
       ],
@@ -711,7 +712,8 @@ const getReviewerHistory = async (req, res) => {
             },
             {
               model: ApprovalThesis,
-              attributes: ["status", "date_approved", "approved"],
+              // NORMALIZACIÓN: 'approved' BOOLEAN eliminado — usar 'status' ENUM
+              attributes: ["status", "date_approved"],
               required: false,
             },
             {
@@ -790,7 +792,8 @@ const getReviewerHistory = async (req, res) => {
           status: statusInSpanish,
           status_original: revisionThesis.ApprovalThesis?.status || null,
           date_approved: revisionThesis.ApprovalThesis?.date_approved || null,
-          approved: revisionThesis.ApprovalThesis?.approved || null,
+          // NORMALIZACIÓN: 'approved' BOOLEAN eliminado — derivar de status
+          approved: revisionThesis.ApprovalThesis?.status === 'approved',
         },
         comments: reviewData.commentsRevisions || [], // ✅ Cambiar a commentsRevisions (plural, minúscula)
         total_comments: reviewData.commentsRevisions ? reviewData.commentsRevisions.length : 0, // ✅ Cambiar a commentsRevisions

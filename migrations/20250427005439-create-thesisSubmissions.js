@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'user', 
+          model: 'user',
           key: 'user_id',
         },
         onUpdate: 'CASCADE',
@@ -30,7 +30,7 @@ module.exports = {
         onDelete: 'CASCADE',
       },
       file_path: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(500),
         allowNull: false,
       },
       date: {
@@ -38,13 +38,11 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
+      // NORMALIZACIÓN: approved_proposal convertido a ENUM semántico (antes era INTEGER 0-3)
       approved_proposal: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        defaultValue: 0,
-        validate: {
-          isIn: [[0, 1, 2, 3]],
-        },
+        type: Sequelize.ENUM('pending', 'approved', 'needs_changes', 'rejected'),
+        allowNull: false,
+        defaultValue: 'pending',
       },
     });
   },

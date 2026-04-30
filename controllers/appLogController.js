@@ -85,12 +85,13 @@ const listAllLogs = async (req, res) => {
     // Formatear logs
     const formattedLogs = logs.rows.map((log) => ({
       user_id: log.user_id,
-      username: log.username,
+      // NORMALIZACIÓN: username eliminado del modelo — se obtiene via JOIN a User
+      username: log.User?.name || null,
       role: log.User.role.name,
       action: log.action,
       description: log.details,
       date: log.date,
-      sede_id: log.User.sede_id, // Incluir sede_id en la respuesta
+      sede_id: log.User.sede_id,
     }));
 
     res.json({
@@ -130,6 +131,8 @@ const listLogsByUser = async (req, res) => {
 
     const logs = await AppLog.findAll({
       where: { user_id },
+      // NORMALIZACIÓN: incluir User para obtener nombre (username fue eliminado del modelo)
+      include: [{ model: User, attributes: ["name"] }],
       order: [["date", "DESC"]],
     });
 
@@ -140,7 +143,8 @@ const listLogsByUser = async (req, res) => {
     }
 
     const formattedLogs = logs.map((log) => ({
-      username: log.username,
+      // NORMALIZACIÓN: username eliminado del modelo — se obtiene via JOIN a User
+      username: log.User?.name || null,
       action: log.action,
       description: log.details,
       date: log.date,

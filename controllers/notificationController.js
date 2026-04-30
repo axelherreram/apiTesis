@@ -63,8 +63,9 @@ const getNotificationsByUser = async (req, res) => {
         student_id: user_id,
         type_notification: "student",
       },
-      attributes: ["notification_text", "notification_date", "task_id", "sede_id"],
-      order: [["notification_date", "DESC"]], // Ordenar de forma descendente
+      // NORMALIZACIÓN: sede_id eliminado de notification (transitivo via student_id → user → sede_id)
+      attributes: ["notification_text", "notification_date", "task_id", "student_id"],
+      order: [["notification_date", "DESC"]],
     });
 
     return res.status(200).json(notifications);

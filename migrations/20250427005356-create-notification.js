@@ -1,26 +1,19 @@
 'use strict';
 
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('notification', {
       notification_id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
       },
+      // NORMALIZACIÓN 3NF: notification_text ampliado a TEXT
+      // ELIMINADO: sede_id (transitivo via student_id -> user.sede_id)
       notification_text: {
-        type: Sequelize.STRING,
+        type: Sequelize.TEXT,
         allowNull: false,
-      },
-      sede_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: 'sede', 
-          key: 'sede_id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
       },
       student_id: {
         type: Sequelize.INTEGER,
@@ -36,7 +29,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'task', 
+          model: 'task',
           key: 'task_id',
         },
         onUpdate: 'CASCADE',
@@ -47,33 +40,15 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
+      // NORMALIZACIÓN: type_notification como ENUM en lugar de STRING libre
       type_notification: {
-        type: Sequelize.STRING(10),
-        allowNull: false,
-        validate: {
-          isIn: {
-            args: [['student', 'general']],
-            msg: "El tipo de notificación debe ser 'student' o 'general'.",
-          },
-        },
-      },
-      createdAt: {
-        type: Sequelize.DATE,
+        type: Sequelize.ENUM('student', 'general'),
         allowNull: false,
       },
-      updatedAt: {
-        type: Sequelize.DATE,
-        allowNull: false,
-      },
-    },
-  {
-    timestamps: true,
-  }
-  );
-  
+    });
   },
 
-  down: async (queryInterface, Sequelize) => {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('notification');
   },
 };

@@ -1,7 +1,8 @@
 'use strict';
 
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('coursesedeassignment', {
       asigCourse_id: {
         type: Sequelize.INTEGER,
@@ -12,7 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'course', 
+          model: 'course',
           key: 'course_id',
         },
         onUpdate: 'CASCADE',
@@ -22,7 +23,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: 'sede', 
+          model: 'sede',
           key: 'sede_id',
         },
         onUpdate: 'CASCADE',
@@ -38,14 +39,22 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
+      // Default explícito: un curso se activa al asignarse
       courseActive: {
         type: Sequelize.BOOLEAN,
-        allowNull: true,
+        allowNull: false,
+        defaultValue: true,
       },
+    });
+
+    // UNIQUE compuesto: evita asignar el mismo curso a la misma sede en el mismo año
+    await queryInterface.addIndex('coursesedeassignment', ['course_id', 'sede_id', 'year_id'], {
+      unique: true,
+      name: 'uq_csassign',
     });
   },
 
-  down: async (queryInterface, Sequelize) => {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('coursesedeassignment');
   },
 };

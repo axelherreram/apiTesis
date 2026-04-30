@@ -10,24 +10,22 @@ const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware"
 
 const router = express.Router();
 
-// Middleware para verificar el rol de coordinador de sede y coordinador general
 const coordinador_sede = verifyRole([4, 5]);
-
 const adminOrSuperadmin = verifyRole([1, 3, 4, 5]);
 
 /**
  * @swagger
  * tags:
- *   - name: Asignación de curso a sede
- *     description: Operaciones de asignación de cursos a sedes
+ *   - name: CourseAssignments
+ *     description: Course-to-sede assignment operations
  */
 
 /**
  * @swagger
- * /api/crearAsignacionSedeCurso:
+ * /api/course-assignments:
  *   post:
- *     summary: Crear una asignación de curso a sede
- *     tags: [Asignación de curso a sede]
+ *     summary: Create a course assignment for a sede
+ *     tags: [CourseAssignments]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -42,32 +40,24 @@ const adminOrSuperadmin = verifyRole([1, 3, 4, 5]);
  *             properties:
  *               course_id:
  *                 type: integer
- *                 description: ID del curso a asignar
+ *                 description: Course ID to assign
  *                 example: 1
  *               sede_id:
  *                 type: integer
- *                 description: ID de la sede donde se asignará el curso
+ *                 description: Sede ID to assign the course to
  *                 example: 1
  *     responses:
  *       201:
- *         description: Asignación de curso a sede creada exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: Asignación de curso a sede creada exitosamente.
+ *         description: Course assignment created successfully
  *       400:
- *         description: Error en la creación de la asignación (curso en periodo incorrecto, asignación ya existente, etc.)
+ *         description: Assignment error (wrong period, already exists, etc.)
  *       403:
- *         description: No tienes permisos para asignar cursos a esta sede
+ *         description: No permission to assign courses to this sede
  *       500:
- *         description: Error del servidor al crear la asignación
+ *         description: Server error
  */
 router.post(
-  "/crearAsignacionSedeCurso",
+  "/course-assignments",
   authMiddleware,
   getUserIdToken,
   coordinador_sede,
@@ -76,10 +66,10 @@ router.post(
 
 /**
  * @swagger
- * /api/cursosPorSede/{sede_id}/{year}:
+ * /api/courses/by-location/{sede_id}/{year}:
  *   get:
- *     summary: Obtener los cursos asignados a una sede
- *     tags: [Asignación de curso a sede]
+ *     summary: Get courses assigned to a sede for a given year
+ *     tags: [CourseAssignments]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -88,16 +78,16 @@ router.post(
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID de la sede para la que se quieren obtener los cursos
+ *         description: Sede ID
  *       - in: path
  *         name: year
  *         required: true
  *         schema:
  *           type: integer
- *         description: Año para el que se quieren obtener los cursos
+ *         description: Year
  *     responses:
  *       200:
- *         description: Cursos asignados a la sede recuperados exitosamente
+ *         description: Courses for the sede retrieved successfully
  *         content:
  *           application/json:
  *             schema:
@@ -105,12 +95,12 @@ router.post(
  *               items:
  *                 $ref: '#/components/schemas/CourseSedeAssignment'
  *       404:
- *         description: No se encontraron cursos asignados a la sede
+ *         description: No courses found for this sede
  *       500:
- *         description: Error del servidor al recuperar los cursos
+ *         description: Server error
  */
 router.get(
-  "/cursosPorSede/:sede_id/:year",
+  "/courses/by-location/:sede_id/:year",
   authMiddleware,
   getUserIdToken,
   adminOrSuperadmin,

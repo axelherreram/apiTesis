@@ -10,21 +10,21 @@ const superAdmin = verifyRole([5]);
 /**
  * @swagger
  * tags:
- *   name: Sede
- *   description: Gestión de sedes - operaciones para listar y crear sedes dentro del sistema.
+ *   name: Locations
+ *   description: Location (sede) management - list, create and edit locations.
  */
 
 /**
  * @swagger
- * /api/sedes:
+ * /api/locations:
  *   get:
- *     summary: Lista todas las sedes
- *     tags: [Sede]
+ *     summary: List all locations
+ *     tags: [Locations]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Lista de todas las sedes disponibles.
+ *         description: List of all available locations.
  *         content:
  *           application/json:
  *             schema:
@@ -32,10 +32,10 @@ const superAdmin = verifyRole([5]);
  *               items:
  *                 $ref: '#/components/schemas/Sede'
  *       500:
- *         description: Error interno del servidor al intentar recuperar las sedes.
+ *         description: Internal server error.
  *   post:
- *     summary: Crea una nueva sede
- *     tags: [Sede]
+ *     summary: Create a new location
+ *     tags: [Locations]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -46,23 +46,19 @@ const superAdmin = verifyRole([5]);
  *             $ref: '#/components/schemas/Sede'
  *     responses:
  *       201:
- *         description: Sede creada exitosamente.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Sede'
+ *         description: Location created successfully.
  *       400:
- *         description: Datos de entrada inválidos. Se requiere el nombre de la sede.
+ *         description: Invalid input data.
  *       500:
- *         description: Error interno del servidor al intentar crear la sede.
+ *         description: Internal server error.
  */
 
 /**
  * @swagger
- * /api/sedes/{sede_id}:
+ * /api/locations/{sede_id}:
  *   put:
- *     summary: Edita el nombre de una sede
- *     tags: [Sede]
+ *     summary: Edit a location's name and address
+ *     tags: [Locations]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -71,7 +67,7 @@ const superAdmin = verifyRole([5]);
  *         required: true
  *         schema:
  *           type: integer
- *         description: ID de la sede a editar
+ *         description: Location ID to edit
  *     requestBody:
  *       required: true
  *       content:
@@ -81,59 +77,23 @@ const superAdmin = verifyRole([5]);
  *             properties:
  *               nameSede:
  *                 type: string
- *                 example: "Nueva Sede"
- *                 description: Nuevo nombre de la sede
+ *                 example: "New Location Name"
  *               address:
  *                 type: string
- *                 example: "Calle Falsa 123"
- *                 description: Nueva dirección de la sede
+ *                 example: "123 Main Street"
  *     responses:
  *       200:
- *         description: Sede actualizada satisfactoriamente.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Sede actualizada satisfactoriamente"
+ *         description: Location updated successfully.
  *       400:
- *         description: El nombre de la sede es necesario.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "El nombre de la sede es necesario"
+ *         description: Location name is required.
  *       404:
- *         description: Sede no encontrada.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Sede no encontrada"
+ *         description: Location not found.
  *       500:
- *         description: Error al actualizar la sede.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Error al actualizar la sede"
- *                 error:
- *                   type: string
+ *         description: Error updating location.
  */
 
-router.get('/sedes', authMiddleware, listSede);
-router.post('/sedes', authMiddleware, getUserIdToken, superAdmin, createSede);
-router.put('/sedes/:sede_id', authMiddleware, getUserIdToken, superAdmin, editSede);
+router.get('/locations', authMiddleware, listSede);
+router.post('/locations', authMiddleware, getUserIdToken, superAdmin, createSede);
+router.put('/locations/:sede_id', authMiddleware, getUserIdToken, superAdmin, editSede);
 
 module.exports = router;

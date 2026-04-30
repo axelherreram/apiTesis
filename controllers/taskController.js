@@ -35,8 +35,7 @@ const createTask = async (req, res) => {
     description,
     taskStart,
     endTask,
-    startTime,
-    endTime,
+    // NORMALIZACIÓN: startTime y endTime eliminados (consolidados en DATETIME taskStart/endTask)
   } = req.body;
   const user_id = req.user_id;
   const { sede_id: tokenSedeId } = req;
@@ -122,7 +121,8 @@ const createTask = async (req, res) => {
     // Paso 8: Validar si ya existe una tarea de tipo "Propuesta de tesis"
     if (typeTask_id === 1) {
       const tareaExistente = await Task.findOne({
-        where: { asigCourse_id, typeTask_id: 1, year_id },
+        // NORMALIZACIÓN: year_id eliminado de task; se filtra via asigCourse_id que ya contiene el año
+        where: { asigCourse_id, typeTask_id: 1 },
       });
 
       if (tareaExistente) {
@@ -134,6 +134,7 @@ const createTask = async (req, res) => {
     }
 
     // Paso 9: Crear la nueva tarea
+    // NORMALIZACIÓN: year_id, startTime y endTime eliminados del modelo task
     const newTask = await Task.create({
       asigCourse_id,
       typeTask_id,
@@ -141,9 +142,6 @@ const createTask = async (req, res) => {
       description,
       taskStart: formattedTaskStart,
       endTask: formattedEndTask,
-      startTime,
-      endTime,
-      year_id,
     });
 
     const newTaskId = newTask.task_id;
@@ -250,8 +248,9 @@ const listTasks = async (req, res) => {
     );
 
     // Buscar las tareas asociadas a la sede y al año
+    // NORMALIZACIÓN: year_id eliminado de task; se filtra via asigCourse_id
     const tasks = await Task.findAll({
-      where: { asigCourse_id: asigCourseIds, year_id },
+      where: { asigCourse_id: asigCourseIds },
     });
 
     // Verificar si se encontraron tareas
@@ -401,8 +400,9 @@ const listTasksByCourse = async (req, res) => {
     const asigCourse_id = courseSedeAssignment.asigCourse_id;
 
     // Buscar todas las tareas asociadas a la asignación de curso, sede y año
+    // NORMALIZACIÓN: year_id eliminado de task
     const tasks = await Task.findAll({
-      where: { asigCourse_id, year_id },
+      where: { asigCourse_id },
     });
 
     // Verificar si se encontraron tareas
@@ -456,7 +456,8 @@ const listTasksByCourse = async (req, res) => {
  */
 const updateTask = async (req, res) => {
   const { task_id } = req.params;
-  const { title, description, taskStart, endTask, startTime, endTime } =
+  // NORMALIZACIÓN: startTime y endTime eliminados del modelo task (consolidados en DATETIME)
+  const { title, description, taskStart, endTask } =
     req.body;
   const user_id = req.user_id;
   const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
@@ -518,15 +519,13 @@ const updateTask = async (req, res) => {
     task.description = description ?? task.description;
     task.taskStart = formattedTaskStart;
     task.endTask = formattedEndTask;
-    task.startTime = startTime ?? task.startTime;
-    task.endTime = endTime ?? task.endTime;
+    // NORMALIZACIÓN: startTime y endTime eliminados del modelo task
 
     // Registrar la actividad del usuario
     const user = await User.findByPk(user_id);
     await logActivity(
       user_id,
       user.sede_id,
-      user.name,
       `Actualizó tarea con título: ${task.title}`,
       "Se actualizó tarea"
     );

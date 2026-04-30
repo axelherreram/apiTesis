@@ -5,63 +5,47 @@ const authMiddleware = require('../middlewares/authMiddleware');
 const router = express.Router();
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
-
 const admin = verifyRole([3, 5]);
 
 /**
  * @swagger
  * tags:
- *   - name: studentComision
- *     description: Operaciones relacionadas con los estudiantes en las comisiones
- * 
- * /api/comisiones/students/{year}/{sede_id}:
+ *   - name: CommissionStudents
+ *     description: Operations related to students in commission groups
+ *
+ * /api/commissions/students/{year}/{sede_id}:
  *   get:
- *     summary: Obtener estudiantes por año y sede
- *     description: Devuelve una lista de estudiantes que pertenecen a una comisión para un año y sede específicos.
+ *     summary: Get students by year and sede
+ *     description: Returns students belonging to a commission for a specific year and sede.
  *     tags:
- *       - studentComision
+ *       - CommissionStudents
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: year
  *         required: true
- *         description: El año del estudiante.
  *         schema:
  *           type: integer
  *       - in: path
  *         name: sede_id
  *         required: true
- *         description: El ID de la sede donde se encuentra el estudiante.
  *         schema:
  *           type: integer
  *     responses:
  *       200:
- *         description: Lista de estudiantes obtenidos con éxito.
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   user_id:
- *                     type: integer
- *                   user_name:
- *                     type: string
- *                   email:
- *                     type: string
+ *         description: Students retrieved successfully.
  *       401:
- *         description: No autorizado. Token de autenticación inválido o no proporcionado.
+ *         description: Unauthorized.
  *       404:
- *         description: No se encontraron estudiantes.
- *     security:
- *       - BearerAuth: []
- * components:
- *   securitySchemes:
- *     BearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
+ *         description: No students found.
  */
-router.get("/comisiones/students/:year/:sede_id", authMiddleware, admin, extractSedeIdMiddleware, getStudentsComisionByYear);
+router.get(
+  "/commissions/students/:year/:sede_id",
+  authMiddleware,
+  admin,
+  extractSedeIdMiddleware,
+  getStudentsComisionByYear
+);
 
 module.exports = router;

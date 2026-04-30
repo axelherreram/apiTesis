@@ -18,16 +18,16 @@ const admin = verifyRole([3]);
 /**
  * @swagger
  * tags:
- *   name: Task
- *   description: Operaciones relacionadas con las tareas (tasks)
+ *   name: Tasks
+ *   description: Task management operations
  */
 
 /**
  * @swagger
- * /api/tareas/{sede_id}/{year}:
+ * /api/tasks/{sede_id}/{year}:
  *   get:
- *     summary: Lista todas las tareas
- *     tags: [Task]
+ *     summary: List all tasks for a sede and year
+ *     tags: [Tasks]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -36,16 +36,16 @@ const admin = verifyRole([3]);
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID de la sede para obtener las tareas
+ *         description: Sede ID
  *       - in: path
  *         name: year
  *         schema:
  *           type: integer
  *         required: true
- *         description: Año para obtener las tareas
+ *         description: Year
  *     responses:
  *       200:
- *         description: Lista de tareas
+ *         description: List of tasks
  *         content:
  *           application/json:
  *             schema:
@@ -53,12 +53,12 @@ const admin = verifyRole([3]);
  *               items:
  *                 $ref: '#/components/schemas/Task'
  *       401:
- *         description: No autorizado
+ *         description: Unauthorized
  *       500:
- *         description: Error del servidor
+ *         description: Server error
  */
 router.get(
-  "/tareas/:sede_id/:year",
+  "/tasks/:sede_id/:year",
   authMiddleware,
   getUserIdToken,
   listTasks
@@ -68,20 +68,20 @@ router.get(
  * @swagger
  * /api/tasks/{task_id}:
  *   get:
- *     summary: Obtener los detalles de una tarea por ID
- *     tags: [Task]
+ *     summary: Get task details by ID
+ *     tags: [Tasks]
  *     security:
- *       - bearerAuth: []  # Requiere autenticación
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: task_id
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID único de la tarea
+ *         description: Unique task ID
  *     responses:
  *       200:
- *         description: Tarea encontrada exitosamente
+ *         description: Task found successfully
  *         content:
  *           application/json:
  *             schema:
@@ -98,33 +98,18 @@ router.get(
  *                       type: string
  *                     description:
  *                       type: string
- *                     status:
- *                       type: string
- *                     createdAt:
+ *                     taskStart:
  *                       type: string
  *                       format: date-time
- *                     updatedAt:
+ *                     endTask:
  *                       type: string
  *                       format: date-time
  *       400:
- *         description: ID de tarea inválido o no proporcionado
- *         content:
- *           application/json:
- *             example:
- *               message: "El ID de la tarea es inválido o no fue proporcionado."
+ *         description: Invalid or missing task ID
  *       404:
- *         description: Tarea no encontrada
- *         content:
- *           application/json:
- *             example:
- *               message: "Tarea no encontrada. Verifique el ID proporcionado."
+ *         description: Task not found
  *       500:
- *         description: Error en el servidor
- *         content:
- *           application/json:
- *             example:
- *               message: "Ocurrió un error al intentar obtener la tarea."
- *               error: "Detalles del error."
+ *         description: Server error
  */
 router.get(
   "/tasks/:task_id",
@@ -136,10 +121,10 @@ router.get(
 
 /**
  * @swagger
- * /api/tareas/curso/{sede_id}/{course_id}/{year}:
+ * /api/tasks/course/{sede_id}/{course_id}/{year}:
  *   get:
- *     summary: Lista tareas de un curso específico
- *     tags: [Task]
+ *     summary: List tasks for a specific course
+ *     tags: [Tasks]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -148,22 +133,22 @@ router.get(
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID de la sede
+ *         description: Sede ID
  *       - in: path
  *         name: course_id
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID del curso
+ *         description: Course ID
  *       - in: path
  *         name: year
  *         schema:
  *           type: integer
  *         required: true
- *         description: Año del curso
+ *         description: Course year
  *     responses:
  *       200:
- *         description: Lista de tareas del curso especificado
+ *         description: List of tasks for the given course
  *         content:
  *           application/json:
  *             schema:
@@ -171,12 +156,12 @@ router.get(
  *               items:
  *                 $ref: '#/components/schemas/Task'
  *       404:
- *         description: No se encontraron tareas
+ *         description: No tasks found
  *       500:
- *         description: Error del servidor
+ *         description: Server error
  */
 router.get(
-  "/tareas/curso/:sede_id/:course_id/:year",
+  "/tasks/course/:sede_id/:course_id/:year",
   authMiddleware,
   getUserIdToken,
   listTasksByCourse
@@ -184,10 +169,10 @@ router.get(
 
 /**
  * @swagger
- * /api/tareas/{task_id}:
+ * /api/tasks/{task_id}:
  *   put:
- *     summary: Actualiza una tarea específica
- *     tags: [Task]
+ *     summary: Update a specific task
+ *     tags: [Tasks]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -196,7 +181,7 @@ router.get(
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID de la tarea
+ *         description: Task ID
  *     requestBody:
  *       required: true
  *       content:
@@ -206,10 +191,10 @@ router.get(
  *             properties:
  *               title:
  *                 type: string
- *                 example: Nueva tarea de desarrollo
+ *                 example: Updated task title
  *               description:
  *                 type: string
- *                 example: Descripción actualizada de la tarea
+ *                 example: Updated task description
  *               taskStart:
  *                 type: string
  *                 format: date-time
@@ -218,26 +203,18 @@ router.get(
  *                 type: string
  *                 format: date-time
  *                 example: 2024-11-28T17:00:00Z
- *               startTime:
- *                 type: string
- *                 format: time
- *                 example: 09:00:00
- *               endTime:
- *                 type: string
- *                 format: time
- *                 example: 17:00:00
  *     responses:
  *       200:
- *         description: Tarea actualizada exitosamente
+ *         description: Task updated successfully
  *       400:
- *         description: Datos inválidos
+ *         description: Invalid data
  *       404:
- *         description: Tarea no encontrada
+ *         description: Task not found
  *       500:
- *         description: Error del servidor
+ *         description: Server error
  */
 router.put(
-  "/tareas/:task_id",
+  "/tasks/:task_id",
   authMiddleware,
   getUserIdToken,
   admin,
@@ -247,10 +224,10 @@ router.put(
 
 /**
  * @swagger
- * /api/tareas:
+ * /api/tasks:
  *   post:
- *     summary: Crear una nueva tarea
- *     tags: [Task]
+ *     summary: Create a new task
+ *     tags: [Tasks]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -267,90 +244,52 @@ router.put(
  *               - description
  *               - taskStart
  *               - endTask
- *               - startTime
- *               - endTime
  *             properties:
  *               course_id:
  *                 type: integer
- *                 description: ID del curso relacionado a la tarea
+ *                 description: Related course ID
  *               sede_id:
  *                 type: integer
- *                 description: ID de la sede relacionada a la tarea
+ *                 description: Related sede ID
  *               typeTask_id:
  *                 type: integer
- *                 description: Tipo de tarea (1 para propuesta de tesis, etc.)
+ *                 description: Task type (1 = thesis proposal, etc.)
  *               title:
  *                 type: string
- *                 description: Título de la tarea
+ *                 description: Task title
  *               description:
  *                 type: string
- *                 description: Descripción detallada de la tarea
+ *                 description: Detailed task description
  *               taskStart:
  *                 type: string
  *                 format: date-time
- *                 description: Fecha y hora de inicio de la tarea
+ *                 description: Task start datetime
  *               endTask:
  *                 type: string
  *                 format: date-time
- *                 description: Fecha y hora de finalización de la tarea
- *               startTime:
- *                 type: string
- *                 format: time
- *                 description: Hora de inicio de la tarea
- *               endTime:
- *                 type: string
- *                 format: time
- *                 description: Hora de finalización de la tarea
+ *                 description: Task end datetime
  *           example:
  *             course_id: 1
  *             sede_id: 1
  *             typeTask_id: 1
- *             title: "CAPÍTULO 3"
- *             description: "Completar el capítulo 3 del proyecto de investigación"
+ *             title: "CHAPTER 3"
+ *             description: "Complete chapter 3 of the research project"
  *             taskStart: "2024-09-15T08:00:00Z"
  *             endTask: "2024-09-20T12:00:00Z"
- *             startTime: "08:00:00"
- *             endTime: "12:00:00"
  *     responses:
  *       201:
- *         description: Tarea creada exitosamente
- *         content:
- *           application/json:
- *             example:
- *               message: "Tarea creada exitosamente"
+ *         description: Task created successfully
  *       400:
- *         description: Datos inválidos
- *         content:
- *           application/json:
- *             example:
- *               message: "¡La tarea de propuesta de tesis ya existe!"
+ *         description: Invalid data
  *       403:
- *         description: Acceso denegado
- *         content:
- *           application/json:
- *             example:
- *               message: "No tienes acceso a esta sede"
+ *         description: Access denied
  *       404:
- *         description: No se encontró algún registro necesario
- *         content:
- *           application/json:
- *             examples:
- *               courseSedeNotFound:
- *                 value:
- *                   message: "No se encontró una asignación válida de curso, sede y año"
- *               yearNotFound:
- *                 value:
- *                   message: "No se encontró un registro para el año especificado"
+ *         description: Related record not found
  *       500:
- *         description: Error del servidor
- *         content:
- *           application/json:
- *             example:
- *               message: "Error al crear la tarea"
- *               error: "Detalle del error"
+ *         description: Server error
  */
 router.post(
-  "/tareas",
+  "/tasks",
   authMiddleware,
   getUserIdToken,
   admin,

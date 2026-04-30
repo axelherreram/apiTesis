@@ -82,79 +82,41 @@ const createTaskSubmission = async (req, res) => {
     }
 
     // ...existing code...
-    
+
   // Configurar zona horaria
   const timeZone = "America/Guatemala";
-  // Use moment() with tz to get the current time in the target timezone
   const currentDateTime = moment().tz(timeZone);
-    
-    // Convertir fechas de la tarea a la zona horaria correcta
-    const taskStart = moment.tz(taskExist.taskStart, timeZone);
-    const endTask = moment.tz(taskExist.endTask, timeZone);
-    
-    // Validar rango de fechas (sin considerar horas)
-    const isDateValid = currentDateTime.isBetween(taskStart, endTask, "day", "[]");
-    
-    if (!isDateValid) {
-      // Eliminar el archivo si está fuera del rango de fechas permitido
-      if (req.file && req.file.path) {
-        fs.unlink(req.file.path, (err) => {
-          if (err) {
-            console.error(`Error al eliminar el archivo PDF: ${err.message}`);
-          }
-        });
-      }
-    
-      return res.status(400).json({
-        message: "La tarea no puede ser entregada fuera del rango de fechas permitido",
-        debug: {
-          currentDateTime: currentDateTime.format(),
-          taskStart: taskStart.format(),
-          endTask: endTask.format(),
-        },
+
+  // NORMALIZACIÓN 3NF: taskStart y endTask son DATETIME completos (fecha + hora en un solo campo).
+  // Un único isBetween con precisión 'minute' valida fecha Y hora al mismo tiempo.
+  const taskStartDT = moment.tz(taskExist.taskStart, timeZone);
+  const endTaskDT   = moment.tz(taskExist.endTask,   timeZone);
+
+  const isWithinRange = currentDateTime.isBetween(taskStartDT, endTaskDT, "minute", "[]");
+
+  if (!isWithinRange) {
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error(`Error al eliminar el archivo PDF: ${err.message}`);
       });
     }
-    
-    // Solo validar horario si es el primer o último día
-    const isFirstDay = currentDateTime.isSame(taskStart, 'day');
-    const isLastDay = currentDateTime.isSame(endTask, 'day');
-    
-    if (isFirstDay || isLastDay) {
-      // Extraer las horas y minutos de la tarea
-      const startTimeParts = taskExist.startTime.split(':');
-      const endTimeParts = taskExist.endTime.split(':');
-    
-      // Crear objetos moment para la hora actual y las horas de inicio/fin
-      const startTime = moment(currentDateTime).set({
-        hour: parseInt(startTimeParts[0], 10),
-        minute: parseInt(startTimeParts[1], 10),
-        second: 0
-      });
-      const endTime = moment(currentDateTime).set({
-        hour: parseInt(endTimeParts[0], 10),
-        minute: parseInt(endTimeParts[1], 10),
-        second: 0
-      });
-    
-      // Validar si la hora actual está dentro del rango de horas permitido
-      const isTimeValid = currentDateTime.isBetween(startTime, endTime, null, '[]');
-    
-      if (!isTimeValid) {
-        // Eliminar el archivo si está fuera del rango de horas permitido
-        if (req.file && req.file.path) {
-          fs.unlink(req.file.path, (err) => {
-            if (err) {
-              console.error(`Error al eliminar el archivo PDF: ${err.message}`);
-            }
-          });
-        }
-    
-        return res.status(400).json({
-          message: "La tarea no puede ser entregada fuera del horario permitido",
-        });
-      }
-    }
-    
+
+    // Distinguir si el error es de fecha o de hora para dar un mensaje preciso al cliente
+    const isDateInRange = currentDateTime.isBetween(taskStartDT, endTaskDT, "day", "[]");
+    const message = isDateInRange
+      ? "La tarea no puede ser entregada fuera del horario permitido"
+      : "La tarea no puede ser entregada fuera del rango de fechas permitido";
+
+    return res.status(400).json({
+      message,
+      debug: {
+        currentDateTime:  currentDateTime.format("DD/MM/YYYY HH:mm"),
+        habilitadoDesde:  taskStartDT.format("DD/MM/YYYY HH:mm"),
+        habilitadoHasta:  endTaskDT.format("DD/MM/YYYY HH:mm"),
+      },
+    });
+  }
+
 
     // Buscar si ya existe una entrega
     let taskSubmissionExist = await TaskSubmission.findOne({
@@ -218,9 +180,9 @@ const createTaskSubmission = async (req, res) => {
     );
 
     // Crear la notificación
+    // NORMALIZACIÓN: sede_id eliminado de notification (transitivo via student_id)
     await createNotification(
       `El estudiante ${userExist.name} ha ${isUpdate ? "actualizado" : "confirmado"} la entrega de la tarea: ${taskExist.title}`,
-      userExist.sede_id,
       user_id,
       task_id,
       "general"
@@ -577,14 +539,13 @@ const getAllTasksBySedeYearAndUser = async (req, res) => {
           (assignment) => assignment.asigCourse_id
         ),
       },
+      // NORMALIZACIÓN: startTime y endTime eliminados del modelo task
       attributes: [
         "task_id",
         "title",
         "description",
         "taskStart",
         "endTask",
-        "startTime",
-        "endTime",
       ],
     });
 

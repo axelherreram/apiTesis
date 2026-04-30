@@ -15,16 +15,16 @@ const adminOrSuperAdmin = verifyRole([3, 4, 5]); // Solo Admin
 /**
  * @swagger
  * tags:
- *   name: Estudiantes
- *   description: Gestión de estudiantes y filtrado
+ *   name: Students
+ *   description: Student and user management
  */
 
 /**
  * @swagger
- * /api/sedes/{sede_id}/cursos/{course_id}/estudiantes/{year}:
+ * /api/locations/{sede_id}/courses/{course_id}/students/{year}:
  *   get:
- *     summary: Listar todos los estudiantes asignados a un curso en una sede específica y registrados en un año determinado
- *     tags: [Estudiantes]
+ *     summary: List students enrolled in a course at a specific sede for a given year
+ *     tags: [Students]
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -33,37 +33,31 @@ const adminOrSuperAdmin = verifyRole([3, 4, 5]); // Solo Admin
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID de la sede para listar los estudiantes
+ *         description: Sede ID
  *       - in: path
  *         name: course_id
  *         schema:
  *           type: integer
  *         required: true
- *         description: ID del curso para listar los estudiantes asignados
+ *         description: Course ID
  *       - in: path
  *         name: year
  *         schema:
  *           type: integer
  *         required: true
- *         description: Año de registro para filtrar a los estudiantes
+ *         description: Registration year
  *     responses:
  *       200:
- *         description: Lista de estudiantes asignados al curso obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/User'
+ *         description: Student list retrieved successfully
  *       401:
- *         description: No autorizado
+ *         description: Unauthorized
  *       404:
- *         description: Curso, sede o estudiantes no encontrados
+ *         description: Course, sede or students not found
  *       500:
- *         description: Error en el servidor
+ *         description: Server error
  */
 router.get(
-  "/sedes/:sede_id/cursos/:course_id/estudiantes/:year",
+  "/locations/:sede_id/courses/:course_id/students/:year",
   authMiddleware,
   adminOrTerna,
   getUserIdToken,
@@ -73,28 +67,24 @@ router.get(
 
 /**
  * @swagger
- * /api/usuarios/perfil:
+ * /api/users/profile:
  *   get:
- *     summary: Obtener perfil del usuario autenticado por token
- *     tags: [Estudiantes]
+ *     summary: Get the authenticated user's profile
+ *     tags: [Students]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Información del perfil del usuario obtenida exitosamente
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
+ *         description: User profile retrieved successfully
  *       401:
- *         description: No autorizado
+ *         description: Unauthorized
  *       404:
- *         description: Usuario no encontrado
+ *         description: User not found
  *       500:
- *         description: Error en el servidor
+ *         description: Server error
  */
 router.get(
-  "/usuarios/perfil",
+  "/users/profile",
   authMiddleware,
   getUserIdToken,
   userController.listuserbytoken
@@ -331,12 +321,12 @@ router.get(
 
 /**
  * @swagger
- * /api/usuarios/crear:
+ * /api/users/create:
  *   post:
- *     summary: Registrar un estudiante para historial (sin acceso a inicio de sesión)
+ *     summary: Register a student for history (no login access)
  *     security:
  *       - bearerAuth: []
- *     tags: [Estudiantes]
+ *     tags: [Students]
  *     requestBody:
  *       required: true
  *       content:
@@ -347,26 +337,23 @@ router.get(
  *               email:
  *                 type: string
  *                 format: email
- *                 description: Correo electrónico del estudiante.
  *               name:
  *                 type: string
- *                 description: Nombre completo del estudiante.
  *               carnet:
  *                 type: string
- *                 description: Número de identificación del estudiante.
  *             required:
  *               - email
  *               - name
  *     responses:
  *       201:
- *         description: Estudiante registrado exitosamente (sin acceso a inicio de sesión).
+ *         description: Student registered successfully.
  *       400:
- *         description: Error en la solicitud (correo o carnet en uso, datos inválidos).
+ *         description: Email or carnet already in use.
  *       500:
- *         description: Error interno del servidor.
+ *         description: Server error.
  */
 router.post(
-  "/usuarios/crear",
+  "/users/create",
   authMiddleware,
   admin,
   extractSedeIdMiddleware,

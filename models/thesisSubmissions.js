@@ -4,24 +4,26 @@ const User = require("./user");
 const Task = require("./task");
 
 /**
- * Model `thesisSubmissions` represents the submissions related to thesis work by students.
- * 
+ * Model `thesisSubmissions` represents thesis submissions made by students.
+ *
  * Fields:
- * - `thesisSubmissions_id`: Unique identifier for the thesis submission (Primary Key, auto-increment).
- * - `user_id`: Reference to the student submitting the thesis (`User` model).
- * - `task_id`: Reference to the related task (`Task` model).
- * - `file_path`: Path where the submitted file is stored.
- * - `date`: Date of submission (Default: current timestamp, adjusted for timezone).
- * - `approved_proposal`: Status of the thesis submission:
- *     - `0`: Pending review
- *     - `1`: Approved
- *     - `2`: Requires modifications
- *     - `3`: Rejected
- * 
+ * - `thesisSubmissions_id`: Unique identifier (PK, auto-increment).
+ * - `user_id`: FK to `User`, the student submitting the thesis.
+ * - `task_id`: FK to `Task`, the related task.
+ * - `file_path`: Path where the submitted file is stored (STRING(500), required).
+ * - `date`: Date of submission (default: current timestamp, adjusted for timezone).
+ * - `approved_proposal`: Approval status — ENUM('pending', 'approved', 'needs_changes', 'rejected').
+ *
+ * NORMALIZACIÓN:
+ * - `approved_proposal` convertido de INTEGER (0-3) a ENUM semántico autoexplicativo.
+ * - `file_path` ampliado a STRING(500) para rutas largas.
+ *
  * Configuration:
- * - `timestamps: false`: No automatic `createdAt` or `updatedAt` fields.
- * - `tableName: 'thesisSubmissions'`: Database table name.
- * - `hooks.beforeCreate`: Adjusts `date` to the correct timezone before saving.
+ * - `timestamps: false`: No automatic `createdAt` / `updatedAt`.
+ * - `tableName: 'thesissubmissions'`: Database table name.
+ *
+ * Hooks:
+ * - `beforeCreate`: Adjusts `date` to correct timezone before saving.
  */
 const thesisSubmissions = sequelize.define(
   "thesisSubmissions",
@@ -48,7 +50,7 @@ const thesisSubmissions = sequelize.define(
       },
     },
     file_path: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(500),
       allowNull: false,
     },
     date: {
@@ -57,15 +59,9 @@ const thesisSubmissions = sequelize.define(
       defaultValue: DataTypes.NOW,
     },
     approved_proposal: {
-      type: DataTypes.INTEGER,
-      allowNull: true,
-      defaultValue: 0,
-      validate: {
-        isIn: {
-          args: [[0, 1, 2, 3]],
-          msg: "El valor de 'approved_proposal' debe ser 0, 1, 2 o 3",
-        },
-      },
+      type: DataTypes.ENUM("pending", "approved", "needs_changes", "rejected"),
+      allowNull: false,
+      defaultValue: "pending",
     },
   },
   {

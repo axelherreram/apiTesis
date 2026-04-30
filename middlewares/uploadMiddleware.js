@@ -25,6 +25,13 @@
 
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs");
+
+// Ensure upload directory exists on startup
+const profilePhotoDir = path.join(__dirname, "../public/profilephoto");
+if (!fs.existsSync(profilePhotoDir)) {
+  fs.mkdirSync(profilePhotoDir, { recursive: true });
+}
 
 // Configuring multer to store uploaded files in the 'profilephoto' folder
 const storage = multer.diskStorage({

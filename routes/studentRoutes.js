@@ -7,54 +7,55 @@ const verifyRole = require("../middlewares/roleMiddleware");
 const authMiddleware = require("../middlewares/authMiddleware");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
 
-const admin = verifyRole([3]); 
-const coordinador_sede = verifyRole([4]); // Solo cordinador de sede 
+const admin = verifyRole([3]);
+const coordinador_sede = verifyRole([4]);
+
 /**
  * @swagger
  * tags:
- *   name: Carga masiva de usuarios
- *   description: Operaciones para subir estudiantes y catedráticos por medio de un archivo Excel
+ *   name: BulkUpload
+ *   description: Bulk upload operations for students and professors via Excel files
  */
 
 /**
  * @swagger
- * /api/usuarios/cargaMasiva:
+ * /api/students/bulk-upload:
  *   post:
- *     summary: Cargar estudiantes masivamente desde un archivo Excel
+ *     summary: Bulk upload students from an Excel file
  *     security:
  *       - bearerAuth: []
- *     tags: [Carga masiva de usuarios]
+ *     tags: [BulkUpload]
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
- *             properties:
- *               archivo:
- *                 type: string
- *                 format: binary
- *                 description: El archivo Excel que contiene los datos de los estudiantes.
- *               sede_id:
- *                 type: integer
- *                 description: ID de la sede a la que pertenece el estudiante.
- *               course_id:
- *                 type: integer
- *                 description: ID del curso al que se asignan los estudiantes.
  *             required:
- *               - archivo
+ *               - file
  *               - sede_id
  *               - course_id
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Excel file containing student data.
+ *               sede_id:
+ *                 type: integer
+ *                 description: Sede ID the students belong to.
+ *               course_id:
+ *                 type: integer
+ *                 description: Course ID to assign the students to.
  *     responses:
  *       201:
- *         description: Estudiantes cargados exitosamente
+ *         description: Students uploaded successfully
  *       400:
- *         description: Error en la carga del archivo o campos requeridos faltantes
+ *         description: File upload error or missing required fields
  *       500:
- *         description: Error al cargar usuarios
+ *         description: Server error
  */
 router.post(
-  "/usuarios/cargaMasiva",
+  "/students/bulk-upload",
   authMiddleware,
   admin,
   extractSedeIdMiddleware,
@@ -64,39 +65,39 @@ router.post(
 
 /**
  * @swagger
- * /api/catedraticos/cargaMasiva:
+ * /api/professors/bulk-upload:
  *   post:
- *     summary: Cargar catedráticos masivamente desde un archivo Excel
+ *     summary: Bulk upload professors from an Excel file
  *     security:
  *       - bearerAuth: []
- *     tags: [Carga masiva de usuarios]
+ *     tags: [BulkUpload]
  *     requestBody:
  *       required: true
  *       content:
  *         multipart/form-data:
  *           schema:
  *             type: object
+ *             required:
+ *               - file
+ *               - sede_id
  *             properties:
- *               archivo:
+ *               file:
  *                 type: string
  *                 format: binary
- *                 description: El archivo Excel que contiene los datos de los catedráticos.
+ *                 description: Excel file containing professor data.
  *               sede_id:
  *                 type: integer
- *                 description: ID de la sede a la que pertenece el catedrático.
- *             required:
- *               - archivo
- *               - sede_id
+ *                 description: Sede ID the professors belong to.
  *     responses:
  *       201:
- *         description: Catedráticos cargados exitosamente
+ *         description: Professors uploaded successfully
  *       400:
- *         description: Error en la carga del archivo o campos requeridos faltantes
+ *         description: File upload error or missing required fields
  *       500:
- *         description: Error al cargar usuarios
+ *         description: Server error
  */
 router.post(
-  "/catedraticos/cargaMasiva",
+  "/professors/bulk-upload",
   authMiddleware,
   coordinador_sede,
   extractSedeIdMiddleware,

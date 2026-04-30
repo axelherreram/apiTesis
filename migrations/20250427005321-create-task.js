@@ -1,9 +1,9 @@
-"use strict";
+'use strict';
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("task", {
+    await queryInterface.createTable('task', {
       task_id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -13,21 +13,21 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "coursesedeassignment",
-          key: "asigCourse_id",
+          model: 'coursesedeassignment',
+          key: 'asigCourse_id',
         },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       },
       typeTask_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-          model: "typetask",
-          key: "typeTask_id",
+          model: 'typetask',
+          key: 'typeTask_id',
         },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       },
       title: {
         type: Sequelize.STRING(255),
@@ -37,6 +37,8 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false,
       },
+      // NORMALIZACIÓN 3NF: taskStart y endTask como DATE (= DATETIME en MySQL, Sequelize v6).
+      // Eliminados: year_id (transitivo via asigCourse_id), startTime, endTime.
       taskStart: {
         type: Sequelize.DATE,
         allowNull: false,
@@ -45,28 +47,10 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
       },
-      startTime: {
-        type: Sequelize.TIME,
-        allowNull: false,
-      },
-      endTime: {
-        type: Sequelize.TIME,
-        allowNull: false,
-      },
-      year_id: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "year", 
-          key: "year_id",
-        },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
-      },
     });
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("task");
+    await queryInterface.dropTable('task');
   },
 };

@@ -1,7 +1,8 @@
 'use strict';
 
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('courseassignment', {
       courseAssignment_id: {
         type: Sequelize.INTEGER,
@@ -10,31 +11,39 @@ module.exports = {
       },
       student_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
-          model: 'user', 
+          model: 'user',
           key: 'user_id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
+        onDelete: 'RESTRICT',
       },
       asigCourse_id: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: 'coursesedeassignment',
           key: 'asigCourse_id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'SET NULL',
+        onDelete: 'RESTRICT',
       },
       note: {
         type: Sequelize.FLOAT,
         allowNull: true,
         defaultValue: null,
-      }
+      },
+    });
+
+    // UNIQUE compuesto: evita que un estudiante se inscriba dos veces al mismo curso
+    await queryInterface.addIndex('courseassignment', ['student_id', 'asigCourse_id'], {
+      unique: true,
+      name: 'uq_courseassign',
     });
   },
 
-  down: async (queryInterface, Sequelize) => {
+  async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('courseassignment');
   },
 };

@@ -131,9 +131,9 @@ const uploadProposal = async (req, res) => {
       );
 
       // Crear notificación
+      // NORMALIZACIÓN: sede_id eliminado de notification (transitivo via student_id)
       await createNotification(
         `Entrega de propuesta de tesis por ${userExist.name}`,
-        userExist.sede_id,
         user_id,
         task_id,
         "general"
@@ -254,8 +254,8 @@ const updateProposal = async (req, res) => {
           .json({ message: "Entrega de tesis no encontrada" });
       }
 
-      // Verificar si la propuesta ya ha sido aprobada
-      if ([1, 2, 3].includes(existingSubmission.approved_proposal)) {
+      // NORMALIZACIÓN: approved_proposal es ENUM — cualquier valor distinto de 'pending' = ya procesada
+      if (existingSubmission.approved_proposal !== 'pending') {
         // Eliminar el archivo si la propuesta ya está aprobada
         if (req.file && req.file.path) {
           fs.unlink(req.file.path, (err) => {
@@ -298,9 +298,9 @@ const updateProposal = async (req, res) => {
       );
 
       // Crear notificación
+      // NORMALIZACIÓN: sede_id eliminado de notification (transitivo via student_id)
       await createNotification(
         `Entrega de propuesta de tesis actualizada por ${userExist.name}`,
-        userExist.sede_id,
         user_id,
         existingSubmission.task_id,
         "general"

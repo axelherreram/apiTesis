@@ -170,15 +170,14 @@ const bulkUploadUsers = async (req, res) => {
           console.log(`Contraseña generada para ${email}: ${randomPassword}`);
           const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-          // Paso 14: Crear el usuario con el year_id del año actual o recién creado
+          // Paso 14: Crear el usuario (year_id no forma parte de Users — se vincula via CourseSedeAssignment)
           existingUser = await User.create({
             email,
             password: hashedPassword,
             name: nombre,
             carnet: carnetLimpio,
-            rol_id: 1, // Rol de estudiante
+            rol_id: 1,
             sede_id,
-            year_id,
           });
 
           // Paso 15: Enviar correo electrónico con la contraseña temporal

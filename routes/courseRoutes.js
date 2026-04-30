@@ -8,22 +8,22 @@ const router = express.Router();
 /**
  * @swagger
  * tags:
- *   name: Cursos
- *   description: Operaciones relacionadas con los cursos
+ *   name: Courses
+ *   description: Course management operations
  */
 
 /**
  * @swagger
- * /api/cursos:
+ * /api/courses:
  *   get:
- *     summary: Obtener todos los cursos
- *     description: Obtiene todos los cursos de la base de datos
- *     tags: [Cursos]
+ *     summary: Get all courses
+ *     description: Returns all courses from the database
+ *     tags: [Courses]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Una lista de cursos
+ *         description: A list of courses
  *         content:
  *           application/json:
  *             schema:
@@ -31,12 +31,12 @@ const router = express.Router();
  *               items:
  *                 $ref: '#/components/schemas/Curso'
  *       401:
- *         description: No autorizado
+ *         description: Unauthorized
  *       403:
- *         description: Prohibido
+ *         description: Forbidden
  *       500:
- *         description: Error en el servidor
+ *         description: Server error
  */
-router.get("/cursos", authMiddleware, listCourses);
+router.get("/courses", authMiddleware, listCourses);
 
 module.exports = router;

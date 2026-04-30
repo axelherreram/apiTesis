@@ -1,26 +1,28 @@
 const { DataTypes } = require("sequelize");
 const { sequelize } = require("../config/database");
-
+const Comments = require("./comments");
 
 /**
- * Model `CommentVersion` represents a version of a comment that can be updated by users with different roles.
- * 
+ * Model `CommentVersion` represents a versioned entry of a comment.
+ *
  * Fields:
- * - `commentVersion_id`: Unique identifier for the comment version (PK, auto-increment).
- * - `comment`: Text of the comment version (required).
- * - `datecomment`: Date and time when the comment version was created (default: current date and time).
- * - `role`: Role of the user who posted the comment version, either "student" or "teacher" (required, validated).
- * - `comment_id`: ID of the original comment that this version is associated with (foreign key to `Comments`).
- * 
+ * - `commentVersion_id`: Unique identifier (PK, auto-increment).
+ * - `comment_id`: FK to `Comments`, the parent comment (required).
+ * - `comment`: Text content of the comment version (TEXT, required).
+ * - `role`: Role of the commenter — ENUM('student', 'teacher') (required).
+ * - `datecomment`: Date/time of the comment (default: NOW).
+ *
+ * NORMALIZACIÓN:
+ * - `role` convertido de STRING libre a ENUM para garantizar integridad en BD.
+ * - `comment` cambiado de STRING a TEXT para soportar contenido largo.
+ * - `comment_id` ahora es NOT NULL (FK obligatoria).
+ *
  * Configuration:
- * - `timestamps: false`: Disables automatic `createdAt` and `updatedAt` fields.
- * - `tableName: "commentVersion"`: Database table name (`commentVersion`).
- * 
+ * - `timestamps: false`: No automatic `createdAt` / `updatedAt`.
+ * - `tableName: 'commentversion'`: Database table name.
+ *
  * Hooks:
- * - `beforeCreate`: Adjusts the date to the correct time zone before creating a new record.
- * 
- * Relationships:
- * - `belongsTo(Comments, { foreignKey: "comment_id" })`: Each comment version belongs to a specific comment.
+ * - `beforeCreate`: Adjusts date to correct timezone before saving.
  */
 const CommentVersion = sequelize.define(
   "CommentVersion",
@@ -30,8 +32,20 @@ const CommentVersion = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    comment_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: Comments,
+        key: "comment_id",
+      },
+    },
     comment: {
-      type: DataTypes.STRING,
+      type: DataTypes.TEXT,
+      allowNull: false,
+    },
+    role: {
+      type: DataTypes.ENUM("student", "teacher"),
       allowNull: false,
     },
     datecomment: {
@@ -39,30 +53,12 @@ const CommentVersion = sequelize.define(
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
-    role: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      validate: {
-        isIn: {
-          args: [["student", "teacher"]],
-          msg: "El rol debe ser 'student' o 'teacher'",
-        },
-      },
-    },
-    comment_id: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: "Comments",
-        key: "comment_id",
-      },
-    },
   },
   {
     tableName: "commentversion",
     timestamps: false,
     hooks: {
       beforeCreate: (commentVersion, options) => {
-        // Ajustar la fecha a la zona horaria correcta
         const currentDate = new Date();
         commentVersion.datecomment = new Date(currentDate.getTime() - currentDate.getTimezoneOffset() * 60000);
       },
