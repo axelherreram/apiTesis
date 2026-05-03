@@ -20,18 +20,18 @@ dotenv.config();
  * @returns The function `updateApprovedProposal` returns different responses based on the conditions
  * met during its execution. Here are the possible return scenarios:
  */
-// NORMALIZACIÓN: approved_proposal cambiado de INTEGER (0-3) a ENUM semántico
-const VALID_PROPOSAL_STATUSES = ['approved', 'needs_changes', 'rejected'];
+// Se removió el ENUM. Ahora es INTEGER (0 para pendiente, 1, 2, 3 para aprobadas).
 
 const updateApprovedProposal = async (req, res) => {
   const { thesisSubmissions_id, user_id } = req.params;
   const { approved_proposal } = req.body;
 
   try {
-    // Validar que approved_proposal sea un valor ENUM válido (distinto de 'pending')
-    if (!VALID_PROPOSAL_STATUSES.includes(approved_proposal)) {
+    // Validar que approved_proposal sea un valor numérico válido (1, 2 o 3)
+    const proposalNumber = parseInt(approved_proposal, 10);
+    if (![1, 2, 3].includes(proposalNumber)) {
       return res.status(400).json({
-        message: `El valor de 'approved_proposal' debe ser uno de: ${VALID_PROPOSAL_STATUSES.join(', ')}`,
+        message: "El valor de 'approved_proposal' debe ser 1, 2 o 3",
       });
     }
 
@@ -50,27 +50,27 @@ const updateApprovedProposal = async (req, res) => {
         .json({ message: "Entrega de tesis no encontrada" });
     }
 
-    // Validar si la propuesta ya fue procesada (distinta de 'pending')
-    if (thesisSubmission.approved_proposal !== 'pending') {
+    // Validar si la propuesta ya fue procesada (distinta de 0)
+    if (thesisSubmission.approved_proposal !== 0) {
       return res.status(400).json({
         message: "La propuesta ya ha sido procesada, no se puede modificar el estado",
       });
     }
 
     // Actualizar el campo approved_proposal
-    thesisSubmission.approved_proposal = approved_proposal;
+    thesisSubmission.approved_proposal = proposalNumber;
     await thesisSubmission.save();
 
     // Agregar la acción a la línea de tiempo
     await addTimeline(
       thesisSubmission.user_id,
       "Propuesta de tesis actualizada",
-      `La propuesta de tesis ha sido marcada como: ${approved_proposal}`,
+      `La propuesta de tesis ha sido marcada con la Propuesta ${proposalNumber}`,
       thesisSubmission.task_id
     );
 
     res.status(200).json({
-      message: `La propuesta ha sido actualizada a '${approved_proposal}' con éxito.`,
+      message: `La propuesta ha sido actualizada a la Propuesta ${proposalNumber} con éxito.`,
     });
   } catch (error) {
     console.error("Error al actualizar el campo 'approved_proposal':", error);

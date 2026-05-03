@@ -21,13 +21,22 @@ const getNotificationsBySede = async (req, res) => {
   }
 
   try {
+    const User = require("../models/user");
+
     const notifications = await Notification.findAll({
       where: {
-        sede_id: sede_id,
         type_notification: "general",
       },
+      include: [
+        {
+          model: User,
+          where: { sede_id: sede_id },
+          attributes: [] // No devolver columnas del usuario, solo usarlo para filtrar
+        }
+      ],
       attributes: ["notification_text", "notification_date", "task_id", "student_id"],
       order: [["notification_date", "DESC"]], // Ordenar de forma descendente
+      limit: 5,
     });
 
     return res.status(200).json(notifications);

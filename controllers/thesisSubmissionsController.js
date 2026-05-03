@@ -115,10 +115,11 @@ const uploadProposal = async (req, res) => {
       }
 
       // Crear registro en la base de datos
+      const relativeFilePath = `public/uploads/submissions/${req.file.filename}`;
       await ThesisSubmission.create({
         user_id,
         task_id,
-        file_path: req.file.path,
+        file_path: relativeFilePath,
         date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
       });
 
@@ -254,8 +255,8 @@ const updateProposal = async (req, res) => {
           .json({ message: "Entrega de tesis no encontrada" });
       }
 
-      // NORMALIZACIÓN: approved_proposal es ENUM — cualquier valor distinto de 'pending' = ya procesada
-      if (existingSubmission.approved_proposal !== 'pending') {
+      // Verificamos si la propuesta ya fue aprobada (distinto de 0)
+      if (existingSubmission.approved_proposal !== 0) {
         // Eliminar el archivo si la propuesta ya está aprobada
         if (req.file && req.file.path) {
           fs.unlink(req.file.path, (err) => {
@@ -282,9 +283,9 @@ const updateProposal = async (req, res) => {
       }
 
       // Actualizar la entrega con el nuevo archivo si se pasa uno
-      existingSubmission.file_path = req.file
-        ? req.file.path
-        : existingSubmission.file_path;
+      if (req.file) {
+        existingSubmission.file_path = `public/uploads/submissions/${req.file.filename}`;
+      }
       existingSubmission.date = moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A");
 
       await existingSubmission.save();

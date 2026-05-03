@@ -35,17 +35,19 @@ const createTask = async (req, res) => {
     description,
     taskStart,
     endTask,
-    // NORMALIZACIÓN: startTime y endTime eliminados (consolidados en DATETIME taskStart/endTask)
+    startTime,
+    endTime
   } = req.body;
   const user_id = req.user_id;
   const { sede_id: tokenSedeId } = req;
 
   try {
     // Paso 1: Validar que la fecha de inicio no sea mayor a la fecha final
-    const formattedTaskStart = moment
-      .tz(taskStart, "America/Guatemala")
-      .toDate();
-    const formattedEndTask = moment.tz(endTask, "America/Guatemala").toDate();
+    const combinedStart = `${taskStart}T${startTime || "00:00"}:00`;
+    const combinedEnd = `${endTask}T${endTime || "23:59"}:00`;
+
+    const formattedTaskStart = moment.tz(combinedStart, "YYYY-MM-DDTHH:mm:ss", "America/Guatemala").toDate();
+    const formattedEndTask = moment.tz(combinedEnd, "YYYY-MM-DDTHH:mm:ss", "America/Guatemala").toDate();
 
     if (formattedTaskStart > formattedEndTask) {
       return res.status(400).json({
@@ -275,8 +277,17 @@ const listTasks = async (req, res) => {
       `Listó todas las tareas para la sede ${sede_id} y el año ${year}.`
     ); */
 
-    // Devolver las tareas
-    res.status(200).json(tasks);
+    // Devolver las tareas mapeadas para incluir startTime y endTime
+    const tasksWithTimes = tasks.map(task => {
+      const json = task.toJSON();
+      return {
+        ...json,
+        startTime: moment(json.taskStart).tz("America/Guatemala").format("HH:mm:ss"),
+        endTime: moment(json.endTask).tz("America/Guatemala").format("HH:mm:ss"),
+      };
+    });
+
+    res.status(200).json(tasksWithTimes);
   } catch (error) {
     console.error("Error al obtener las tareas:", error); // Registrar el error completo
     res.status(500).json({
@@ -329,6 +340,8 @@ const listTask = async (req, res) => {
       message: "Tarea encontrada exitosamente.",
       data: {
         ...task.toJSON(),
+        startTime: moment(task.taskStart).tz("America/Guatemala").format("HH:mm:ss"),
+        endTime: moment(task.endTask).tz("America/Guatemala").format("HH:mm:ss"),
         course_id: courseSedeAssignment.course_id, // Incluir course_id en la respuesta
       },
     });
@@ -428,8 +441,17 @@ const listTasksByCourse = async (req, res) => {
       `Listó todas las tareas del curso con ID ${course_id} para la sede ${sede_id} en el año ${year}`
     ); */
 
-    // Responder con las tareas encontradas
-    res.status(200).json(tasks);
+    // Responder con las tareas encontradas con horas separadas
+    const tasksWithTimes = tasks.map(task => {
+      const json = task.toJSON();
+      return {
+        ...json,
+        startTime: moment(json.taskStart).tz("America/Guatemala").format("HH:mm:ss"),
+        endTime: moment(json.endTask).tz("America/Guatemala").format("HH:mm:ss"),
+      };
+    });
+
+    res.status(200).json(tasksWithTimes);
   } catch (error) {
     console.error("Error al obtener las tareas:", error);
     res.status(500).json({
@@ -456,9 +478,7 @@ const listTasksByCourse = async (req, res) => {
  */
 const updateTask = async (req, res) => {
   const { task_id } = req.params;
-  // NORMALIZACIÓN: startTime y endTime eliminados del modelo task (consolidados en DATETIME)
-  const { title, description, taskStart, endTask } =
-    req.body;
+  const { title, description, taskStart, endTask, startTime, endTime } = req.body;
   const user_id = req.user_id;
   const { sede_id: tokenSedeId } = req; // Extraer sede_id del token
 
@@ -500,11 +520,13 @@ const updateTask = async (req, res) => {
     let formattedEndTask = task.endTask;
 
     if (taskStart) {
-      formattedTaskStart = moment.tz(taskStart, "America/Guatemala").toDate();
+      const combinedStart = `${taskStart}T${startTime || "00:00"}:00`;
+      formattedTaskStart = moment.tz(combinedStart, "YYYY-MM-DDTHH:mm:ss", "America/Guatemala").toDate();
     }
 
     if (endTask) {
-      formattedEndTask = moment.tz(endTask, "America/Guatemala").toDate();
+      const combinedEnd = `${endTask}T${endTime || "23:59"}:00`;
+      formattedEndTask = moment.tz(combinedEnd, "YYYY-MM-DDTHH:mm:ss", "America/Guatemala").toDate();
     }
 
     if (formattedTaskStart > formattedEndTask) {

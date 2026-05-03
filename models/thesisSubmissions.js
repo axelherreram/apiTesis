@@ -59,9 +59,9 @@ const thesisSubmissions = sequelize.define(
       defaultValue: DataTypes.NOW,
     },
     approved_proposal: {
-      type: DataTypes.ENUM("pending", "approved", "needs_changes", "rejected"),
+      type: DataTypes.INTEGER,
       allowNull: false,
-      defaultValue: "pending",
+      defaultValue: 0,
     },
   },
   {

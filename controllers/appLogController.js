@@ -53,7 +53,7 @@ const listAllLogs = async (req, res) => {
     }
 
     // Construir la condición where basada en el rol
-    const whereCondition = requestingUser.rol_id === 5 
+    const whereCondition = requestingUser.rol_id === 5
       ? {} // Coordinador general ve todos los logs
       : { sede_id: requestSedeId }; // Otros roles solo ven logs de su sede
 
@@ -83,16 +83,17 @@ const listAllLogs = async (req, res) => {
     }
 
     // Formatear logs
-    const formattedLogs = logs.rows.map((log) => ({
-      user_id: log.user_id,
-      // NORMALIZACIÓN: username eliminado del modelo — se obtiene via JOIN a User
-      username: log.User?.name || null,
-      role: log.User.role.name,
-      action: log.action,
-      description: log.details,
-      date: log.date,
-      sede_id: log.User.sede_id,
-    }));
+    const formattedLogs = logs.rows.map((log) => {
+      const logUser = log.user || log.User; // Sequelize might use lowercase 'user' since the model is defined as 'user'
+      return {
+        // NORMALIZACIÓN: username eliminado del modelo — se obtiene via JOIN a User
+        username: logUser?.name || "Usuario Desconocido",
+        role: logUser?.role?.name || "Rol Desconocido",
+        action: log.action,
+        description: log.details,
+        date: log.date,
+      };
+    });
 
     res.json({
       message: "Lista completa de bitácoras",
