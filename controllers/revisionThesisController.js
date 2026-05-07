@@ -30,16 +30,11 @@ const uploadRevisionThesis = async (req, res) => {
 
     // Verificar si ambos archivos fueron subidos
     if (!req.files || !req.files["approval_letter"] || !req.files["thesis"]) {
-      throw new Error(
-        "Se requieren ambos archivos (carta de aprobación y tesis)"
-      );
+      return res.status(400).json({
+        title: "Archivos requeridos",
+        message: "Se requieren ambos archivos (carta de aprobación y tesis)",
+      });
     }
-/*     if (carnet) {
-      const carnetRegex = /^\d{4}-\d{2}-\d{4,}$/;
-      if (!carnetRegex.test(carnet)) {
-        throw new Error("Carnet inválido, ingrese carnet completo" + carnet);
-      }
-    } */
 
     // Desestructurar los archivos subidos
     const { approval_letter, thesis } = req.files;
@@ -49,54 +44,57 @@ const uploadRevisionThesis = async (req, res) => {
     thesis_dir = `/uploads/revisionthesis/${thesis[0].filename}`;
 
     // Validar que el usuario exista
-    const userInfo = await User.findOne({
-      where: { carnet },
-    });
+    const userInfo = await User.findOne({ where: { carnet } });
     if (!userInfo) {
-      throw new Error("Usuario no encontrado");
+      return res.status(404).json({
+        title: "Usuario no encontrado",
+        message: `No se encontró ningún usuario con el carnet ${carnet}. Verifique el dato e intente nuevamente.`,
+      });
     }
     const user_id = userInfo.user_id;
 
     // Validar que el usuario sea un estudiante (rol_id === 1)
     if (userInfo.rol_id !== 1) {
-      throw new Error("Error, debe de ser estudiante");
+      return res.status(403).json({
+        title: "Acceso denegado",
+        message: "El carnet ingresado no corresponde a un estudiante. Solo los estudiantes pueden enviar una revisión de tesis.",
+      });
     }
 
     // Validar que la sede exista
     const sedeInfo = await Sede.findByPk(sede_id);
     if (!sedeInfo) {
-      throw new Error("Sede no encontrada");
+      return res.status(404).json({
+        title: "Sede no encontrada",
+        message: "La sede seleccionada no existe. Por favor seleccione una sede válida.",
+      });
     }
 
     // Verificar si el usuario ya tiene una revisión activa
-    const userRevisions = await RevisionThesis.findAll({
-      where: { user_id },
-    });
+    const userRevisions = await RevisionThesis.findAll({ where: { user_id } });
 
     if (userRevisions.length > 0) {
       // Buscar si alguna revisión tiene un proceso activo
       const activeRevision = userRevisions.find((rev) => rev.active_process);
-
       if (activeRevision) {
-        throw new Error(
-          `El estudiante ya cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}`
-        );
+        return res.status(409).json({
+          title: "Proceso de revisión activo",
+          message: `El estudiante ya cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}. No es posible iniciar uno nuevo hasta que el actual sea finalizado.`,
+        });
       }
 
       // Verificar si alguna revisión anterior ya fue aprobada
       const approvedRevision = await ApprovalThesis.findOne({
         where: {
-          revision_thesis_id: userRevisions.map(
-            (rev) => rev.revision_thesis_id
-          ), // Buscar en todas las revisiones del usuario
+          revision_thesis_id: userRevisions.map((rev) => rev.revision_thesis_id),
           status: "approved",
         },
       });
-
       if (approvedRevision) {
-        throw new Error(
-          `El estudiante no puede mandar solicitud porque ya se aprobó su tesis`
-        );
+        return res.status(409).json({
+          title: "Tesis ya aprobada",
+          message: "El estudiante no puede enviar una nueva solicitud porque su tesis ya fue aprobada anteriormente.",
+        });
       }
     }
 
@@ -116,9 +114,7 @@ const uploadRevisionThesis = async (req, res) => {
     });
 
     // Obtener informacion del coordinador de tesis
-    const CordinadorThesis = await User.findOne({
-      where: { rol_id: 6 },
-    });
+    const CordinadorThesis = await User.findOne({ where: { rol_id: 6 } });
 
     // Enviar correo electrónico al coordinador de sede solo si existe
     if (CordinadorThesis) {
@@ -126,11 +122,8 @@ const uploadRevisionThesis = async (req, res) => {
         recipient_name: CordinadorThesis.name,
         student_name: userInfo.name,
         campus_name: sedeInfo.nameSede,
-        request_date: moment(newRevision.date_revision).tz("America/Guatemala").format(
-          "DD/MM/YYYY, h:mm A"
-        ),
+        request_date: moment(newRevision.date_revision).tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
       };
-
       await sendEmailThesisRequest(
         "Solicitud de revisión de tesis",
         CordinadorThesis.email,
@@ -147,24 +140,22 @@ const uploadRevisionThesis = async (req, res) => {
   } catch (error) {
     console.error("Error en la subida de archivos:", error);
 
-    // Eliminar los archivos subidos si ocurre un error
-    if (approval_letter_dir) {
-      fs.unlinkSync(path.join(__dirname, `../public${approval_letter_dir}`));
-    }
-    if (thesis_dir) {
-      fs.unlinkSync(path.join(__dirname, `../public${thesis_dir}`));
-    }
-
-    // Respuesta de error
-    if (error.message.includes("proceso de revisión activo")) {
-      return res.status(409).json({
-        title: "No es posible crear una nueva revisión de tesis",
-        message: error.message,
-      });
+    // Eliminar los archivos subidos si ocurre un error inesperado
+    try {
+      if (approval_letter_dir) {
+        fs.unlinkSync(path.join(__dirname, `../public${approval_letter_dir}`));
+      }
+      if (thesis_dir) {
+        fs.unlinkSync(path.join(__dirname, `../public${thesis_dir}`));
+      }
+    } catch (cleanupError) {
+      console.error("Error al limpiar archivos temporales:", cleanupError);
     }
 
+    // Error genérico del servidor
     res.status(500).json({
-      message: "Error al subir la revisión de tesis",
+      title: "Error interno del servidor",
+      message: "Ocurrió un error inesperado al procesar la solicitud. Por favor intente nuevamente.",
       error: error.message,
     });
   }

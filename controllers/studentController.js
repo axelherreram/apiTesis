@@ -125,12 +125,12 @@ const bulkUploadUsers = async (req, res) => {
 
       // Convertir el nombre a mayúsculas
       const carnetLimpio = carnet.replace(/\s+/g, ""); // Elimina espacios del carnet
-      
+
       // Paso 11: Verificar si ya existe un usuario con ese carnet (cualquier rol)
       const userWithCarnet = await User.findOne({ where: { carnet: carnetLimpio } });
-      
+
       let existingUser;
-      
+
       if (userWithCarnet) {
         // Si existe un usuario con ese carnet, verificar si es estudiante
         if (userWithCarnet.rol_id === 1) {
@@ -149,17 +149,17 @@ const bulkUploadUsers = async (req, res) => {
         // Paso 12: Verificar nuevamente que no exista duplicado de carnet o email antes de crear
         const duplicateCarnet = await User.findOne({ where: { carnet: carnetLimpio } });
         const duplicateEmail = await User.findOne({ where: { email } });
-        
+
         if (duplicateCarnet) {
           console.log(`El carnet ${carnetLimpio} ya existe en el sistema`);
           continue;
         }
-        
+
         if (duplicateEmail && duplicateEmail.rol_id !== 1) {
           console.log(`El email ${email} ya está registrado con un rol diferente a estudiante`);
           continue;
         }
-        
+
         try {
           // Paso 13: Generar una contraseña temporal y hashearla
           const randomPassword = crypto
@@ -170,7 +170,7 @@ const bulkUploadUsers = async (req, res) => {
           console.log(`Contraseña generada para ${email}: ${randomPassword}`);
           const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-          // Paso 14: Crear el usuario (year_id no forma parte de Users — se vincula via CourseSedeAssignment)
+          // Paso 14: Crear el usuario con el año académico actual
           existingUser = await User.create({
             email,
             password: hashedPassword,
@@ -178,6 +178,7 @@ const bulkUploadUsers = async (req, res) => {
             carnet: carnetLimpio,
             rol_id: 1,
             sede_id,
+            year_id,
           });
 
           // Paso 15: Enviar correo electrónico con la contraseña temporal
