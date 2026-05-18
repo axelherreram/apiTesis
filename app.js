@@ -70,17 +70,22 @@ require('dotenv').config();
 
 const app = express();
 
-/* // Configure rate limiter
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.',
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+// Rate limiter — límite estricto para auth, más generoso para el resto de la API
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 20,                   // máx 20 intentos de login/recuperación por IP
+  message: { message: 'Demasiados intentos. Por favor espere 15 minutos e intente de nuevo.' },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
 
-// Apply rate limiting to all routes
-app.use(limiter); */
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: 500,                  // máx 500 peticiones generales por IP
+  message: { message: 'Demasiadas solicitudes. Por favor intente más tarde.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Asociar modelos
 associateModels();
@@ -128,7 +133,13 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 // Configurar Swagger para la documentación de la API
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
+// Aplicar rate limiter generoso a toda la API
+app.use('/api', apiLimiter);
+
 // Definir rutas de la API
+// Rate limiter estricto solo en los endpoints de autenticación sensibles
+app.use('/auth/login', authLimiter);
+app.use('/auth/requestPasswordRecovery', authLimiter);
 app.use('/auth', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', AppLogRoutes);
@@ -162,13 +173,15 @@ app.use('/api', createCorSedeRoutes);
 app.use('/api', createCorThesisRoutes);
 
 // Sincronizar la base de datos y arrancar el servidor
+const PORT = process.env.PORT || 3000;
 sequelize.sync({ alter: false, force: false })
   .then(async () => {
     console.log('Base de datos sincronizada');
-    app.listen(3000, () => {
-      console.log('Servidor ejecutándose en el puerto 3000', 'http://localhost:3000/api-docs');
+    app.listen(PORT, () => {
+      console.log(`Servidor ejecutándose en el puerto ${PORT}`, `http://localhost:${PORT}/api-docs`);
     });
   })
   .catch(error => {
-    console.log('Error al conectar con la base de datos', error);
+    console.error('Error fatal al conectar con la base de datos:', error);
+    process.exit(1); // Terminar el proceso para evitar servidor zombie
   });

@@ -292,6 +292,12 @@ const getCourseDetails = async (req, res) => {
     const infoSede = await Sede.findOne({
       where: { sede_id },
     });
+
+    if (!infoSede) {
+      return res.status(404).json({
+        message: `La sede con ID ${sede_id} no existe.`,
+      });
+    }
     const nameSede = infoSede.nameSede;
 
     // Paso 2: Obtener todos los estudiantes asignados al curso

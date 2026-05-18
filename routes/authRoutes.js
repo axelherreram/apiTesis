@@ -192,4 +192,31 @@ router.put(
  */
 router.post("/requestPasswordRecovery", authController.requestPasswordRecovery);
 
+/**
+ * @swagger
+ * /auth/refresh:
+ *   post:
+ *     summary: Renueva el access token usando el refresh token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *             example:
+ *               refreshToken: "eyJhbGci..."
+ *     responses:
+ *       200:
+ *         description: Nuevo access token generado
+ *       400:
+ *         description: Refresh token no proporcionado
+ *       401:
+ *         description: Refresh token inválido o expirado
+ */
+router.post("/refresh", authController.refreshAccessToken);
+
 module.exports = router;

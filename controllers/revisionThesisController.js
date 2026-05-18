@@ -261,12 +261,15 @@ const getRevisionsByUserId = async (req, res) => {
  */
 const getPendingRevisions = async (req, res) => {
   try {
-    const { order = "asc", carnet } = req.query;
+    const { order = "asc", carnet, page = 1, limit = 10 } = req.query;
     const orderDirection = order.toLowerCase() === "desc" ? "DESC" : "ASC";
+    const pageNumber = Math.max(1, parseInt(page, 10) || 1);
+    const limitNumber = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+    const offset = (pageNumber - 1) * limitNumber;
 
     const whereClause = {
       active_process: true,
-      "$AssignedReviews.assigned_review_id$": null, 
+      "$AssignedReviews.assigned_review_id$": null,
     };
 
     if (carnet) {
@@ -276,7 +279,7 @@ const getPendingRevisions = async (req, res) => {
       whereClause["$User.carnet$"] = { [Op.like]: `%${carnet}%` };
     }
 
-    const pendingRevisions = await RevisionThesis.findAll({
+    const { count, rows: pendingRevisions } = await RevisionThesis.findAndCountAll({
       attributes: ["revision_thesis_id", "date_revision"],
       where: whereClause,
       include: [
@@ -296,8 +299,13 @@ const getPendingRevisions = async (req, res) => {
         },
       ],
       order: [["date_revision", orderDirection]],
-      limmit: 100,
+      limit: limitNumber,
+      offset,
+      subQuery: false, // evita que Sequelize genere una subquery interna donde AssignedReviews aún no está en el JOIN
+      distinct: true,  // necesario para que count sea correcto con includes
     });
+
+    const totalPages = Math.ceil(count / limitNumber);
 
     return res.status(pendingRevisions.length ? 200 : 404).json({
       message:
@@ -305,6 +313,12 @@ const getPendingRevisions = async (req, res) => {
           ? "Revisiones de tesis pendientes sin asignar obtenidas con éxito"
           : "No hay revisiones de tesis pendientes sin asignar",
       orden: orderDirection,
+      pagination: {
+        total: count,
+        totalPages,
+        currentPage: pageNumber,
+        limit: limitNumber,
+      },
       data: pendingRevisions.map((revision) => ({
         ...revision.toJSON(),
         ApprovalThesis: { ...revision.ApprovalThesis, status: "Pendiente" },
@@ -561,37 +575,32 @@ const getInforRevisionsByUserId = async (req, res) => {
  */
 const getApprovedRevisions = async (req, res) => {
   try {
-    const { order = "asc", carnet } = req.query;
+    const { order = "asc", carnet, page = 1, limit = 10 } = req.query;
 
     const orderDirection = order === "desc" ? "DESC" : "ASC";
+    const pageNumber = Math.max(1, parseInt(page, 10) || 1);
+    const limitNumber = Math.min(100, Math.max(1, parseInt(limit, 10) || 10));
+    const offset = (pageNumber - 1) * limitNumber;
 
     const userWhereClause = {};
     if (carnet) {
-      // Validar el formato del carnet
       const carnetRegex = /^\d{4}-\d{2}-\d{2,}$/;
       if (!carnetRegex.test(carnet)) {
         return res.status(400).json({ message: "Carnet inválido" });
       }
-
-      // Validar que se ingresen al menos 2 dígitos del carnet
       const carnetParts = carnet.split("-");
       if (carnetParts[2].length < 2) {
-        return res
-          .status(400)
-          .json({ message: "Debe ingresar al menos 2 dígitos del carnet" });
+        return res.status(400).json({ message: "Debe ingresar al menos 2 dígitos del carnet" });
       }
-
-      // Agregar el carnet al filtro de búsqueda
       userWhereClause.carnet = { [Op.like]: `%${carnet}%` };
     }
 
-    // Obtener revisiones aprobadas
-    const approvedRevisions = await RevisionThesis.findAll({
+    const { count, rows: approvedRevisions } = await RevisionThesis.findAndCountAll({
       attributes: ["revision_thesis_id", "date_revision", "thesis_dir"],
       include: [
         {
           model: ApprovalThesis,
-          where: { status: "approved" }, // Solo revisiones aprobadas
+          where: { status: "approved" },
           attributes: ["status", "date_approved"],
         },
         {
@@ -601,40 +610,45 @@ const getApprovedRevisions = async (req, res) => {
         },
         {
           model: Sede,
-          attributes: ["nameSede"], // Incluir información de la sede
+          attributes: ["nameSede"],
         },
       ],
-      order: [["date_revision", orderDirection]], // Ordenar por fecha de revisión
+      order: [["date_revision", orderDirection]],
+      limit: limitNumber,
+      offset,
+      subQuery: false, // evita el problema de JOIN en subquery paginada
+      distinct: true,
     });
 
-    // Si no hay revisiones aprobadas
+    const totalPages = Math.ceil(count / limitNumber);
+
     if (approvedRevisions.length === 0) {
       return res.status(404).json({
         message: "No hay revisiones de tesis aprobadas",
+        pagination: { total: 0, totalPages: 0, currentPage: pageNumber, limit: limitNumber },
       });
     }
 
-    // Formatear las revisiones aprobadas
     const formattedRevisions = approvedRevisions.map((revision) => {
       const revisionData = revision.toJSON();
       return {
         ...revisionData,
-        thesis_dir: `${
-          process.env.BASE_URL + "/public" || "http://localhost:3000/public"
-        }${revisionData.thesis_dir}`, // Agregar baseURL a la ruta del archivo
+        thesis_dir: `${process.env.BASE_URL + "/public" || "http://localhost:3000/public"}${revisionData.thesis_dir}`,
         ApprovalThesis: revisionData.ApprovalThesis
-          ? {
-              ...revisionData.ApprovalThesis,
-              status: "aprobada", // Traducir el estado a español
-            }
-          : null, // Si no hay ApprovalThesis, asignar null
+          ? { ...revisionData.ApprovalThesis, status: "aprobada" }
+          : null,
       };
     });
 
-    // Respuesta exitosa
     res.status(200).json({
       message: "Revisiones de tesis aprobadas obtenidas con éxito",
       orden: orderDirection,
+      pagination: {
+        total: count,
+        totalPages,
+        currentPage: pageNumber,
+        limit: limitNumber,
+      },
       data: formattedRevisions,
     });
   } catch (error) {

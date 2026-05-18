@@ -148,17 +148,22 @@ const loginUser = async (req, res) => {
       return res.status(401).json({ message: "Contraseña inválida" });
     }
 
-    // Generate JWT token for authentication
-    const token = jwt.sign(
-      {
-        user: {
-          user_id: user.user_id,
-          rol_id: user.rol_id,
-          sede_id: user.sede_id,
-        },
+    const payload = {
+      user: {
+        user_id: user.user_id,
+        rol_id: user.rol_id,
+        sede_id: user.sede_id,
       },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" } // Token expiration time
+    };
+
+    // Access token: corta duración (1h)
+    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+    // Refresh token: larga duración (7 días), firmado con secret diferente
+    const refreshToken = jwt.sign(
+      payload,
+      process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET + "_refresh",
+      { expiresIn: "7d" }
     );
 
     // Log activity only for role 1
@@ -171,7 +176,7 @@ const loginUser = async (req, res) => {
       );
     }
 
-    // Send response with user details and token
+    // Send response with user details and both tokens
     res.status(200).json({
       message: "Inicio de sesión exitoso",
       id: user.user_id,
@@ -179,6 +184,7 @@ const loginUser = async (req, res) => {
       rol: user.rol_id,
       passwordUpdate: user.passwordUpdate,
       token,
+      refreshToken,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -338,6 +344,9 @@ const updateProfilePhoto = async (req, res) => {
  * it returns a generic server error message.
  */
 const requestPasswordRecovery = async (req, res) => {
+  // Mensaje genérico invariable — no revela si el correo existe (evita user enumeration)
+  const GENERIC_MSG = "Si el correo electrónico está registrado, recibirás tu nueva contraseña en unos minutos.";
+
   try {
     const { email } = req.body;
 
@@ -351,18 +360,19 @@ const requestPasswordRecovery = async (req, res) => {
       return res.status(400).json({ message: "Correo electrónico no válido." });
     }
 
-    // Buscar el usuario por correo electrónico
+    // Buscar el usuario — si no existe, responder igual que si existiera (sin revelar)
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(404).json({ message: "No se encontró un usuario con ese correo electrónico." });
+      // Respuesta 200 genérica: no confirmamos ni negamos si el correo existe
+      return res.status(200).json({ message: GENERIC_MSG });
     }
-    // Generar una nueva contraseña aleatoria usando crypto
+
+    // Generar nueva contraseña aleatoria
     const newPassword = crypto.randomBytes(8).toString('hex');
-    // Generar una nueva contraseña aleatoria
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Actualizar la contraseña del usuario
-    await user.update({ password: hashedPassword });
+    await user.update({ password: hashedPassword, passwordUpdate: false });
 
     // Enviar correo con la nueva contraseña
     await sendEmailPasswordRecovery(
@@ -372,9 +382,7 @@ const requestPasswordRecovery = async (req, res) => {
       { nombre: user.name, newPassword }
     );
 
-    return res.status(200).json({
-      message: "Tu nueva contraseña ha sido enviada a tu correo electrónico.",
-    });
+    return res.status(200).json({ message: GENERIC_MSG });
   } catch (error) {
     console.error("Error al solicitar la recuperación de la contraseña:", error);
     return res.status(500).json({
@@ -384,10 +392,47 @@ const requestPasswordRecovery = async (req, res) => {
   }
 };
 
+/**
+ * Renueva el access token usando un refresh token válido.
+ * El cliente debe enviar el refreshToken en el body: { refreshToken: "..." }
+ */
+const refreshAccessToken = async (req, res) => {
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Se requiere el refresh token." });
+  }
+
+  try {
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET + "_refresh"
+    );
+
+    // Verificar que el usuario sigue activo
+    const user = await User.findByPk(decoded.user.user_id);
+    if (!user || !user.active) {
+      return res.status(401).json({ message: "Usuario inactivo o no encontrado." });
+    }
+
+    // Emitir nuevo access token
+    const newToken = jwt.sign(
+      { user: { user_id: user.user_id, rol_id: user.rol_id, sede_id: user.sede_id } },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    return res.status(200).json({ token: newToken });
+  } catch (error) {
+    return res.status(401).json({ message: "Refresh token inválido o expirado." });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   updatePassword,
   updateProfilePhoto,
   requestPasswordRecovery,
+  refreshAccessToken,
 };

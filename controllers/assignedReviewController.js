@@ -4,7 +4,8 @@ const RevisionThesis = require("../models/revisionThesis");
 const User = require("../models/user");
 const { sendEmailReviewerAsigned } = require("../services/emailService");
 const moment = require("moment-timezone");
-const { Op } = require("sequelize");
+const { Op, Transaction } = require("sequelize");
+const { sequelize } = require("../config/database");
 
 /**
  * The function `createAssignedReview` assigns a reviewer to a thesis revision, ensuring the user
@@ -18,75 +19,80 @@ const { Op } = require("sequelize");
  * assignment already exists.
  */
 const createAssignedReview = async (req, res) => {
+  const { revision_thesis_id, user_id } = req.body;
+
+  // Validaciones previas sin transacción (consultas de solo lectura)
+  const [infoUser, infoRevision] = await Promise.all([
+    User.findByPk(user_id),
+    RevisionThesis.findByPk(revision_thesis_id),
+  ]);
+
+  if (!infoUser) {
+    return res.status(404).json({
+      message: "Usuario no encontrado",
+      details: `No existe un usuario con ID ${user_id}.`,
+    });
+  }
+  if (![6, 7].includes(infoUser.rol_id)) {
+    return res.status(400).json({ message: "El usuario no es un revisor o coordinador" });
+  }
+  if (!infoRevision) {
+    return res.status(404).json({
+      message: "Revisión de tesis no encontrada",
+      details: `No existe una revisión con ID ${revision_thesis_id}.`,
+    });
+  }
+  if (!infoRevision.active_process) {
+    return res.status(400).json({ message: "La revisión no está activa" });
+  }
+
+  // Transacción SERIALIZABLE + lock FOR UPDATE para eliminar race condition:
+  // Si dos peticiones llegan al mismo tiempo, solo una obtendrá el lock;
+  // la segunda esperará y verá el registro ya creado por la primera.
+  const transaction = await sequelize.transaction({
+    isolationLevel: Transaction.ISOLATION_LEVELS.SERIALIZABLE,
+  });
+
   try {
-    const { revision_thesis_id, user_id } = req.body;
-
-    // Consultar usuario y revisión en paralelo
-    const [infoUser, infoRevision] = await Promise.all([
-      User.findByPk(user_id),
-      RevisionThesis.findByPk(revision_thesis_id),
-    ]);
-
-    // Validaciones
-    if (!infoUser) {
-      return res.status(404).json({
-        message: "Usuario no encontrado",
-        details: `No existe un usuario con ID ${user_id}.`,
-      });
-    }
-
-    if (![6, 7].includes(infoUser.rol_id)) {
-      return res.status(400).json({
-        message: "El usuario no es un revisor o coordinador",
-      });
-    }
-
-    if (!infoRevision) {
-      return res.status(404).json({
-        message: "Revisión de tesis no encontrada",
-        details: `No existe una revisión con ID ${revision_thesis_id}.`,
-      });
-    }
-
-    if (!infoRevision.active_process) {
-      return res.status(400).json({
-        message: "La revisión no está activa",
-      });
-    }
-
-    // Verificar si ya tiene un revisor asignado
+    // Verificar duplicado DENTRO de la transacción con lock pesimista
     const existingAssignment = await AssignedReview.findOne({
       where: { revision_thesis_id },
+      lock: transaction.LOCK.UPDATE,
+      transaction,
     });
 
     if (existingAssignment) {
-      return res.status(409).json({
-        message: "La revisión ya tiene un revisor asignado",
-      });
+      await transaction.rollback();
+      return res.status(409).json({ message: "La revisión ya tiene un revisor asignado" });
     }
 
-    // Crear asignación y actualizar estado en paralelo
-    await Promise.all([
-      AssignedReview.create({ revision_thesis_id, user_id }),
-      ApprovalThesis.update(
-        { status: "in revision" },
-        { where: { revision_thesis_id } }
-      ),
-    ]);
+    // Crear asignación y actualizar estado dentro de la transacción
+    await AssignedReview.create({ revision_thesis_id, user_id }, { transaction });
+    await ApprovalThesis.update(
+      { status: "in revision" },
+      { where: { revision_thesis_id }, transaction }
+    );
 
-    // Enviar correo al revisor
-    await sendEmailReviewerAsigned("Nueva revisión", infoUser.email, {
-      reviewer_name: infoUser.name,
-      reviewer_date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
-    });
+    await transaction.commit();
+
+    // Enviar correo DESPUÉS del commit (datos ya persistidos)
+    try {
+      await sendEmailReviewerAsigned("Nueva revisión", infoUser.email, {
+        reviewer_name: infoUser.name,
+        reviewer_date: moment().tz("America/Guatemala").format("DD/MM/YYYY, h:mm A"),
+      });
+    } catch (emailError) {
+      console.error("Error al enviar correo al revisor (asignación ya guardada):", emailError.message);
+    }
 
     return res.status(201).json({ message: "Revisión asignada con éxito" });
   } catch (error) {
+    await transaction.rollback();
     console.error("Error al asignar la revisión:", error);
     return res.status(500).json({
       message: "Error interno del servidor",
       details: error.message,
-    }); 
+    });
   }
 };
 

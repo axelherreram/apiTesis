@@ -117,7 +117,7 @@ const createCommentRevision = async (req, res) => {
       { transaction }
     );
 
-    // Obtener datos del estudiante
+    // Obtener datos del estudiante (fuera de la transacción — solo lectura)
     const data_student = await RevisionThesis.findOne({
       where: { revision_thesis_id },
       include: {
@@ -128,16 +128,19 @@ const createCommentRevision = async (req, res) => {
 
     // Sequelize puede devolver el usuario como 'user' (minúscula) o 'User' (mayúscula)
     const studentUser = data_student?.User || data_student?.user;
-    // Verificar que `data_student` tenga datos
+
     if (!data_student || !studentUser) {
       await transaction.rollback();
       return res.status(404).json({
-        message:
-          "No se encontró información del estudiante asociado a la revisión.",
+        message: "No se encontró información del estudiante asociado a la revisión.",
       });
     }
 
-    // Enviar correo electrónico al estudiante
+    // ✅ COMMIT PRIMERO — los datos quedan persistidos antes de intentar el email.
+    // Si el email falla después del commit, el comentario ya fue guardado correctamente.
+    await transaction.commit();
+
+    // Enviar correo DESPUÉS del commit
     const templateVariables = {
       student_name: studentUser.name,
       title,
@@ -146,25 +149,27 @@ const createCommentRevision = async (req, res) => {
       status_message: isApproved ? "Aprobada" : "Rechazada",
       custom_message: isApproved
         ? "¡Felicitaciones! Tu tesis ha sido aprobada. Puedes proceder con los siguientes pasos."
-        : "Tu tesis ha sido rechazada. Por favor revisa los comentarios y realiza las correcciones necesarias y comunicate con tu catedrático correspondiente.",
+        : "Tu tesis ha sido rechazada. Por favor revisa los comentarios y realiza las correcciones necesarias y comunícate con tu catedrático correspondiente.",
     };
 
-    // Enviar correo electrónico
-    if (isApproved) {
-      await sendEmailCommentRevisionAproved(
-        "Comentario de revisión de tesis",
-        studentUser.email,
-        templateVariables
-      );
-    } else {
-      await sendEmailCommentRevisionRejected(
-        "Comentario de revisión de tesis",
-        studentUser.email,
-        templateVariables
-      );
+    try {
+      if (isApproved) {
+        await sendEmailCommentRevisionAproved(
+          "Comentario de revisión de tesis",
+          studentUser.email,
+          templateVariables
+        );
+      } else {
+        await sendEmailCommentRevisionRejected(
+          "Comentario de revisión de tesis",
+          studentUser.email,
+          templateVariables
+        );
+      }
+    } catch (emailError) {
+      // El comentario ya fue guardado — solo registrar el fallo del correo
+      console.error("Error al enviar correo al estudiante (comentario ya guardado):", emailError.message);
     }
-
-    await transaction.commit(); // Confirmar la transacción
 
     // Respuesta exitosa
     res.status(201).json({

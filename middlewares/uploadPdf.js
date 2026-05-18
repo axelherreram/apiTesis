@@ -40,13 +40,15 @@ const storage = multer.diskStorage({
   }
 });
 
-// File filter to only allow PDF files
+// File filter: valida TANTO la extensión como el MIME type real del archivo
 const fileFilter = (req, file, cb) => {
-  const ext = path.extname(file.originalname);
-  if (ext === '.pdf') {
+  const ext = path.extname(file.originalname).toLowerCase();
+  const mime = file.mimetype;
+
+  if (ext === '.pdf' && mime === 'application/pdf') {
     cb(null, true);
   } else {
-    cb(new Error('Only PDF files are allowed'));
+    cb(new Error('Solo se permiten archivos PDF válidos (extensión .pdf y tipo application/pdf)'));
   }
 };
 
