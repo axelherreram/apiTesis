@@ -5,6 +5,7 @@ const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
 const { sendEmailCatedratico } = require("../services/emailService");
+const logger = require("../utils/logger");
 
 /**
  * The function `bulkUploadCatedratico` handles the bulk upload of teacher data from an Excel file,
@@ -85,7 +86,7 @@ const bulkUploadCatedratico = async (req, res) => {
 
       if (!existingUser) {
         const randomPassword = Math.random().toString(36).slice(-8);
-        console.log(`Contraseña generada para ${email}: ${randomPassword}`);
+        logger.debug(`Contraseña generada para catedrático (omitida en producción)`);
 
         const hashedPassword = await bcrypt.hash(randomPassword, 10);
 

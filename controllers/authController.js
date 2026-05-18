@@ -103,9 +103,10 @@ const registerUser = async (req, res) => {
     });
   } catch (err) {
     console.error("Error en el registro de usuario:", err);
+    const isDev = process.env.NODE_ENV !== 'production';
     res.status(500).json({
       message: "Error en el servidor. Por favor, intente más tarde.",
-      error: err.message,
+      ...(isDev && { error: err.message }),
     });
   }
 };
@@ -176,7 +177,16 @@ const loginUser = async (req, res) => {
       );
     }
 
-    // Send response with user details and both tokens
+    // ✅ refreshToken como cookie HttpOnly — JavaScript nunca puede leerla (protección XSS)
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,                                          // inaccesible desde JS
+      secure: process.env.NODE_ENV === 'production',          // solo HTTPS en producción
+      sameSite: 'lax',                                        // protección CSRF básica
+      maxAge: 7 * 24 * 60 * 60 * 1000,                       // 7 días en ms
+      path: '/',
+    });
+
+    // Send response — accessToken en body (puede ir en memoria en el frontend)
     res.status(200).json({
       message: "Inicio de sesión exitoso",
       id: user.user_id,
@@ -184,10 +194,12 @@ const loginUser = async (req, res) => {
       rol: user.rol_id,
       passwordUpdate: user.passwordUpdate,
       token,
-      refreshToken,
+      // refreshToken ya NO va en el body — viaja solo como cookie HttpOnly
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error en loginUser:', error);
+    const isDev = process.env.NODE_ENV !== 'production';
+    res.status(500).json({ message: 'Error en el servidor. Por favor intente más tarde.', ...(isDev && { error: error.message }) });
   }
 };
 
@@ -393,14 +405,15 @@ const requestPasswordRecovery = async (req, res) => {
 };
 
 /**
- * Renueva el access token usando un refresh token válido.
- * El cliente debe enviar el refreshToken en el body: { refreshToken: "..." }
+ * Renueva el access token leyendo el refresh token desde la cookie HttpOnly.
+ * El cliente NO necesita enviar nada en el body — la cookie viaja automáticamente.
  */
 const refreshAccessToken = async (req, res) => {
-  const { refreshToken } = req.body;
+  // Leer desde cookie HttpOnly (no desde body — más seguro)
+  const refreshToken = req.cookies?.refreshToken;
 
   if (!refreshToken) {
-    return res.status(400).json({ message: "Se requiere el refresh token." });
+    return res.status(401).json({ message: "No hay refresh token. Por favor inicia sesión nuevamente." });
   }
 
   try {
@@ -428,6 +441,19 @@ const refreshAccessToken = async (req, res) => {
   }
 };
 
+/**
+ * Cierra la sesión del usuario limpiando la cookie del refresh token en el servidor.
+ */
+const logoutUser = (req, res) => {
+  res.clearCookie('refreshToken', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  });
+  return res.status(200).json({ message: 'Sesión cerrada exitosamente.' });
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -435,4 +461,5 @@ module.exports = {
   updateProfilePhoto,
   requestPasswordRecovery,
   refreshAccessToken,
+  logoutUser,
 };

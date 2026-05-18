@@ -6,6 +6,7 @@ const path = require("path");
 const fs = require("fs");
 const Year = require("../models/year");
 const { sendEmailPassword } = require("../services/emailService");
+const logger = require("../utils/logger");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const Course = require("../models/course");
 const crypto = require("crypto");
@@ -167,7 +168,7 @@ const bulkUploadUsers = async (req, res) => {
             .toString("base64")
             .slice(0, 12);
 
-          console.log(`Contraseña generada para ${email}: ${randomPassword}`);
+          logger.debug(`Contraseña generada para user (no en logs de producción)`);
           const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
           // Paso 14: Crear el usuario con el año académico actual
@@ -199,7 +200,7 @@ const bulkUploadUsers = async (req, res) => {
 
       // Verificar que existingUser no sea null antes de proceder
       if (!existingUser) {
-        console.log(`No se pudo obtener o crear el usuario para ${email} con carnet ${carnetLimpio}`);
+        logger.warn(`No se pudo obtener o crear el usuario para el carnet ${carnetLimpio.substring(0, 4)}...`);
         continue;
       }
 

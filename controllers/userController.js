@@ -10,6 +10,7 @@ const Sede = require("../models/sede");
 const { sendEmailPassword } = require("../services/emailService");
 const CourseSedeAssignment = require("../models/courseSedeAssignment");
 const crypto = require("crypto");
+const logger = require("../utils/logger");
 
 
 /**
@@ -27,27 +28,17 @@ const crypto = require("crypto");
  */
 const getUsersByCourse = async (req, res) => {
   const { sede_id, course_id, year } = req.params;
-  const user_id = req.user_id;
-  //const { sede_id: tokenSedeId } = req;
+  const user_id = req.user?.user_id;
+  const tokenSedeId = req.user?.sede_id;
   try {
-    /*     // Obtener el usuario solicitante para verificar su rol
-    const requestingUser = await User.findByPk(user_id);
-    if (!requestingUser) {
-      return res
-        .status(404)
-        .json({ message: "No se encontró el usuario solicitante" });
-    }
-
-    // Solo validar acceso a sede si el rol no es 5
-    if (requestingUser.rol_id !== 5) {
-      // Validar que el `sede_id` del token coincida con el `sede_id` de la solicitud
+    // Validar que el sede_id de la solicitud coincide con el del token
+    // Solo el coordinador general (rol 5) puede consultar cualquier sede
+    const requestingUser = await User.findByPk(user_id, { attributes: ['rol_id'] });
+    if (requestingUser && requestingUser.rol_id !== 5) {
       if (parseInt(sede_id, 10) !== parseInt(tokenSedeId, 10)) {
-        return res
-          .status(403)
-          .json({ message: "No tienes acceso a los grupos de esta sede" });
+        return res.status(403).json({ message: 'No tienes acceso a los grupos de esta sede' });
       }
     }
- */
     const yearRecord = await Year.findOne({ where: { year } });
     if (!yearRecord) {
       return res.status(404).json({ message: "El año especificado no existe" });
@@ -223,11 +214,12 @@ const createAdmin = async (req, res) => {
   }
 
   try {
+    // Validar formato del carnet
     // const carnetRegex = /^\d{4}-\d{2}-\d{4,8}$/;
     // if (!carnetRegex.test(carnet)) {
     //   return res.status(400).json({
     //     title: "Error",
-    //     message: "Carnet inválido, ingrese el código completo",
+    //     message: "Carnet inválido, ingrese el código completo (formato: XXXX-YX-XXXXXXXX)",
     //   });
     // }
 
@@ -282,11 +274,11 @@ const createAdmin = async (req, res) => {
     });
 
     try {
-        await sendEmailPassword("Registro exitoso",
+      await sendEmailPassword("Registro exitoso",
         `Hola ${name}, tu contraseña temporal es: ${password}`,
-        email,{ nombre: name, password }
-      );  
-      console.log("Correo enviado a:", email);
+        email, { nombre: name, password }
+      );
+      logger.debug("Correo de admin enviado a:", email);
     } catch (emailError) {
       console.error("Error al enviar el correo:", emailError);
       return res.status(500).json({
@@ -296,7 +288,7 @@ const createAdmin = async (req, res) => {
       });
     }
 
-    console.log("Administrador creado:", admin.email);
+    logger.debug("Administrador creado ID:", admin.user_id);
     res.status(201).json({ message: "Administrador creado con éxito." });
   } catch (error) {
     console.error("Error al crear el administrador:", error);
@@ -445,9 +437,9 @@ const listAllAdmins = async (req, res) => {
       active: admin.active,
       sede: admin.location
         ? {
-            sede_id: admin.location.sede_id,
-            nombre: admin.location.nameSede,
-          }
+          sede_id: admin.location.sede_id,
+          nombre: admin.location.nameSede,
+        }
         : null, // Sede del administrador
       profilePhoto: admin.profilePhoto
         ? `${process.env.BASE_URL}/public/profilephoto/${admin.profilePhoto}`

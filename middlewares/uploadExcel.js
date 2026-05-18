@@ -38,7 +38,11 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function (req, file, cb) {
-    cb(null, file.originalname);
+    // ✅ NUNCA usar file.originalname directamente — vulnerable a path traversal.
+    // Generamos un nombre único con timestamp + random para evitar colisiones y ataques.
+    const ext = path.extname(file.originalname).toLowerCase().replace(/[^a-z0-9.]/g, '');
+    const safeName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+    cb(null, safeName);
   }
 });
 

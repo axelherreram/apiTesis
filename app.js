@@ -65,10 +65,28 @@ const createCorThesisRoutes = require('./routes/createCorThesisRoutes');
 const morgan = require('morgan');
 const path = require('path');
 const cors = require('cors');
+const helmet = require('helmet');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser'); // Para leer HttpOnly cookies del refreshToken
 
 require('dotenv').config();
 
 const app = express();
+
+// ─── Proxy y HTTPS ──────────────────────────────────────────────────────────
+// Necesario si el servidor corre detrás de nginx/Apache/CloudFlare.
+// Permite leer req.secure y req.ip correctamente.
+app.set('trust proxy', 1);
+
+// En producción, forzar redirección HTTP → HTTPS
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (!req.secure) {
+      return res.redirect(301, `https://${req.headers.host}${req.url}`);
+    }
+    next();
+  });
+}
 
 // Rate limiter — límite estricto para auth, más generoso para el resto de la API
 const authLimiter = rateLimit({
@@ -89,6 +107,14 @@ const apiLimiter = rateLimit({
 
 // Asociar modelos
 associateModels();
+
+// ─── Helmet: HTTP Security Headers ──────────────────────────────────────────
+// Agrega automáticamente: X-Content-Type-Options, X-Frame-Options,
+// Strict-Transport-Security, Content-Security-Policy, y más.
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }, // permite que el frontend cargue imágenes
+  contentSecurityPolicy: false, // desactivado para no romper Swagger UI
+}));
 
 // Configurar CORS
 const allowedOrigins = [
@@ -114,19 +140,39 @@ app.use(cors({
 // Configurar body-parser para analizar JSON
 app.use(bodyParser.json());
 
-// Configurar Morgan para el registro de solicitudes HTTP
-// app.use(morgan('dev'));
+// Parsear cookies (necesario para leer el refreshToken HttpOnly)
+app.use(cookieParser());
 
-// middleware para loggear las solicitudes manuales
-/* app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
-  console.log("Body:", req.body);
-  console.log("Headers:", req.headers);
-  next();
-});
- */
-// Servir archivos estáticos
-app.use('/public', express.static(path.join(__dirname, 'public')));
+// ─── Archivos estáticos ─────────────────────────────────────────────────────
+// Fotos de perfil: públicas (no contienen información sensible)
+app.use('/public/profilephoto', express.static(path.join(__dirname, 'public/profilephoto')));
+
+// PDFs y otros uploads: requieren JWT válido
+// El token puede venir de dos formas:
+//   1. Header:  Authorization: Bearer <token>   ← para llamadas API normales
+//   2. Param:   ?token=<token>                  ← para carga directa en <iframe>, <embed>, <a>
+//              (el navegador no puede enviar headers custom al cargar recursos directamente)
+const protectedStaticMiddleware = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const headerToken = authHeader && authHeader.startsWith('Bearer ') ? authHeader.slice(7) : null;
+  const queryToken  = req.query?.token ?? null;
+  const token = headerToken || queryToken;
+
+  if (!token) {
+    return res.status(401).json({ message: 'Acceso no autorizado a este recurso.' });
+  }
+  try {
+    jwt.verify(token, process.env.JWT_SECRET);
+
+    // Permitir embedding en iframes del frontend (diferente puerto en dev, mismo dominio en prod)
+    res.setHeader('X-Frame-Options', 'ALLOWALL');
+    res.setHeader('Content-Security-Policy', "frame-ancestors *");
+    next();
+  } catch {
+    return res.status(401).json({ message: 'Token inválido o expirado.' });
+  }
+};
+app.use('/public/uploads', protectedStaticMiddleware, express.static(path.join(__dirname, 'public/uploads')));
 
 
 

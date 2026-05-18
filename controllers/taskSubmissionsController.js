@@ -318,36 +318,40 @@ const getCourseDetails = async (req, res) => {
       attributes: ["task_id", "title", "description", "taskStart", "endTask"],
     });
 
-    // Paso 4: Obtener las entregas de tareas de los estudiantes
-    const studentTasks = await Promise.all(
-      students.map(async (student) => {
-        const submissions = await TaskSubmissions.findAll({
-          where: { user_id: student.user_id },
-          attributes: ["task_id", "submission_complete", "date"],
-          include: [
-            {
-              model: Task,
-              attributes: ["title"], // Incluir el título de la tarea
-            },
-          ],
-        });
+    // Paso 4: Obtener TODAS las entregas del curso en una sola query (elimina N+1)
+    const studentIds = students.map((s) => s.user_id);
 
-        const formattedSubmissions = submissions.map((submission) => ({
-          title: submission.Task?.title, // Agregar el título de la tarea
-          submission_complete: submission.submission_complete,
-          date: submission.date,
-        }));
+    const allSubmissions = await TaskSubmissions.findAll({
+      where: { user_id: studentIds },
+      attributes: ["user_id", "task_id", "submission_complete", "date"],
+      include: [
+        {
+          model: Task,
+          attributes: ["title"],
+        },
+      ],
+    });
 
-        return {
-          student: {
-            name: student.name,
-            email: student.email,
-            carnet: student.carnet,
-          },
-          submissions: formattedSubmissions,
-        };
-      })
-    );
+    // Agrupar entregas por user_id en memoria — O(n) en vez de N queries
+    const submissionsByUser = new Map();
+    for (const sub of allSubmissions) {
+      const uid = sub.user_id;
+      if (!submissionsByUser.has(uid)) submissionsByUser.set(uid, []);
+      submissionsByUser.get(uid).push({
+        title: sub.Task?.title,
+        submission_complete: sub.submission_complete,
+        date: sub.date,
+      });
+    }
+
+    const studentTasks = students.map((student) => ({
+      student: {
+        name: student.name,
+        email: student.email,
+        carnet: student.carnet,
+      },
+      submissions: submissionsByUser.get(student.user_id) || [],
+    }));
 
     // Paso 5: Enviar la respuesta con los detalles del curso
     res.status(200).json({
@@ -592,9 +596,78 @@ const getAllTasksBySedeYearAndUser = async (req, res) => {
   }
 };
 
+/**
+ * GET /api/students/:user_id/tasks/:task_id/submission
+ *
+ * Devuelve la entrega de una tarea específica de un estudiante.
+ * Más eficiente que getStudentCourseDetails porque solo busca 1 registro.
+ */
+const getStudentTaskSubmission = async (req, res) => {
+  const { user_id, task_id } = req.params;
+
+  try {
+    // Verificar que el estudiante exista
+    const student = await User.findByPk(user_id, {
+      attributes: ["user_id", "name", "email", "carnet"],
+    });
+    if (!student) {
+      return res.status(404).json({ message: "Estudiante no encontrado" });
+    }
+
+    // Verificar que la tarea exista
+    const task = await Task.findByPk(task_id, {
+      attributes: ["task_id", "title"],
+    });
+    if (!task) {
+      return res.status(404).json({ message: "Tarea no encontrada" });
+    }
+
+    // Buscar la entrega del estudiante para esa tarea
+    const submission = await TaskSubmissions.findOne({
+      where: { user_id, task_id },
+      attributes: ["submission_id", "submission_complete", "date", "file_path"],
+    });
+
+    if (!submission) {
+      return res.status(404).json({
+        message: "El estudiante aún no ha entregado esta tarea",
+      });
+    }
+
+    // Construir URL pública del archivo
+    const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
+    const normalizedPath = (submission.file_path || "").replace(/\\/g, "/");
+    const file_url = normalizedPath
+      ? encodeURI(`${BASE_URL}/${normalizedPath}`)
+      : null;
+
+    return res.status(200).json({
+      student: {
+        user_id: student.user_id,
+        name: student.name,
+        email: student.email,
+        carnet: student.carnet,
+      },
+      submission: {
+        submission_id: submission.submission_id,
+        task_title: task.title,
+        submission_complete: submission.submission_complete,
+        date: submission.date,
+        file_url,
+      },
+    });
+  } catch (error) {
+    console.error("Error en getStudentTaskSubmission:", error);
+    return res.status(500).json({
+      message: "Error al obtener la entrega del estudiante",
+    });
+  }
+};
+
 module.exports = {
   getCourseDetails,
   createTaskSubmission,
   getStudentCourseDetails,
   getAllTasksBySedeYearAndUser,
+  getStudentTaskSubmission,
 };

@@ -175,8 +175,9 @@ module.exports = function associateModels() {
   Task.hasMany(Notification, { foreignKey: "task_id" });
 
   // Relación entre RevisionThesis y User
-  RevisionThesis.belongsTo(User, { foreignKey: "user_id" });
-  User.hasMany(RevisionThesis, { foreignKey: "user_id" });
+  // as:'user' (minúscula) — consistente con ThesisSubmission y demás asociaciones del módulo thesis
+  RevisionThesis.belongsTo(User, { foreignKey: "user_id", as: "user" });
+  User.hasMany(RevisionThesis, { foreignKey: "user_id", as: "revisionTheses" });
 
   // Relación entre RevisionThesis y Sede
   RevisionThesis.belongsTo(Sede, { foreignKey: "sede_id" });
@@ -193,8 +194,9 @@ module.exports = function associateModels() {
   User.hasMany(ApprovalThesis, { foreignKey: "user_id" });
 
   // Relación entre AssignedReview y User
-  AssignedReview.belongsTo(User, { foreignKey: "user_id" });
-  User.hasMany(AssignedReview, { foreignKey: "user_id" });
+  // as:'reviewer' — diferencia semántica: este User es el revisor asignado, no el estudiante
+  AssignedReview.belongsTo(User, { foreignKey: "user_id", as: "reviewer" });
+  User.hasMany(AssignedReview, { foreignKey: "user_id", as: "assignedReviews" });
 
   // Relación entre AssignedReview y RevisionThesis
   AssignedReview.belongsTo(RevisionThesis, {

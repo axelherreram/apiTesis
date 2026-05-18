@@ -4,6 +4,8 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
 const getUserIdToken = require("../middlewares/getUserIdToken");
 const extractSedeIdMiddleware = require("../middlewares/extractSedeIdMiddleware");
+const { validate } = require("../middlewares/validate");
+const { createAdminSchema, createUserNotlogSchema, assignAdminSchema } = require("../validators/userValidator");
 
 const router = express.Router();
 
@@ -147,6 +149,7 @@ router.post(
   "/admin/create",
   authMiddleware,
   coordinador_sede,
+  validate(createAdminSchema),
   userController.createAdmin
 );
 
@@ -197,6 +200,7 @@ router.post(
   "/admin/assign",
   authMiddleware,
   coordinador_sede,
+  validate(assignAdminSchema),
   userController.assignAdminToSede
 );
 
@@ -357,6 +361,7 @@ router.post(
   authMiddleware,
   admin,
   extractSedeIdMiddleware,
+  validate(createUserNotlogSchema),
   userController.createUserNotlog
 );
 

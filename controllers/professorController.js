@@ -4,7 +4,8 @@ const Year = require("../models/year");
 const { logActivity } = require("../sql/appLog");
 const { sequelize } = require("../config/database");
 const bcrypt = require("bcrypt");
-require("dotenv").config(); // Asegúrate de cargar las variables de entorno
+const logger = require("../utils/logger");
+require("dotenv").config();
 const { sendEmailCatedratico } = require("../services/emailService");
 const crypto = require("crypto");
 /**
@@ -286,7 +287,7 @@ const createProfessor = async (req, res) => {
 
     // Generar una contraseña aleatoria
     const randomPassword = crypto.randomBytes(4).toString("hex");
-    console.log(`Contraseña generada para ${email}: ${randomPassword}`);
+    logger.debug(`Contraseña generada para profesor (omitida en producción)`);
 
     // Hashear la contraseña generada
     const hashedPassword = await bcrypt.hash(randomPassword, 10);
@@ -315,7 +316,7 @@ const createProfessor = async (req, res) => {
       nombre: name,
       password: randomPassword,
     });
-    console.log("email: ", email, "  password: ", randomPassword);
+    logger.debug("Correo de profesor enviado (datos omitidos en producción)");
 
     res.status(201).json({ message: "Profesor creado exitosamente" });
   } catch (error) {

@@ -5,6 +5,7 @@ const {
   createTaskSubmission,
   getStudentCourseDetails,
   getAllTasksBySedeYearAndUser,
+  getStudentTaskSubmission,
 } = require("../controllers/taskSubmissionsController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const verifyRole = require("../middlewares/roleMiddleware");
@@ -159,6 +160,63 @@ router.get(
   authMiddleware,
   admin,
   getStudentCourseDetails
+);
+
+/**
+ * @swagger
+ * /api/students/{user_id}/tasks/{task_id}/submission:
+ *   get:
+ *     summary: Obtener la entrega de una tarea específica de un estudiante
+ *     description: Devuelve el archivo y estado de entrega del estudiante para una tarea concreta. Más eficiente que el endpoint de detalles del curso.
+ *     tags: [TaskSubmissions]
+ *     parameters:
+ *       - in: path
+ *         name: user_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID del estudiante
+ *       - in: path
+ *         name: task_id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID de la tarea
+ *     responses:
+ *       200:
+ *         description: Entrega encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 student:
+ *                   type: object
+ *                   properties:
+ *                     user_id: { type: integer }
+ *                     name: { type: string }
+ *                     email: { type: string }
+ *                     carnet: { type: string }
+ *                 submission:
+ *                   type: object
+ *                   properties:
+ *                     submission_id: { type: integer }
+ *                     task_title: { type: string }
+ *                     submission_complete: { type: boolean }
+ *                     date: { type: string, format: date-time }
+ *                     file_url: { type: string }
+ *       404:
+ *         description: Estudiante, tarea o entrega no encontrada
+ *       500:
+ *         description: Error interno del servidor
+ *     security:
+ *       - bearerAuth: []
+ */
+router.get(
+  "/students/:user_id/tasks/:task_id/submission",
+  authMiddleware,
+  admin,
+  getStudentTaskSubmission
 );
 
 // Nueva ruta para obtener todas las tareas por sede, año y usuario

@@ -141,8 +141,9 @@ const getAssignedReviewsByUser = async (req, res) => {
             },
             {
               model: User,
-              attributes: ["user_id","name", "email", "carnet"],
-              where: carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {}, // Filtro dentro de User
+              as: "user",                        // alias: RevisionThesis → User
+              attributes: ["user_id", "name", "email", "carnet"],
+              where: carnet ? { carnet: { [Op.like]: `%${carnet}%` } } : {},
             },
           ],
         },
@@ -220,6 +221,7 @@ const getReviewHistoryByUser = async (req, res) => {
             },
             {
               model: User,
+              as: "user",                        // alias: RevisionThesis → User
               attributes: ["user_id", "name", "email", "carnet"],
               where: userWhereClause,
             },

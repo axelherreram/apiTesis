@@ -1,9 +1,32 @@
-node_modules
+# Dependencias
+node_modules/
 
+# Variables de entorno — NUNCA subir al repositorio
 .env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.test
 
-public
+# Logs
+logs/
+*.log
+npm-debug.log*
 
+# Archivos subidos por usuarios (no deben versionarse)
+public/uploads/
+public/profilephoto/
+
+# Lock files
 package-lock.json
 
-.vscode
+# Editores e IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

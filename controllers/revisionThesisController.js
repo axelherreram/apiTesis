@@ -39,13 +39,17 @@ const uploadRevisionThesis = async (req, res) => {
     // Desestructurar los archivos subidos
     const { approval_letter, thesis } = req.files;
 
-    // Obtener las rutas de los archivos subidos
-    approval_letter_dir = `/uploads/revisionthesis/${approval_letter[0].filename}`;
-    thesis_dir = `/uploads/revisionthesis/${thesis[0].filename}`;
+    // Obtener las rutas de los archivos subidos — se guarda la URL completa para consistencia
+    const BASE = process.env.BASE_URL || 'http://localhost:3000';
+    approval_letter_dir = `${BASE}/public/uploads/revisionthesis/${approval_letter[0].filename}`;
+    thesis_dir = `${BASE}/public/uploads/revisionthesis/${thesis[0].filename}`;
 
     // Validar que el usuario exista
     const userInfo = await User.findOne({ where: { carnet } });
     if (!userInfo) {
+      // ✔️ Limpiar archivos subidos antes de retornar error
+      if (approval_letter_dir) fs.unlink(path.join(__dirname, `../public${new URL(approval_letter_dir).pathname}`), () => {});
+      if (thesis_dir) fs.unlink(path.join(__dirname, `../public${new URL(thesis_dir).pathname}`), () => {});
       return res.status(404).json({
         title: "Usuario no encontrado",
         message: `No se encontró ningún usuario con el carnet ${carnet}. Verifique el dato e intente nuevamente.`,
@@ -55,6 +59,8 @@ const uploadRevisionThesis = async (req, res) => {
 
     // Validar que el usuario sea un estudiante (rol_id === 1)
     if (userInfo.rol_id !== 1) {
+      if (approval_letter_dir) fs.unlink(path.join(__dirname, `../public${new URL(approval_letter_dir).pathname}`), () => {});
+      if (thesis_dir) fs.unlink(path.join(__dirname, `../public${new URL(thesis_dir).pathname}`), () => {});
       return res.status(403).json({
         title: "Acceso denegado",
         message: "El carnet ingresado no corresponde a un estudiante. Solo los estudiantes pueden enviar una revisión de tesis.",
@@ -64,6 +70,8 @@ const uploadRevisionThesis = async (req, res) => {
     // Validar que la sede exista
     const sedeInfo = await Sede.findByPk(sede_id);
     if (!sedeInfo) {
+      if (approval_letter_dir) fs.unlink(path.join(__dirname, `../public${new URL(approval_letter_dir).pathname}`), () => {});
+      if (thesis_dir) fs.unlink(path.join(__dirname, `../public${new URL(thesis_dir).pathname}`), () => {});
       return res.status(404).json({
         title: "Sede no encontrada",
         message: "La sede seleccionada no existe. Por favor seleccione una sede válida.",
@@ -77,6 +85,8 @@ const uploadRevisionThesis = async (req, res) => {
       // Buscar si alguna revisión tiene un proceso activo
       const activeRevision = userRevisions.find((rev) => rev.active_process);
       if (activeRevision) {
+        if (approval_letter_dir) fs.unlink(path.join(__dirname, `../public${new URL(approval_letter_dir).pathname}`), () => {});
+        if (thesis_dir) fs.unlink(path.join(__dirname, `../public${new URL(thesis_dir).pathname}`), () => {});
         return res.status(409).json({
           title: "Proceso de revisión activo",
           message: `El estudiante ya cuenta con un proceso de revisión activo en la sede ${sedeInfo.nameSede}. No es posible iniciar uno nuevo hasta que el actual sea finalizado.`,
@@ -91,6 +101,8 @@ const uploadRevisionThesis = async (req, res) => {
         },
       });
       if (approvedRevision) {
+        if (approval_letter_dir) fs.unlink(path.join(__dirname, `../public${new URL(approval_letter_dir).pathname}`), () => {});
+        if (thesis_dir) fs.unlink(path.join(__dirname, `../public${new URL(thesis_dir).pathname}`), () => {});
         return res.status(409).json({
           title: "Tesis ya aprobada",
           message: "El estudiante no puede enviar una nueva solicitud porque su tesis ya fue aprobada anteriormente.",
@@ -152,11 +164,12 @@ const uploadRevisionThesis = async (req, res) => {
       console.error("Error al limpiar archivos temporales:", cleanupError);
     }
 
-    // Error genérico del servidor
+    // Error genérico del servidor — no revelar detalles internos al cliente
+    const isDev = process.env.NODE_ENV !== 'production';
     res.status(500).json({
       title: "Error interno del servidor",
       message: "Ocurrió un error inesperado al procesar la solicitud. Por favor intente nuevamente.",
-      error: error.message,
+      ...(isDev && { error: error.message }),
     });
   }
 };
@@ -188,6 +201,7 @@ const getRevisionsByUserId = async (req, res) => {
       include: [
         {
           model: User,
+          as: "user",                          // alias definido en asociaciones.js
           attributes: ["name", "carnet", "email", "profilePhoto"],
           include: [
             {
@@ -205,11 +219,12 @@ const getRevisionsByUserId = async (req, res) => {
         {
           model: AssignedReview,
           attributes: ["assigned_review_id"],
-          required: false, // No es obligatorio que haya asignaciones
+          required: false,
           include: [
             {
               model: User,
-              attributes: ["name", "email"], // Información del revisor asignado
+              as: "reviewer",               // alias definido en asociaciones.js
+              attributes: ["name", "email"],
             },
           ],
         },
@@ -223,18 +238,15 @@ const getRevisionsByUserId = async (req, res) => {
       });
     }
 
-    // Mapear los datos para agregar el baseURL a thesis_dir
+    // thesis_dir ya está almacenado como URL completa — no requiere construcción
     const mappedRevisions = revisions.map((revision) => ({
-      ...revision.toJSON(), // Convertir a objeto plano
-      thesis_dir: `${
-        process.env.BASE_URL + "/public" || "http://localhost:3000/public"
-      }${revision.thesis_dir}`,
-      assigned_reviewer: revision.AssignedReviews.length
-        ? revision.AssignedReviews.map((assignedReview) => ({
-            reviewer_name: assignedReview.User.name,
-            reviewer_email: assignedReview.User.email,
+      ...revision.toJSON(),
+      assigned_reviewer: revision.AssignedReviews?.length
+        ? revision.AssignedReviews.map((ar) => ({
+            reviewer_name: ar.reviewer?.name,
+            reviewer_email: ar.reviewer?.email,
           }))
-        : null, // Si no hay revisor asignado, asignamos null
+        : null,
     }));
 
     // Respuesta exitosa
@@ -244,9 +256,10 @@ const getRevisionsByUserId = async (req, res) => {
     });
   } catch (error) {
     console.error("Error al obtener las revisiones del estudiante:", error);
+    const isDev = process.env.NODE_ENV !== 'production';
     res.status(500).json({
       message: "Error al obtener las revisiones del estudiante",
-      error: error.message,
+      ...(isDev && { error: error.message }),
     });
   }
 };

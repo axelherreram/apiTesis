@@ -3,6 +3,13 @@ const authController = require("../controllers/authController");
 const authMiddleware = require("../middlewares/authMiddleware");
 const router = express.Router();
 const { upload, handleMulterErrors } = require("../middlewares/uploadMiddleware");
+const { validate } = require("../middlewares/validate");
+const {
+  loginSchema,
+  registerSchema,
+  requestPasswordRecoverySchema,
+  updatePasswordSchema,
+} = require("../validators/authValidator");
 
 /**
  * @swagger
@@ -63,7 +70,7 @@ const { upload, handleMulterErrors } = require("../middlewares/uploadMiddleware"
  *                 value:
  *                   message: "Error en el servidor"
  */
-router.post("/register", authController.registerUser);
+router.post("/register", validate(registerSchema), authController.registerUser);
 
 /**
  * @swagger
@@ -128,6 +135,7 @@ router.post("/login", authController.loginUser);
 router.put(
   "/updatePassword",
   authMiddleware,
+  validate(updatePasswordSchema),
   authController.updatePassword
 );
 
@@ -218,5 +226,17 @@ router.post("/requestPasswordRecovery", authController.requestPasswordRecovery);
  *         description: Refresh token inválido o expirado
  */
 router.post("/refresh", authController.refreshAccessToken);
+
+/**
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Cierra la sesión del usuario y elimina la cookie del refresh token
+ *     tags: [Authentication]
+ *     responses:
+ *       200:
+ *         description: Sesión cerrada exitosamente
+ */
+router.post("/logout", authController.logoutUser);
 
 module.exports = router;
